@@ -31,7 +31,7 @@ var rules = []rule{
 	{mod + "internal/adapters", append([]string{contract, mod + "internal/adapters", mygo}, thirdParty...)},
 	{mod + "internal/views", append([]string{contract, mod + "internal/views", mod + "locales", mygo + "/ui", mygo + "/i18n", mygo + "/plugins/glass"}, thirdParty...)},
 	{mod + "internal/mock", []string{contract, mygo + "/ui/markdown/parser"}},
-	{mod + "internal/contracttest", []string{contract, mod + "internal/mock"}},
+	{mod + "internal/contracttest", []string{contract, mod + "internal/mock", mod + "tests/corpus"}},
 	{mod + "internal/app", []string{mod, mygo, "golang.org/x/"}},
 	{mod + "locales", []string{mygo + "/i18n", mygo + "/locales"}},
 }

@@ -40,7 +40,7 @@ type FileSettings struct {
 	ShowAllFiles   bool
 	RemoteImages   bool // 是否加载网络图片（默认否）
 	RestoreSession bool
-	LargeFileBytes int64 // 超过即进入大文件模式，默认 1 MB
+	LargeFileBytes int64 // 超过即进入大文件模式，默认 5 MB（ADR-003）
 }
 
 // Settings 是全部用户设置。
