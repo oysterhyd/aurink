@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
-  "appName": "Aurink",
-  "@appName": {
-    "description": "The name of the app."
+  "app_name": "Aurink",
+  "@app_name": {
+    "description": "The name of the app, wherever it names itself."
   }
 }

@@ -16,6 +16,7 @@
 
 需要 CEO 注意
 - 05 §3.1 的文案键示例 `shell.tabs.close` 不符合 MyGo 规则 [源码 docs/i18n.md]：键只能是字母开头的字母、数字和 `_`。写 `tools/i18nmerge` 前需要定下规则，比如 `shell_tabs_close`。
+  **已解决**：CEO 已定规则，见 05 §3.4（`6a60ce0`）。
 
 门禁结果（Windows，本机）
 - [实测] `scripts/gate.ps1`、`scripts/gate.sh` 都输出 `Gate passed`，退出码 0。第 6 项输出 `SKIPPED: tools/i18nmerge does not exist yet`。
@@ -37,6 +38,15 @@
 - [实测] `scripts/gate.ps1`：`Gate passed`（第 6 项跳过，原因同上）。
 - [实测-CI] 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41302344666>（`53dd09a`）。
 - 已合入 main 并打标签 `contract-v1.0-rc`（指向 `53dd09a`，已推送）。
+
+## i18nmerge（05 §3.4）
+
+变更摘要
+- `tools/i18nmerge`：检查 K1–K6 和跨分片重复键，生成 `locales/*.json`、`catalog_gen.go`，再运行 `mygo i18n check`。门禁第 6 项不再跳过。
+- `appName` 改名为 `app_name`，移到 `i18n/fragments/int.{en,zh-Hans}.json`；生成函数仍是 `AppName()`。
+
+待办
+- 冻结 `contract-v1.0` 时把 `internal/contract/document.go` 第 60 行的 `"undo.typing"` 改成 `"editing_undo_typing"`（CEO 指示在冻结时做，现在未改）。
 
 ## 合并记录
 

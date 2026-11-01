@@ -37,13 +37,13 @@ func In(locale string) Messages { return Messages{locale} }
 // AppName says "Aurink"
 // in the language the app shows.
 //
-// The name of the app.
+// The name of the app, wherever it names itself.
 func AppName() string { return In(i18n.Locale()).AppName() }
 
 // AppName says "Aurink"
 // in the language of msgs.
 //
-// The name of the app.
+// The name of the app, wherever it names itself.
 func (msgs Messages) AppName() string {
-	return Catalog.Format(msgs.locale, "appName", nil)
+	return Catalog.Format(msgs.locale, "app_name", nil)
 }
