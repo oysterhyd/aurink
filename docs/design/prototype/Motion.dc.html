@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Aurink 运动语言</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Newsreader:opsz,wght@6..72,500&family=Noto+Serif+SC:wght@500&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1960px; height: 1400px; box-sizing: border-box; padding: 56px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: 380px 470px 1fr; gap: 24px; background: #090A0F; color: #ECEDF2; font-family: 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: 14px">
+
+  <section style="grid-column: span 7; border-radius: 20px; padding: 32px; background: #111218; box-shadow: 0 0 0 1px rgba(255,255,255,.07); display: flex; flex-direction: column">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px">
+      <h2 style="margin: 0; font: 500 26px Newsreader, 'Noto Serif SC', serif">四个运动令牌</h2>
+      <button onClick="{{playAll}}" style="height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: #ECEDF2; color: #111218; font: inherit; font-weight: 600; cursor: pointer">全部播放</button>
+    </div>
+    <div style="flex: 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{tokens}}" as="k" hint-placeholder-count="4">
+        <button onClick="{{k.play}}" style="padding: 14px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.085); color: inherit; font: inherit; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+          <span style="display: flex; justify-content: space-between; align-items: baseline"><b style="font-weight: 600">{{k.name}}</b><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #A2A4B3">{{k.spec}}</span></span>
+          <svg viewBox="0 0 200 90" width="100%" height="90" fill="none" aria-hidden="true"><path d="M0 76H200M0 16H200" stroke="rgba(255,255,255,.08)"></path><path d="{{k.path}}" stroke="oklch(0.82 0.12 182)" stroke-width="2"></path></svg>
+          <span style="position: relative; display: block; height: 22px; border-radius: 999px; background: rgba(255,255,255,.04)"><span data-ball="{{k.id}}" style="position: absolute; left: 3px; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: oklch(0.82 0.12 182); box-shadow: 0 0 12px oklch(0.82 0.12 182 / .6)"></span></span>
+          <span style="font-size: 12px; color: #A2A4B3; line-height: 1.45">{{k.use}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="grid-column: span 5; border-radius: 20px; padding: 32px; background: #111218; box-shadow: 0 0 0 1px rgba(255,255,255,.07)">
+    <h2 style="margin: 0 0 16px; font: 500 26px Newsreader, 'Noto Serif SC', serif">三条运动规则</h2>
+    <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 16px">
+      <li><b style="font-weight: 600">一个来源，一个去处</b><div style="color: #A2A4B3; margin-top: 3px; line-height: 1.55">浮层从触发它的控件长出，关闭时回到原处；不从屏幕中央凭空出现。</div></li>
+      <li><b style="font-weight: 600">当前位置只有一颗滑块</b><div style="color: #A2A4B3; margin-top: 3px; line-height: 1.55">标签、分段、菜单、面板都用同一个滑动选中块，不用多个元素各自变色。</div></li>
+      <li><b style="font-weight: 600">文字不做弹性</b><div style="color: #A2A4B3; margin-top: 3px; line-height: 1.55">Markdown 标记只淡入，宽度立即变化；任何动画都不能让正文抖动。</div></li>
+      <li><b style="font-weight: 600">空闲时零帧</b><div style="color: #A2A4B3; margin-top: 3px; line-height: 1.55">极光 12 秒后静止；减少动态效果时取消位移，只保留颜色与淡入。</div></li>
+    </ol>
+  </section>
+
+  <section style="grid-column: span 7; border-radius: 20px; padding: 32px; background: #111218; box-shadow: 0 0 0 1px rgba(255,255,255,.07); display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px">
+      <h2 style="margin: 0; font: 500 26px Newsreader, 'Noto Serif SC', serif">共享元素：搜索框展开为命令面板</h2>
+      <button onClick="{{toggleScrub}}" style="flex: none; height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: #ECEDF2; color: #111218; font: inherit; font-weight: 600; cursor: pointer">{{playLabel}}</button>
+    </div>
+    <div style="position: relative; flex: 1; overflow: hidden; border-radius: 14px; background: #0C0D12; border: 1px solid rgba(255,255,255,.085)">
+      <div style="height: 40px; border-bottom: 1px solid rgba(255,255,255,.07)"></div>
+      <div data-m-scrim style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(4,5,9,.5); opacity: 0"></div>
+      <div data-m-panel style="position: absolute; left: 50%; top: 56px; width: 480px; height: 228px; margin-left: -240px; box-sizing: border-box; border-radius: 16px; overflow: hidden; background: rgba(30,31,40,.92); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 24px 60px rgba(0,0,0,.6)">
+        <div style="height: 44px; display: flex; align-items: center; padding: 0 14px; color: #A2A4B3; border-bottom: 1px solid rgba(255,255,255,.08); white-space: nowrap">搜索文件或输入命令</div>
+        <div data-m-row style="margin: 8px 8px 0; height: 34px; border-radius: 9px; background: oklch(0.82 0.12 182 / .17); display: flex; align-items: center; padding: 0 10px">README.md</div>
+        <div data-m-row style="margin: 4px 8px 0; height: 34px; display: flex; align-items: center; padding: 0 10px">笔记.md</div>
+        <div data-m-row style="margin: 4px 8px 0; height: 34px; display: flex; align-items: center; padding: 0 10px">路线图.md</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 16px">
+      <label for="scrub" style="font-size: 12px; color: #A2A4B3; flex: none">拖动时间轴</label>
+      <input id="scrub" type="range" min="0" max="620" value="{{scrub}}" onChange="{{onScrub}}" style="flex: 1; accent-color: oklch(0.82 0.12 182)">
+      <span style="width: 64px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px">{{scrub}} ms</span>
+    </div>
+  </section>
+
+  <section style="grid-column: span 5; border-radius: 20px; padding: 32px; background: #111218; box-shadow: 0 0 0 1px rgba(255,255,255,.07)">
+    <h2 style="margin: 0 0 18px; font: 500 26px Newsreader, 'Noto Serif SC', serif">关键转场时间线</h2>
+    <sc-for list="{{timelines}}" as="tl" hint-placeholder-count="3">
+      <div style="margin-bottom: 18px">
+        <div style="font-weight: 600; margin-bottom: 6px">{{tl.name}}</div>
+        <sc-for list="{{tl.bars}}" as="bar" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; height: 20px; font-size: 12px">
+            <span style="width: 118px; flex: none; color: #A2A4B3">{{bar.label}}</span>
+            <span style="position: relative; flex: 1; height: 8px; border-radius: 999px; background: rgba(255,255,255,.05)"><span style="position: absolute; top: 0; bottom: 0; border-radius: 999px; left: {{bar.left}}%; width: {{bar.width}}%; background: {{bar.color}}"></span></span>
+            <span style="width: 74px; flex: none; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #A2A4B3">{{bar.ms}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </section>
+
+  <section style="grid-column: span 12; border-radius: 20px; padding: 28px 32px; background: #111218; box-shadow: 0 0 0 1px rgba(255,255,255,.07); overflow: hidden">
+    <h2 style="margin: 0 0 14px; font: 500 26px Newsreader, 'Noto Serif SC', serif">Native UI 落地对照 <span style="font: 400 13px 'Segoe UI', 'Microsoft YaHei UI', sans-serif; color: #A2A4B3">依据规划文档；全部性能均待 S4 实测</span></h2>
+    <div style="display: grid; grid-template-columns: 1.3fr 1.6fr 1.5fr .7fr; font-size: 13px">
+      <div style="padding: 6px 12px 6px 0; color: #A2A4B3; font-weight: 600">原型表现</div><div style="padding: 6px 12px 6px 0; color: #A2A4B3; font-weight: 600">MyGo 能力</div><div style="padding: 6px 12px 6px 0; color: #A2A4B3; font-weight: 600">CPU 或降级路径</div><div style="padding: 6px 0; color: #A2A4B3; font-weight: 600">状态</div>
+      <sc-for list="{{mapping}}" as="r" hint-placeholder-count="7">
+        <div style="padding: 7px 12px 7px 0; border-top: 1px solid rgba(255,255,255,.07)">{{r.a}}</div><div style="padding: 7px 12px 7px 0; border-top: 1px solid rgba(255,255,255,.07); font-family: 'JetBrains Mono', 'Microsoft YaHei UI', monospace; font-size: 12px">{{r.b}}</div><div style="padding: 7px 12px 7px 0; border-top: 1px solid rgba(255,255,255,.07); color: #A2A4B3">{{r.c}}</div><div style="padding: 7px 0; border-top: 1px solid rgba(255,255,255,.07); color: #FFB224">{{r.d}}</div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1960,"height":1400}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { scrub: 620, playing: false };
+    this.defs = [
+      { id: 'quick', name: 'Quick', spec: '120ms EaseOut', d: 120, ease: 'ease-out', use: '悬停、标记淡入、颜色变化' },
+      { id: 'snappy', name: 'Snappy', spec: 'Spring 260 · 0.15', d: 260, b: .15, w: 9, use: '滑块、弹层、胶囊与按钮' },
+      { id: 'smooth', name: 'Smooth', spec: 'Spring 360 · 0', d: 360, b: 0, w: 8, use: '侧栏、布局、模式切换' },
+      { id: 'gentle', name: 'Gentle', spec: 'Spring 520 · 0.1', d: 520, b: .1, w: 9, use: '命令面板、灯箱、共享元素' }
+    ];
+    this.defs.forEach((k) => { if (k.b != null) k.samples = this.sample(k.b, k.w); else k.samples = Array.from({ length: 29 }, (_, i) => { const t = i / 28; return 1 - Math.pow(1 - t, 3); }); if (k.b != null) k.ease = 'linear(' + k.samples.map((v) => v.toFixed(4)).join(',') + ')'; });
+  }
+
+  sample(bounce, w) {
+    const z = Math.max(0.3, 1 - bounce * 2.2), wd = w * Math.sqrt(Math.max(0.0001, 1 - z * z)), pts = [];
+    for (let i = 0; i <= 28; i++) {
+      const x = i / 28 * 1.05;
+      pts.push(i === 28 ? 1 : (z >= 0.999 ? 1 - Math.exp(-w * x) * (1 + w * x) : 1 - Math.exp(-z * w * x) * (Math.cos(wd * x) + (z * w / wd) * Math.sin(wd * x))));
+    }
+    return pts;
+  }
+
+  componentDidMount() { this.buildScrub(); }
+  componentWillUnmount() { cancelAnimationFrame(this._raf); }
+
+  buildScrub() {
+    const panel = document.querySelector('[data-m-panel]'), scrim = document.querySelector('[data-m-scrim]');
+    if (!panel || !panel.animate) return;
+    const g = this.defs[3], s = this.defs[1];
+    const mk = (el, kf, opt) => { const a = el.animate(kf, Object.assign({ fill: 'both' }, opt)); a.pause(); return a; };
+    this.anims = [
+      mk(panel, { transform: ['translate(0,-46px) scale(.58,.14)', 'none'], opacity: [.5, 1] }, { duration: 520, easing: g.ease }),
+      mk(scrim, { opacity: [0, 1] }, { duration: 180, easing: 'ease-out' })
+    ];
+    document.querySelectorAll('[data-m-row]').forEach((r, i) => this.anims.push(mk(r, { opacity: [0, 1], transform: ['translateY(6px)', 'none'] }, { duration: 260, delay: 160 + i * 24, easing: s.ease })));
+    this.seek(this.state.scrub);
+  }
+
+  seek(t) { (this.anims || []).forEach((a) => { a.currentTime = t; }); }
+
+  renderVals() {
+    const S = this.state;
+    const playBall = (k) => {
+      const el = document.querySelector('[data-ball="' + k.id + '"]');
+      if (el && el.animate) el.animate({ left: ['3px', 'calc(100% - 19px)'] }, { duration: k.d * 2.2, easing: k.ease, direction: 'alternate', iterations: 2 });
+    };
+    const tokens = this.defs.map((k) => ({
+      id: k.id, name: k.name, spec: k.spec, use: k.use, play: () => playBall(k),
+      path: k.samples.map((v, i) => (i ? 'L' : 'M') + (i / 28 * 200).toFixed(1) + ' ' + (76 - v * 60).toFixed(1)).join(' ')
+    }));
+    const C = ['oklch(0.8 0.13 182)', 'oklch(0.7 0.15 274)', 'oklch(0.74 0.15 347)'];
+    const bars = (max, list) => list.map((b) => ({ label: b[0], left: b[1] / max * 100, width: (b[2] - b[1]) / max * 100, ms: b[1] + '–' + b[2], color: C[b[3]] }));
+    return {
+      tokens, scrub: S.scrub, playLabel: S.playing ? '暂停' : '播放',
+      playAll: () => this.defs.forEach(playBall),
+      onScrub: (e) => { const v = Number(e.target.value); cancelAnimationFrame(this._raf); this.setState({ scrub: v, playing: false }); this.seek(v); },
+      toggleScrub: () => {
+        if (this.state.playing) { cancelAnimationFrame(this._raf); this.setState({ playing: false }); return; }
+        const from = this.state.scrub >= 620 ? 0 : this.state.scrub, start = performance.now() - from;
+        this.setState({ playing: true });
+        const tick = (now) => {
+          const t = Math.min(620, Math.round(now - start));
+          this.seek(t); this.setState({ scrub: t });
+          if (t < 620) this._raf = requestAnimationFrame(tick); else this.setState({ playing: false });
+        };
+        this._raf = requestAnimationFrame(tick);
+      },
+      timelines: [
+        { name: '打开命令面板', bars: bars(620, [['背景压暗', 0, 180, 2], ['面板从搜索框展开', 0, 520, 0], ['列表逐项进入', 160, 512, 1], ['流光描边扫过', 0, 1125, 2]].map((b) => b[2] > 620 ? [b[0], b[1], 620, b[3]] : b)) },
+        { name: '保存状态', bars: bars(3000, [['已编辑', 0, 500, 2], ['保存中脉动', 500, 1300, 1], ['绘制对勾', 1300, 1520, 0], ['回到圆点', 2800, 3000, 2]]) },
+        { name: '进入阅读模式', bars: bars(520, [['标题栏收起', 0, 360, 1], ['侧栏收起', 0, 360, 1], ['纸面铺满窗口', 0, 360, 0], ['进度线出现', 200, 320, 2]]) }
+      ],
+      mapping: [
+        { a: '面板、菜单、胶囊的玻璃', b: 'glass.Glass{Regular}', c: '实色 surface 加阴影', d: '待验证 S4' },
+        { a: '窗口底色与侧栏', b: 'Window Vibrancy（Win11 Mica/Acrylic）', c: 'chrome 纯色', d: '待验证 S4' },
+        { a: '滚动时顶部标题条', b: 'glass.ScrollEdge{Soft}', c: '纸面色半透明或实色', d: '待验证 S4' },
+        { a: '欢迎页与空状态极光', b: 'ui/shader Fragment，p.Accelerated() 门控', c: '静态背景，无动画', d: '待验证 S4' },
+        { a: '主题径向溶解', b: 'LayerEffect 自点击点过渡', c: '交叉淡化', d: '待验证 S4' },
+        { a: '面板展开、灯箱飞入', b: 'ElementTransition.Match', c: '淡入', d: '源码确认' },
+        { a: '滑块、布局与弹性', b: 'Spring、Transition、AnimatePose', c: '减少动态效果时取消位移', d: '源码确认' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

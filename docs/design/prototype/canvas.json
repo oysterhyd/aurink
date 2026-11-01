@@ -1,0 +1,44 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-31T12:00:00Z" },
+  "title": "Aurink UI 原型",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "DesignSystem.dc.html": { "x": 0, "y": -1800, "w": 1960, "h": 1400, "title": "Ink & Aurora 设计系统" },
+    "Motion.dc.html": { "x": 2040, "y": -1800, "w": 1960, "h": 1400, "title": "运动语言与时间线（可播放）", "is_interactive": true },
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1280, "h": 800, "title": "主界面 · 实时编辑（可完整操作）", "expand": "fill", "is_interactive": true },
+    "Dark.dc.html": { "x": 1360, "y": 0, "w": 1280, "h": 800, "title": "深色 Midnight Ink", "is_interactive": true },
+    "Source.dc.html": { "x": 2720, "y": 0, "w": 1280, "h": 800, "title": "源码模式", "is_interactive": true },
+    "Reading.dc.html": { "x": 0, "y": 1140, "w": 1280, "h": 800, "title": "阅读模式", "is_interactive": true },
+    "Focus.dc.html": { "x": 1360, "y": 1140, "w": 1280, "h": 800, "title": "专注模式", "is_interactive": true },
+    "Welcome.dc.html": { "x": 2720, "y": 1140, "w": 1280, "h": 800, "title": "欢迎页", "is_interactive": true },
+    "Palette.dc.html": { "x": 0, "y": 2280, "w": 1280, "h": 800, "title": "命令面板", "is_interactive": true },
+    "Slash.dc.html": { "x": 1360, "y": 2280, "w": 1280, "h": 800, "title": "斜杠菜单", "is_interactive": true },
+    "Format.dc.html": { "x": 2720, "y": 2280, "w": 1280, "h": 800, "title": "选区格式条", "is_interactive": true },
+    "Conflict.dc.html": { "x": 0, "y": 3420, "w": 1280, "h": 800, "title": "外部修改冲突", "is_interactive": true },
+    "Find.dc.html": { "x": 1360, "y": 3420, "w": 1280, "h": 800, "title": "查找与替换", "is_interactive": true },
+    "Settings.dc.html": { "x": 2720, "y": 3420, "w": 1280, "h": 800, "title": "设置", "is_interactive": true },
+    "Lightbox.dc.html": { "x": 0, "y": 4560, "w": 1280, "h": 800, "title": "图片预览", "is_interactive": true },
+    "Notify.dc.html": { "x": 1360, "y": 4560, "w": 1280, "h": 800, "title": "通知与进度", "is_interactive": true },
+    "Loading.dc.html": { "x": 2720, "y": 4560, "w": 1280, "h": 800, "title": "加载反馈", "is_interactive": true },
+    "LowPower.dc.html": { "x": 4080, "y": 4560, "w": 1280, "h": 800, "title": "CPU 路径降级", "is_interactive": true }
+  },
+  "order": [
+    "DesignSystem.dc.html", "Motion.dc.html",
+    "Main.dc.html", "Dark.dc.html", "Source.dc.html",
+    "Reading.dc.html", "Focus.dc.html", "Welcome.dc.html",
+    "Palette.dc.html", "Slash.dc.html", "Format.dc.html",
+    "Conflict.dc.html", "Find.dc.html", "Settings.dc.html",
+    "Lightbox.dc.html", "Notify.dc.html", "Loading.dc.html", "LowPower.dc.html"
+  ],
+  "notes": {
+    "row0": { "x": 0, "y": -2040, "text": "品牌与设计系统", "kind": "title1", "maxW": 4000 },
+    "row1": { "x": 0, "y": -240, "text": "编辑核心", "kind": "title1", "maxW": 4000 },
+    "row2": { "x": 0, "y": 900, "text": "视图模式与空状态", "kind": "title1", "maxW": 4000 },
+    "row3": { "x": 0, "y": 2040, "text": "键盘优先的浮层", "kind": "title1", "maxW": 4000 },
+    "row4": { "x": 0, "y": 3180, "text": "状态、查找与设置", "kind": "title1", "maxW": 4000 },
+    "row5": { "x": 0, "y": 4320, "text": "预览、反馈与降级", "kind": "title1", "maxW": 5360 }
+  },
+  "designSystems": []
+}

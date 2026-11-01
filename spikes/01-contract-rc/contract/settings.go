@@ -6,14 +6,14 @@ const SettingsVersion = 1
 // Appearance 是外观设置。
 type Appearance struct {
 	Theme        string  // "system" | "light" | "dark"
-	Accent       string  // "" 跟随系统，否则 "#RRGGBB"
+	AccentHue    int     // 强调色 OKLCH 色相 0–359，默认 182
 	ContentFont  string  // "" 为默认
 	CodeFont     string  // "" 为默认
 	FontSize     float32 // 正文字号，默认 16
 	LineHeight   float32 // 默认 1.75
 	ContentWidth float32 // 默认 720
 	ReduceMotion string  // "system" | "on" | "off"
-	// ReduceTransparency 为 true 时不使用玻璃与 Vibrancy。
+	// ReduceTransparency 为 true 时走低功耗路径：不使用玻璃、Vibrancy 与极光。
 	ReduceTransparency bool
 }
 

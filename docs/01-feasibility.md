@@ -142,7 +142,7 @@ MyGo 是一个约 29 万行 Go 的桌面框架：窗口可以显示系统 WebVie
 | 源码模式同步 | 进入源码模式时用当前文本构造 `editor.Buffer`；每帧比对 `Version`，变化时以公共前后缀求差生成事务写回核心模型；退出时销毁。`Highlighter.Edit` 只在视图绘制时惰性回放，不能作为通用变更订阅 [源码 syntax.go] |
 | HTML 粘贴 → Markdown | 复用 `richtext.ParseHTML/ParseRTF(...).Markdown()`（粘贴转换场景可接受其有损性），隔离在 `adapters` 层 |
 | 代码块高亮 | 复用 `editor.LanguageFor` + `Language.Tokenizer` + `editor.Theme` 的 Token 颜色，逐行增量 |
-| 字体 | UI 用系统字体；正文默认系统无衬线 + CJK 回退（PingFang SC / Microsoft YaHei UI / Noto Sans CJK）；可选打包 Inter、JetBrains Mono（OFL，`ui.RegisterFont`）；不打包 CJK 字体（体积 10 MB+） |
+| 字体 | UI 与默认正文用系统字体（Segoe UI Variable + Microsoft YaHei UI 等）。**打包** Newsreader、Noto Serif SC、JetBrains Mono（均为 OFL，`ui.RegisterFont`），用于标题、引用、阅读正文与代码（2026-11-01 用户决定，取代原"不打包 CJK 字体"）。Noto Serif SC 取常用字子集，子集外回退系统字体；首次需要时才注册。子集范围、字重文件、体积、注册耗时、回退观感由 S4 给出 [待验证] |
 
 ## 5. 风险登记
 
@@ -154,10 +154,12 @@ MyGo 是一个约 29 万行 Go 的桌面框架：窗口可以显示系统 WebVie
 | R4 | WebView 渲染服务不可用/慢/占内存 | 中 | 中 | 懒启动、缓存、源码降级；只在文档包含公式/图表时启动 | BE-2 |
 | R5 | MyGo 为 0.x，API 可能变动 | 中 | 中 | 锁定 v0.7.3；升级只由 INT 执行（`mygo migrate-ui`），独立分支验证 | INT |
 | R6 | 开发机仅 Windows，macOS/Linux 验证缺位 | 高 | 中 | GitHub Actions 三平台矩阵跑构建与 Tester 测试；macOS 签名、IME、Vibrancy 需要真机/云 Mac 人工验收 | INT / QA |
-| R7 | Glass / Shader 在核显或 WARP/CPU 渲染下掉帧 | 中 | 中 | `p.Accelerated()` 门控；"减少透明度"设置；CPU 路径用纯色半透明替代 | FE-2 |
+| R7 | Glass / Shader / 多层材质在核显或 WARP/CPU 渲染下掉帧，或与原型观感差距过大 | 中 | 高 | `p.Accelerated()` 门控；"减少透明度"设置；低功耗路径用 02 §4.3 的实色；S4 按基线比对并记录允许的差异 | FE-2 |
 | R8 | 自定义编辑器的无障碍能力弱于系统文本控件 | 中 | 低 | 提供 TextField 角色、标签、选区；读屏全文朗读列为已知限制 | FE-1 |
 | R9 | 扩展语法与 CommonMark 冲突（`~`、`$`、`==`） | 低 | 低 | 默认 GFM 语义，扩展逐项可开关 | BE-1 |
 | R10 | 多 Agent 并行导致契约漂移 | 中 | 高 | 契约冻结 + 一致性测试套件 + CR 流程 + 架构导入规则测试 | CEO / QA |
+| R11 | 打包 CJK 衬线字体使体积与启动超预算，或 `RegisterFont` 对所选格式支持不足 | 中 | 中 | 常用字子集、懒注册；S4 实测；超预算时减字重或缩小子集 | FE-2 |
+| R12 | 多人分别实现后界面与原型不一致（选中药丸、FLIP、材质层级各做一套） | 中 | 高 | 动效与材质集中在 `views/motion`、`views/effects`、`views/kit`；按 `docs/design` 基线逐项对照，M1–M3 把对照结果作为门槛 | FE-1 / FE-2 / CEO |
 
 ## 6. Spike 清单（Phase 0，均限时，结论写入 `spikes/<id>/REPORT.md`）
 
@@ -166,4 +168,4 @@ MyGo 是一个约 29 万行 Go 的桌面框架：窗口可以显示系统 WebVie
 | S1 编辑引擎原型 | FE-1 | 自定义元素 + TextInputClient；200 块文档中 `**粗体**`/标题的光标处显隐；跨块光标移动与选区；1 万块虚拟滚动；IME | 1 万块滚动无整屏重排（帧统计无全量 layout）；击键 p95 < 8 ms；Windows 微软拼音组字/提交/候选框位置正确；`Tester` 回归测试通过 | 方案降级为"块级源码切换"（活动块整块显示源码，其余渲染），仍保持无损 |
 | S2 渲染服务 | BE-2 | 离屏 WebView + MathJax → SVG → `ui.ParseSVG`；Mermaid → PNG | 50 个常见公式 SVG 可解析且视觉正确 ≥ 95%；单公式冷渲染 < 50 ms、缓存 < 1 ms；不放入视图时 `Eval` 稳定 | 公式显示源码 + 外部浏览器预览；纯 Go 子集渲染器调研 |
 | S3 AST 适配 | BE-1 | 前缀区间计算、BlockID 稳定性、5 MB 下解析曲线、分片可行性 | 前缀不变式（去前缀后内容 == `parser.Lines`）在语料上 100% 成立；随机编辑序列下未触及的块 ID 不变 | 保守策略：BlockID 退化为"(种类, 起始偏移)"并接受更多重排 |
-| S4 外观性能 | FE-2 | 玻璃工具栏覆盖滚动内容、Win11 Vibrancy 侧栏、`MYGO_GPU=0` CPU 路径、主题切换 Shader | GPU 路径滚动 60 fps；CPU 路径有可接受降级方案 | 玻璃仅用于浮层，不用于常驻工具栏 |
+| S4 外观性能 | FE-2 | 按 `docs/design/baseline` 复现主界面外壳：窗口材质 + 纸张、三级玻璃、ScrollEdge、滑动选中药丸、面板从 omnibox 长出（`Match`）、极光 Shader、主题径向溶解、`MYGO_GPU=0` 与减少透明度路径、打包字体的体积/注册耗时/中西混排 | GPU 路径滚动与动画 60 fps；空闲 0 帧；低功耗路径与 `LowPower.png` 一致；字体方案满足 03 §10 预算；用户真机确认与基线的观感差异可接受 | 玻璃仅用于浮层，常驻区域用实色；极光改静态渐变；字体减字重或改用系统衬线。任一后备都须更新 02 与基线 |

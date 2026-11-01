@@ -1,0 +1,1472 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Aurink 主界面</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div data-aurink-root onMouseOver="{{hoverOn}}" onMouseOut="{{hoverOff}}" onMouseDown="{{pressOn}}" onMouseUp="{{pressOff}}" style="height: {{rootH}}; min-height: 640px; display: flex; flex-direction: column; position: relative; overflow: hidden; background: {{t.win}}; color: {{t.text}}; font-family: 'Segoe UI Variable Text', 'Segoe UI', 'SF Pro Text', Cantarell, 'Microsoft YaHei UI', 'PingFang SC', 'Noto Sans CJK SC', sans-serif; font-size: 13px; -webkit-font-smoothing: antialiased">
+
+  <sc-if value="{{isRead}}" hint-placeholder-val="{{ false }}">
+    <div aria-hidden="true" style="position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 30; transform-origin: left; transform: scaleX({{scrollFrac}}); background: {{t.brand}}; box-shadow: 0 0 12px {{t.accentGlow}}"></div>
+    <div ref="{{enterFade}}" style="position: absolute; top: 12px; left: 0; right: 0; z-index: 30; display: flex; align-items: center; justify-content: center; pointer-events: none">
+      <span style="font-size: 12px; color: {{t.muted}}; opacity: {{edge}}; transition: opacity 120ms ease-out; font-family: {{t.display}}">{{docTitle}}</span>
+    </div>
+    <button ref="{{enterPop}}" onClick="{{exitRead}}" style="position: absolute; top: 12px; right: 16px; z-index: 31; height: 32px; padding: 0 14px; border-radius: 999px; color: {{t.text}}; font: inherit; font-size: 12px; cursor: pointer; {{t.glassChip}}">退出阅读</button>
+  </sc-if>
+
+  <header style="display: flex; align-items: center; height: 46px; flex: none; position: relative; z-index: 6; transition: margin-top {{m.smooth}}, opacity 200ms ease-out; margin-top: {{headMargin}}px; opacity: {{headOpacity}}">
+    <div style="display: flex; align-items: center; gap: 2px; padding-left: 12px; flex: none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-label="Aurink" role="img">
+        <defs><linearGradient id="mk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="{{t.a1}}"></stop><stop offset="0.55" stop-color="{{t.a2}}"></stop><stop offset="1" stop-color="{{t.a3}}"></stop></linearGradient></defs>
+        <path d="M3 20C4.5 11 7.8 4 12 4s7.5 7 9 16" stroke="url(#mk)" stroke-width="2.6" stroke-linecap="round"></path>
+        <path d="M12 11.5c1.9 2.5 3 4 3 5.4a3 3 0 0 1-6 0c0-1.4 1.1-2.9 3-5.4z" fill="{{t.text}}"></path>
+      </svg>
+      <button aria-label="切换侧栏" title="侧栏 Ctrl+Shift+L" onClick="{{toggleSide}}" style="width: 32px; height: 30px; margin-left: 6px; border: 0; border-radius: 8px; background: none; color: {{t.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="1.5" y="2.5" width="13" height="11" rx="2.5"></rect><path d="M6 2.5v11"></path></svg>
+      </button>
+    </div>
+    <div data-pill-host style="position: relative; display: flex; align-items: center; gap: 2px; margin-left: 6px; min-width: 0; flex: 0 1 auto; overflow: hidden; padding: 3px">
+      <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 9px; {{t.tabPill}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}, opacity 120ms"></div>
+      <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="2">
+        <div data-fk="{{tab.fk}}" data-on="{{tab.on}}" draggable="{{ true }}" onDragStart="{{tab.dragStart}}" onDragOver="{{tab.dragOver}}" onDragEnd="{{tab.dragEnd}}" onMouseEnter="{{tab.enter}}" onMouseLeave="{{tab.leave}}" style="display: flex; align-items: center; height: 30px; flex: none; position: relative; z-index: 1; border-radius: 9px; max-width: 190px; transition: color 120ms ease-out, opacity 120ms; color: {{tab.color}}; opacity: {{tab.opacity}}">
+          <button onClick="{{tab.pick}}" style="height: 30px; border: 0; background: none; color: inherit; font: inherit; font-weight: {{tab.weight}}; cursor: pointer; padding: 0 4px 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{tab.name}}</button>
+          <button aria-label="关闭标签" onClick="{{tab.close}}" style="width: 22px; height: 22px; margin-right: 4px; border: 0; border-radius: 6px; background: none; color: {{t.muted}}; cursor: pointer; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center">
+            <span style="{{tab.dot}}">{{tab.glyph}}</span>
+          </button>
+        </div>
+      </sc-for>
+      <button aria-label="新建文档" title="新建 Ctrl+N" onClick="{{newTab}}" style="flex: none; width: 28px; height: 28px; border: 0; border-radius: 8px; background: none; color: {{t.muted}}; font-size: 16px; cursor: pointer; position: relative; z-index: 1">+</button>
+    </div>
+    <div style="flex: 1 1 8px; min-width: 8px"></div>
+    <button data-omni onClick="{{openPalette}}" style="flex: 0 1 280px; min-width: 150px; height: 30px; padding: 0 6px 0 10px; border-radius: 9px; color: {{t.muted}}; font: inherit; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; background: {{t.surface}}; border: 1px solid {{t.border}}; opacity: {{omniOpacity}}">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.5 10.5 14 14"></path></svg>
+      <span style="flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis">搜索文件或输入命令</span>
+      <kbd style="padding: 1px 6px; border-radius: 5px; font: inherit; font-size: 10.5px; background: {{t.surface}}; border: 1px solid {{t.border}}">Ctrl P</kbd>
+    </button>
+    <div style="flex: 1 1 8px; min-width: 8px"></div>
+    <div style="display: flex; align-items: center; gap: 2px; padding-right: 6px; flex: none">
+      <button data-view-btn onClick="{{toggleView}}" title="视图" style="height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: {{viewBtnBg}}; color: {{t.muted}}; font: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px">{{modeLabel}}<svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" style="transition: transform {{m.snappy}}; transform: rotate({{viewRot}}deg)"><path d="m2 3.5 3 3 3-3"></path></svg></button>
+      <button aria-label="切换主题" title="切换主题" onClick="{{toggleTheme}}" style="width: 32px; height: 30px; border: 0; border-radius: 8px; background: none; color: {{t.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true" style="transition: transform {{m.gentle}}; transform: rotate({{themeRot}}deg)"><circle cx="8" cy="8" r="6"></circle><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"></path></svg>
+      </button>
+      <button aria-label="设置" title="设置" onClick="{{openSettings}}" style="width: 32px; height: 30px; border: 0; border-radius: 8px; background: none; color: {{t.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M2 4.5h7M12 4.5h2M2 11.5h2M7 11.5h7"></path><circle cx="10.5" cy="4.5" r="1.5"></circle><circle cx="5.5" cy="11.5" r="1.5"></circle></svg>
+      </button>
+    </div>
+    <div aria-hidden="true" style="display: flex; align-self: stretch; color: {{t.muted}}; flex: none">
+      <span data-h style="width: 46px; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor"><path d="M0 5h10"></path></svg></span>
+      <span data-h style="width: 46px; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor"><rect x="0.5" y="0.5" width="9" height="9" rx="2"></rect></svg></span>
+      <span data-h style="width: 46px; display: flex; align-items: center; justify-content: center"><svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor"><path d="m0 0 10 10M10 0 0 10"></path></svg></span>
+    </div>
+  </header>
+
+  <sc-if value="{{viewOpen}}" hint-placeholder-val="{{ false }}">
+    <div ref="{{enterPopTop}}" data-pill-host style="position: absolute; top: 46px; right: 214px; z-index: 25; width: 260px; padding: 5px; border-radius: 12px; {{t.glassPanel}}">
+      <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 8px; background: {{t.accentSoft}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}"></div>
+      <sc-for list="{{modeItems}}" as="vm" hint-placeholder-count="5">
+        <button data-on="{{vm.on}}" onClick="{{vm.pick}}" style="position: relative; width: 100%; padding: 7px 9px; border: 0; border-radius: 8px; font: inherit; color: {{t.text}}; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; text-align: left; background: none">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="{{t.muted}}" stroke-width="1.3" stroke-linecap="round" aria-hidden="true" style="margin-top: 2px; flex: none"><path d="{{vm.icon}}"></path></svg>
+          <span style="flex: 1"><span style="display: block; font-weight: 500">{{vm.label}}</span><span style="display: block; font-size: 11.5px; color: {{t.muted}}; margin-top: 1px">{{vm.desc}}</span></span>
+          <span style="font-size: 11px; color: {{t.muted}}">{{vm.key}}</span>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isWelcome}}" hint-placeholder-val="{{ false }}">
+    <main style="flex: 1; min-height: 0; margin: 0 8px 8px; border-radius: 14px; position: relative; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 32px 16px; background: {{t.sheet}}; box-shadow: {{t.sheetShadow}}">
+      <div aria-hidden="true" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; border-radius: 14px; pointer-events: none">
+        <div ref="{{aurora1}}" style="position: absolute; width: 58%; height: 70%; left: -8%; top: -24%; border-radius: 50%; background: radial-gradient(closest-side, {{t.aur1}}, transparent); filter: blur(30px)"></div>
+        <div ref="{{aurora2}}" style="position: absolute; width: 52%; height: 64%; right: -6%; top: 6%; border-radius: 50%; background: radial-gradient(closest-side, {{t.aur2}}, transparent); filter: blur(36px)"></div>
+        <div ref="{{aurora3}}" style="position: absolute; width: 46%; height: 52%; left: 28%; bottom: -24%; border-radius: 50%; background: radial-gradient(closest-side, {{t.aur3}}, transparent); filter: blur(40px)"></div>
+      </div>
+      <div ref="{{enterStagger}}" style="position: relative; width: 100%; max-width: 520px; display: flex; flex-direction: column; gap: 32px">
+        <div data-stag>
+          <h1 style="margin: 0; font-family: {{t.display}}; font-size: 68px; font-weight: 500; letter-spacing: -0.03em; line-height: 1">Aurink</h1>
+          <p style="margin: 12px 0 0; font-size: 16px; color: {{t.muted}}; font-family: {{t.display}}">Markdown 文件就是你的文件。</p>
+        </div>
+        <div data-stag style="display: flex; flex-wrap: wrap; gap: 8px">
+          <button onClick="{{newTab}}" style="height: 38px; padding: 0 16px; border: 0; border-radius: 10px; background: {{t.text}}; color: {{t.sheetSolid}}; font: inherit; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px">新建文档 <span style="font-size: 11px; opacity: .65; font-weight: 400">Ctrl N</span></button>
+          <button onClick="{{openReadme}}" style="height: 38px; padding: 0 14px; border-radius: 10px; color: {{t.text}}; font: inherit; cursor: pointer; {{t.glassChip}}">打开文件</button>
+          <button onClick="{{openReadme}}" style="height: 38px; padding: 0 14px; border-radius: 10px; color: {{t.text}}; font: inherit; cursor: pointer; {{t.glassChip}}">打开文件夹</button>
+        </div>
+        <div data-stag style="padding: 6px; border-radius: 14px; {{t.glassChip}}">
+          <div style="padding: 6px 10px 4px; font-size: 11px; font-weight: 600; color: {{t.muted}}">最近</div>
+          <sc-for list="{{recents}}" as="r" hint-placeholder-count="4">
+            <button onClick="{{openReadme}}" style="width: 100%; height: 38px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: {{t.text}}; font: inherit; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+              <span>{{r.name}}</span><span style="font-size: 12px; color: {{t.muted}}">{{r.path}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{isDoc}}" hint-placeholder-val="{{ true }}">
+    <div style="flex: 1; min-height: 0; display: flex; flex-wrap: wrap; overflow: auto">
+      <aside style="flex: 0 0 {{sideW}}px; width: {{sideW}}px; overflow: hidden; display: flex; flex-direction: column; min-height: 200px; transition: {{sideTrans}}; opacity: {{sideOpacity}}">
+        <div style="width: {{sideInner}}px; flex: 1; min-height: 0; display: flex; flex-direction: column">
+          <div data-pill-host style="position: relative; display: flex; gap: 0; margin: 2px 8px 8px 12px; padding: 3px; border-radius: 10px; background: {{t.surface}}; flex: none">
+            <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 7px; {{t.tabPill}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}"></div>
+            <sc-for list="{{sideTabs}}" as="st" hint-placeholder-count="3">
+              <button data-on="{{st.on}}" onClick="{{st.pick}}" style="position: relative; flex: 1; height: 26px; border: 0; border-radius: 7px; font: inherit; font-size: 12px; cursor: pointer; background: none; color: {{st.color}}; font-weight: {{st.weight}}; transition: color 120ms ease-out">{{st.label}}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{sideFiles}}" hint-placeholder-val="{{ true }}">
+            <nav aria-label="文件树" ref="{{enterFade}}" style="flex: 1; overflow: auto; padding: 0 8px 8px 12px">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 6px; font-size: 11px; font-weight: 600; color: {{t.muted}}"><span>aurink-notes</span></div>
+              <sc-for list="{{tree}}" as="n" hint-placeholder-count="6">
+                <div data-fk="{{n.fk}}" style="position: relative">
+                  <sc-if value="{{n.renaming}}" hint-placeholder-val="{{ false }}">
+                    <div style="padding: 2px 0 2px {{n.pad}}px">
+                      <input aria-label="重命名" value="{{renameVal}}" onChange="{{onRename}}" onKeyDown="{{onRenameKey}}" onBlur="{{commitRename}}" ref="{{focusRef}}" style="width: 100%; box-sizing: border-box; height: 26px; padding: 0 6px; border-radius: 6px; font: inherit; color: {{t.text}}; background: {{t.sheetSolid}}; outline: none; border: 1px solid {{renameBorder}}">
+                      <sc-if value="{{renameConflict}}" hint-placeholder-val="{{ false }}"><div style="font-size: 11px; color: {{t.danger}}; margin-top: 2px">已存在同名文件</div></sc-if>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{n.notRenaming}}" hint-placeholder-val="{{ true }}">
+                    <button draggable="{{ true }}" onDragStart="{{n.dragStart}}" onDragOver="{{n.dragOver}}" onDrop="{{n.drop}}" onDragEnd="{{n.dragEnd}}" onDragLeave="{{n.dragLeave}}" onClick="{{n.pick}}" onDoubleClick="{{n.rename}}" onContextMenu="{{n.ctx}}" style="width: 100%; height: 28px; padding: 0 8px 0 {{n.pad}}px; border: 0; border-radius: 8px; font: inherit; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 6px; background: {{n.bg}}; color: {{n.color}}; font-weight: {{n.weight}}; opacity: {{n.opacity}}; transition: background 120ms ease-out, transform {{m.snappy}}; transform: {{n.lift}}; box-shadow: {{n.ring}}">
+                      <span aria-hidden="true" style="width: 12px; flex: none; color: {{t.muted}}; display: flex; justify-content: center; transition: transform {{m.snappy}}; transform: rotate({{n.rot}}deg)">
+                        <sc-if value="{{n.isDir}}" hint-placeholder-val="{{ false }}"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m3.5 2 3 3-3 3"></path></svg></sc-if>
+                      </span>
+                      <span style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; flex: 1">{{n.name}}</span>
+                      <sc-if value="{{n.dirty}}" hint-placeholder-val="{{ false }}"><span aria-label="未保存" style="width: 6px; height: 6px; border-radius: 50%; background: {{t.accent}}; flex: none"></span></sc-if>
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{n.showCtx}}" hint-placeholder-val="{{ false }}">
+                    <div ref="{{enterPopTop}}" style="position: absolute; left: 28px; top: 28px; z-index: 20; width: 184px; padding: 5px; border-radius: 12px; {{t.glassPanel}}">
+                      <sc-for list="{{ctxItems}}" as="ci" hint-placeholder-count="4">
+                        <button onClick="{{ci.pick}}" style="width: 100%; height: 28px; padding: 0 8px; border: 0; border-radius: 7px; background: none; font: inherit; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: {{ci.color}}"><span>{{ci.label}}</span><span style="font-size: 11px; color: {{t.muted}}">{{ci.key}}</span></button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </nav>
+          </sc-if>
+
+          <sc-if value="{{sideOutline}}" hint-placeholder-val="{{ false }}">
+            <nav aria-label="大纲" ref="{{enterFade}}" style="flex: 1; overflow: auto; padding: 4px 8px 8px 12px">
+              <div style="position: relative">
+                <div aria-hidden="true" style="position: absolute; left: 3px; top: 0; bottom: 0; width: 1px; background: {{t.border}}"></div>
+                <div aria-hidden="true" style="position: absolute; left: 2px; width: 3px; height: 18px; border-radius: 3px; background: {{t.accent}}; box-shadow: 0 0 10px {{t.accentGlow}}; top: {{outlineTop}}px; transition: top {{m.smooth}}"></div>
+                <sc-for list="{{outline}}" as="o" hint-placeholder-count="5">
+                  <button onClick="{{o.pick}}" style="width: 100%; height: 28px; padding: 0 8px 0 {{o.pad}}px; border: 0; border-radius: 7px; background: none; font: inherit; text-align: left; cursor: pointer; display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: {{o.color}}; font-weight: {{o.weight}}; transition: color 120ms ease-out">{{o.text}}</button>
+                </sc-for>
+              </div>
+            </nav>
+          </sc-if>
+
+          <sc-if value="{{sideSearch}}" hint-placeholder-val="{{ false }}">
+            <div ref="{{enterFade}}" style="flex: 1; overflow: auto; padding: 0 8px 8px 12px">
+              <input aria-label="工作区全文搜索" value="{{sq}}" onChange="{{onSq}}" placeholder="搜索整个工作区" style="width: 100%; box-sizing: border-box; height: 30px; padding: 0 10px; border-radius: 8px; background: {{t.surface}}; color: {{t.text}}; font: inherit; margin-bottom: 8px; border: 1px solid {{t.border}}; outline: none">
+              <sc-for list="{{searchHits}}" as="h" hint-placeholder-count="3">
+                <button onClick="{{h.pick}}" style="width: 100%; padding: 8px; border: 0; border-radius: 8px; background: none; color: {{t.text}}; font: inherit; text-align: left; cursor: pointer; display: block">
+                  <span style="display: block; font-size: 11px; color: {{t.muted}}; margin-bottom: 2px">{{h.file}}</span>
+                  <span style="font-size: 12px">{{h.pre}}<mark style="background: {{t.mark}}; color: inherit; border-radius: 3px">{{h.hit}}</mark>{{h.post}}</span>
+                </button>
+              </sc-for>
+              <sc-if value="{{noSearchHits}}" hint-placeholder-val="{{ false }}"><p style="margin: 8px; font-size: 12px; color: {{t.muted}}">没有匹配结果。</p></sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </aside>
+
+      <div role="separator" aria-label="拖动调整侧栏宽度" onMouseDown="{{startResize}}" style="flex: 0 0 8px; width: 8px; cursor: col-resize; display: {{resizeDisplay}}; align-items: center; justify-content: center">
+        <span style="width: 2px; height: 36px; border-radius: 2px; background: {{resizeColor}}; transition: background 120ms ease-out"></span>
+      </div>
+
+      <main style="flex: 999 1 560px; min-width: 0; min-height: 480px; position: relative; transition: margin {{m.smooth}}; margin: {{sheetMargin}}">
+        <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: hidden; background: {{t.sheet}}; box-shadow: {{sheetShadow}}; border-radius: {{sheetRadius}}px; transition: border-radius {{m.smooth}}">
+          <div data-scroller onScroll="{{onScroll}}" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; overflow: auto">
+            <sc-if value="{{banner}}" hint-placeholder-val="{{ false }}">
+              <div role="alert" ref="{{enterCollapse}}" style="position: sticky; top: 0; z-index: 7; overflow: hidden">
+                <div style="margin: 10px 12px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 12px; {{t.glassChip}}">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="{{t.warning}}" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M8 2.4 14.6 13.6H1.4zM8 7v3M8 12v.4"></path></svg>
+                  <span style="flex: 1 1 220px"><b style="font-weight: 600">文件已被其他程序修改。</b><span style="color: {{t.muted}}"> 你的未保存内容仍然完整，尚未写入磁盘。</span></span>
+                  <button onClick="{{keepMine}}" style="height: 28px; padding: 0 12px; border: 0; border-radius: 8px; background: {{t.text}}; color: {{t.sheetSolid}}; font: inherit; font-weight: 600; cursor: pointer">保留我的版本</button>
+                  <button onClick="{{loadDisk}}" style="height: 28px; padding: 0 12px; border: 1px solid {{t.border}}; border-radius: 8px; background: {{t.surface}}; color: {{t.text}}; font: inherit; cursor: pointer">载入磁盘版本</button>
+                  <button disabled="{{ true }}" title="P2 提供" style="height: 28px; padding: 0 10px; border: 0; background: none; color: {{t.muted}}; font: inherit">对比（P2）</button>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isLoadingDoc}}" hint-placeholder-val="{{ false }}">
+              <div aria-label="正在载入" style="box-sizing: border-box; max-width: {{contentW}}px; margin: 0 auto; padding: 88px 28px; display: flex; flex-direction: column; gap: 14px">
+                <sc-for list="{{skeleton}}" as="sk" hint-placeholder-count="7">
+                  <div style="position: relative; overflow: hidden; border-radius: 6px; height: {{sk.h}}px; width: {{sk.w}}%; background: {{t.surface}}; margin-bottom: {{sk.mb}}px">
+                    <div ref="{{sweep}}" style="position: absolute; top: 0; bottom: 0; width: 45%; background: linear-gradient(90deg, transparent, {{t.sweep}}, transparent)"></div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isSource}}" hint-placeholder-val="{{ false }}">
+              <div ref="{{enterFade}}" style="padding: 24px 0 360px; font-family: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', 'DejaVu Sans Mono', 'Microsoft YaHei UI', monospace; font-size: 13px; line-height: 22px">
+                <sc-for list="{{sourceLines}}" as="ln" hint-placeholder-count="20">
+                  <div onClick="{{ln.pick}}" style="display: flex; min-height: 22px; cursor: text; background: {{ln.bg}}">
+                    <span style="width: 60px; flex: none; padding-right: 18px; box-sizing: border-box; text-align: right; color: {{ln.numColor}}; user-select: none; font-size: 12px">{{ln.n}}</span>
+                    <span style="flex: 1; min-width: 0; white-space: pre-wrap; word-break: break-word; padding-right: 28px"><sc-for list="{{ln.toks}}" as="k" hint-placeholder-count="1"><span style="{{k.style}}">{{k.text}}</span></sc-for></span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isRich}}" hint-placeholder-val="{{ true }}">
+              <article ref="{{enterRise}}" style="box-sizing: border-box; max-width: {{articleW}}px; margin: 0 auto; padding: 72px 28px 360px; font-size: {{fontSize}}px; line-height: {{lineH}}; font-family: {{bodyFont}}; transition: max-width {{m.smooth}}">
+                <sc-for list="{{blocks}}" as="b" hint-placeholder-count="10">
+                  <div id="{{b.domId}}" onClick="{{b.pick}}" style="position: relative; cursor: text; transition: opacity 260ms ease-out, filter 260ms ease-out; opacity: {{b.opacity}}; {{b.wrap}}">
+                    <sc-if value="{{b.showGutter}}" hint-placeholder-val="{{ false }}">
+                      <span ref="{{enterFade}}" aria-hidden="true" style="position: absolute; left: -46px; top: {{b.gutterTop}}; width: 36px; text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.6; letter-spacing: .02em; color: {{t.muted}}; font-style: normal; font-weight: 400">{{b.gutter}}</span>
+                    </sc-if>
+
+                    <sc-if value="{{b.isText}}" hint-placeholder-val="{{ true }}">
+                      <div style="display: flex; gap: 10px; {{b.inner}}">
+                        <sc-if value="{{b.isQuote}}" hint-placeholder-val="{{ false }}">
+                          <span aria-hidden="true" style="flex: none; font-family: {{t.display}}; font-size: 2.6em; line-height: .9; color: {{t.accent}}; opacity: .55; width: 26px">“</span>
+                        </sc-if>
+                        <sc-if value="{{b.isBullet}}" hint-placeholder-val="{{ false }}">
+                          <span aria-hidden="true" style="flex: none; width: 16px; display: flex; justify-content: center; padding-top: .72em"><span style="width: 5px; height: 5px; border-radius: 50%; background: {{t.muted}}; display: block"></span></span>
+                        </sc-if>
+                        <sc-if value="{{b.isTask}}" hint-placeholder-val="{{ false }}">
+                          <button role="checkbox" aria-checked="{{b.checked}}" aria-label="任务完成状态" onClick="{{b.toggle}}" style="flex: none; width: 17px; height: 17px; margin-top: .36em; padding: 0; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 120ms ease-out, border-color 120ms ease-out; border: 1.5px solid {{b.taskBorder}}; background: {{b.taskBg}}; color: {{t.onAccent}}">
+                            <sc-if value="{{b.checked}}" hint-placeholder-val="{{ false }}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path ref="{{drawCheck}}" d="M2.5 6.5 5 9l4.5-6"></path></svg></sc-if>
+                          </button>
+                        </sc-if>
+                        <div style="flex: 1; min-width: 0; {{b.textStyle}}"><sc-for list="{{b.segs}}" as="s" hint-placeholder-count="1"><span ref="{{s.ref}}" onClick="{{s.pick}}" style="{{s.style}}">{{s.text}}</span></sc-for></div>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.showFormat}}" hint-placeholder-val="{{ false }}">
+                      <div role="toolbar" aria-label="格式" onClick="{{stop}}" ref="{{enterPopUp}}" style="position: absolute; top: -48px; left: 56px; z-index: 12; height: 40px; box-sizing: border-box; display: flex; align-items: center; overflow: hidden; padding: 0 5px; border-radius: 13px; width: {{fmtW}}px; transition: width {{m.snappy}}; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; line-height: 1; {{t.glassPanel}}">
+                        <sc-if value="{{fmtButtons}}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{cycleTurn}}" style="height: 30px; flex: none; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: {{t.text}}; font-size: 12.5px; cursor: pointer; white-space: nowrap; margin-right: 3px">{{turnLabel}} ▾</button>
+                          <span aria-hidden="true" style="width: 1px; height: 18px; background: {{t.border}}; flex: none; margin-right: 3px"></span>
+                          <sc-for list="{{formatItems}}" as="f" hint-placeholder-count="7">
+                            <button aria-label="{{f.name}}" aria-pressed="{{f.on}}" title="{{f.name}} {{f.key}}" onClick="{{f.pick}}" style="flex: none; width: 31px; height: 30px; border: 0; border-radius: 8px; background: {{f.bg}}; color: {{f.color}}; font-size: 13.5px; cursor: pointer; transition: background 120ms ease-out, color 120ms ease-out; {{f.style}}">{{f.glyph}}</button>
+                          </sc-for>
+                        </sc-if>
+                        <sc-if value="{{fmtLink}}" hint-placeholder-val="{{ false }}">
+                          <input ref="{{focusRef}}" aria-label="链接地址" placeholder="粘贴或输入链接" onKeyDown="{{onLinkKey}}" style="flex: 1; min-width: 0; height: 30px; padding: 0 10px; border: 0; background: none; color: {{t.text}}; font: inherit; font-size: 13px; outline: none">
+                          <button onClick="{{applyLink}}" style="flex: none; height: 28px; padding: 0 10px; border: 0; border-radius: 8px; background: {{t.text}}; color: {{t.sheetSolid}}; font-size: 12px; cursor: pointer">应用</button>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.showLink}}" hint-placeholder-val="{{ false }}">
+                      <div ref="{{enterPopTop}}" onClick="{{stop}}" style="position: absolute; top: 100%; left: 80px; z-index: 12; display: flex; align-items: center; gap: 6px; padding: 5px 5px 5px 12px; border-radius: 12px; font-size: 12px; line-height: 1.4; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; {{t.glassPanel}}">
+                        <span style="color: {{t.muted}}; font-family: 'JetBrains Mono', monospace; font-size: 11.5px">docs/01-feasibility.md</span>
+                        <button onClick="{{noopToast}}" style="height: 26px; padding: 0 8px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; cursor: pointer">编辑 <span style="color: {{t.muted}}">Ctrl K</span></button>
+                        <button onClick="{{noopToast}}" style="height: 26px; padding: 0 8px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; cursor: pointer">打开</button>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.showFn}}" hint-placeholder-val="{{ false }}">
+                      <div ref="{{enterPopTop}}" style="position: absolute; top: 100%; right: 0; z-index: 12; width: 300px; padding: 10px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.55; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; {{t.glassPanel}}">
+                        <span style="color: {{t.accent}}; font-weight: 600">脚注 1　</span>校验方式：保存后逐字节比对未编辑的区域。
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.showSlash}}" hint-placeholder-val="{{ false }}">
+                      <input aria-label="筛选插入内容" ref="{{focusRef}}" value="{{slashQ}}" onChange="{{onSlashQ}}" onKeyDown="{{onSlashKey}}" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none">
+                      <div ref="{{enterPopTop}}" onClick="{{stop}}" style="position: absolute; top: 100%; left: 0; margin-top: 4px; z-index: 12; width: 500px; max-width: 92vw; height: 316px; display: flex; overflow: hidden; border-radius: 14px; font-size: 13px; line-height: 1.4; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-weight: 400; {{t.glassPanel}}">
+                        <div data-slash-scroll ref="{{enterStagger}}" data-pill-host role="menu" aria-label="插入内容" style="position: relative; flex: 0 0 214px; overflow: auto; padding: 5px">
+                          <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 8px; background: {{t.accentSoft}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}"></div>
+                          <sc-for list="{{slashItems}}" as="si" hint-placeholder-count="8">
+                            <div>
+                              <sc-if value="{{si.head}}" hint-placeholder-val="{{ false }}"><div style="padding: 7px 8px 3px; font-size: 11px; font-weight: 600; color: {{t.muted}}">{{si.head}}</div></sc-if>
+                              <button data-stag data-on="{{si.on}}" role="menuitem" onClick="{{si.pick}}" onMouseEnter="{{si.hover}}" style="position: relative; width: 100%; height: 32px; padding: 0 8px; border: 0; border-radius: 8px; font: inherit; color: {{t.text}}; cursor: pointer; display: flex; align-items: center; gap: 9px; text-align: left; background: none">
+                                <span aria-hidden="true" style="width: 22px; height: 22px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: {{t.surface}}; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: {{t.muted}}">{{si.glyph}}</span><span>{{si.label}}</span>
+                              </button>
+                            </div>
+                          </sc-for>
+                          <sc-if value="{{noSlash}}" hint-placeholder-val="{{ false }}"><p style="margin: 12px 8px; color: {{t.muted}}">没有匹配项，按 Esc 保留 /。</p></sc-if>
+                        </div>
+                        <div style="flex: 1; min-width: 0; border-left: 1px solid {{t.border}}; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: {{t.surface}}">
+                          <div style="font-weight: 600">{{slashPrev.label}}</div>
+                          <div style="font-size: 12px; color: {{t.muted}}; flex: none">{{slashPrev.desc}}</div>
+                          <pre style="margin: auto 0 0; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-break: break-word; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.55; color: {{t.muted}}; background: {{t.codeBg}}; border: 1px solid {{t.border}}">{{slashPrev.src}}</pre>
+                        </div>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.isFm}}" hint-placeholder-val="{{ false }}">
+                      <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}">
+                        <div ref="{{enterCollapse}}" style="overflow: hidden"><pre style="margin: 0 0 10px; padding: 12px 16px; border-radius: 12px; background: {{t.codeBg}}; border: 1px solid {{t.border}}; color: {{t.muted}}; font-family: 'JetBrains Mono', 'Cascadia Code', monospace; font-size: .82em; line-height: 1.6; white-space: pre-wrap">{{b.src}}</pre></div>
+                      </sc-if>
+                      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: 12px; line-height: 1.5; color: {{t.muted}}">
+                        <span style="font-weight: 600; letter-spacing: .06em; color: {{t.accent}}">Aurink 产品说明</span>
+                        <span aria-hidden="true">·</span>
+                        <sc-for list="{{b.tags}}" as="tg" hint-placeholder-count="2"><span style="padding: 1px 8px; border-radius: 999px; background: {{t.surface}}; border: 1px solid {{t.border}}">{{tg}}</span></sc-for>
+                        <span aria-hidden="true">·</span>
+                        <span>2026-10-31</span>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.isCode}}" hint-placeholder-val="{{ false }}">
+                      <div style="border-radius: 12px; background: {{t.codeBg}}; overflow: hidden; border: 1px solid {{t.border}}; box-shadow: {{t.codeShadow}}">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; height: 34px; padding: 0 6px 0 14px; font-size: 11px; line-height: 1; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; color: {{t.muted}}; border-bottom: 1px solid {{t.border}}">
+                          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{t.accent}}"></span>Go · session.go</span>
+                          <button onClick="{{copyCode}}" style="height: 24px; padding: 0 8px; border: 0; border-radius: 6px; background: {{copyBg}}; color: {{copyColor}}; font: inherit; cursor: pointer; transition: background 120ms ease-out, color 120ms ease-out">{{copyLabel}}</button>
+                        </div>
+                        <div style="overflow-x: auto; padding: 12px 14px 14px 0; font-family: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', 'Microsoft YaHei UI', monospace; font-size: .84em; line-height: 1.7; white-space: pre">
+                          <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}"><div ref="{{enterCollapse}}" style="overflow: hidden; padding-left: 44px; color: {{t.muted}}">```go</div></sc-if>
+                          <sc-for list="{{b.lines}}" as="cl" hint-placeholder-count="5">
+                            <div style="min-height: 1.7em; display: flex"><span aria-hidden="true" style="width: 32px; margin-right: 12px; text-align: right; flex: none; color: {{t.faint}}; user-select: none">{{cl.n}}</span><span><sc-for list="{{cl.toks}}" as="k" hint-placeholder-count="2"><span style="color: {{k.color}}">{{k.text}}</span></sc-for></span></div>
+                          </sc-for>
+                          <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}"><div ref="{{enterCollapse}}" style="overflow: hidden; padding-left: 44px; color: {{t.muted}}">```</div></sc-if>
+                        </div>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.isTable}}" hint-placeholder-val="{{ false }}">
+                      <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}">
+                        <div ref="{{enterPopUp}}" onClick="{{stop}}" style="position: absolute; top: -38px; right: 0; z-index: 8; display: flex; gap: 2px; padding: 3px; border-radius: 10px; font-size: 12px; line-height: 1; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; {{t.glassPanel}}">
+                          <button onClick="{{addRow}}" style="height: 24px; padding: 0 8px; border: 0; border-radius: 7px; background: none; color: {{t.text}}; font: inherit; cursor: pointer">+ 行</button>
+                          <button onClick="{{addCol}}" style="height: 24px; padding: 0 8px; border: 0; border-radius: 7px; background: none; color: {{t.text}}; font: inherit; cursor: pointer">+ 列</button>
+                          <button onClick="{{noopToast}}" style="height: 24px; padding: 0 8px; border: 0; border-radius: 7px; background: none; color: {{t.text}}; font: inherit; cursor: pointer">格式化表格</button>
+                        </div>
+                      </sc-if>
+                      <div style="overflow-x: auto; border-radius: 12px; border: 1px solid {{t.border}}">
+                        <table style="width: 100%; border-collapse: collapse; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: .875em; line-height: 1.5">
+                          <sc-for list="{{b.rows}}" as="row" hint-placeholder-count="3">
+                            <tr ref="{{enterFade}}">
+                              <sc-for list="{{row.cells}}" as="cell" hint-placeholder-count="3">
+                                <td onClick="{{cell.pick}}" style="padding: 9px 14px; border-bottom: {{row.line}}; font-weight: {{row.weight}}; color: {{row.color}}; background: {{cell.bg}}; box-shadow: {{cell.ring}}; transition: box-shadow 120ms ease-out">{{cell.text}}</td>
+                              </sc-for>
+                            </tr>
+                          </sc-for>
+                        </table>
+                      </div>
+                    </sc-if>
+
+                    <sc-if value="{{b.isMath}}" hint-placeholder-val="{{ false }}">
+                      <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}">
+                        <div ref="{{enterCollapse}}" style="overflow: hidden"><pre style="margin: 0 0 8px; padding: 12px 16px; border-radius: 12px; background: {{t.codeBg}}; border: 1px solid {{t.border}}; color: {{t.muted}}; font-family: 'JetBrains Mono', 'Cascadia Code', monospace; font-size: .84em; line-height: 1.6; white-space: pre-wrap">{{b.src}}</pre></div>
+                      </sc-if>
+                      <sc-if value="{{renderPending}}" hint-placeholder-val="{{ false }}">
+                        <div style="position: relative; overflow: hidden; height: 76px; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: {{t.muted}}; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif">
+                          <div ref="{{sweep}}" style="position: absolute; top: 0; bottom: 0; width: 45%; background: linear-gradient(90deg, transparent, {{t.sweep}}, transparent)"></div>正在启动公式渲染
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{renderDone}}" hint-placeholder-val="{{ true }}">
+                        <div ref="{{enterFade}}" style="padding: 16px 12px; border-radius: 12px; text-align: center; font-family: 'Cambria Math', Cambria, 'Times New Roman', serif; font-size: 1.3em; font-style: italic; line-height: 1.4; border: 1px solid {{b.frame}}; transition: border-color 120ms ease-out">T<sub>top</sub> = <span style="font-size: 1.3em; font-style: normal">∑</span><sub>i &lt; k</sub> h<sub>i</sub></div>
+                      </sc-if>
+                    </sc-if>
+
+                    <sc-if value="{{b.isMermaid}}" hint-placeholder-val="{{ false }}">
+                      <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}">
+                        <div ref="{{enterCollapse}}" style="overflow: hidden"><pre style="margin: 0 0 8px; padding: 12px 16px; border-radius: 12px; background: {{t.codeBg}}; border: 1px solid {{t.border}}; color: {{t.muted}}; font-family: 'JetBrains Mono', 'Cascadia Code', monospace; font-size: .84em; line-height: 1.6; white-space: pre-wrap">{{b.src}}</pre></div>
+                      </sc-if>
+                      <sc-if value="{{renderPending}}" hint-placeholder-val="{{ false }}">
+                        <div style="position: relative; overflow: hidden; height: 112px; border-radius: 12px; background: {{t.surface}}; display: flex; align-items: center; justify-content: center; font-size: 12px; color: {{t.muted}}; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif">
+                          <div ref="{{sweep}}" style="position: absolute; top: 0; bottom: 0; width: 45%; background: linear-gradient(90deg, transparent, {{t.sweep}}, transparent)"></div>正在渲染图表
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{renderDone}}" hint-placeholder-val="{{ true }}">
+                        <div ref="{{enterStagger}}" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; padding: 26px 12px; border-radius: 12px; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: 13px; line-height: 1.3; border: 1px solid {{t.border}}; background: {{t.surface}}">
+                          <sc-for list="{{b.nodes}}" as="nd" hint-placeholder-count="4">
+                            <span data-stag style="display: inline-flex; align-items: center; gap: 8px">
+                              <span style="padding: 8px 12px; border-radius: 9px; border: 1px solid {{t.border}}; background: {{t.sheetSolid}}">{{nd.label}}</span>
+                              <sc-if value="{{nd.arrow}}" hint-placeholder-val="{{ true }}"><svg width="18" height="8" viewBox="0 0 18 8" fill="none" stroke="{{t.accent}}" stroke-width="1.3" aria-hidden="true"><path d="M0 4h16M13 1l3 3-3 3"></path></svg></sc-if>
+                            </span>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </sc-if>
+
+                    <sc-if value="{{b.isImg}}" hint-placeholder-val="{{ false }}">
+                      <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}">
+                        <div ref="{{enterCollapse}}" style="overflow: hidden; margin-bottom: 8px; color: {{t.muted}}; font-family: 'JetBrains Mono', 'Cascadia Code', monospace; font-size: .84em">![工作区示意](assets/workspace.png)</div>
+                      </sc-if>
+                      <figure data-figure onDoubleClick="{{openLight}}" title="双击放大" style="margin: 0; cursor: zoom-in">
+                        <div style="height: 210px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: {{t.art}}; border: 1px solid {{t.border}}; color: #fff; font-family: {{t.display}}; font-size: 28px; letter-spacing: -.02em; opacity: {{lightSrcOpacity}}">Aurink</div>
+                        <figcaption style="margin-top: 8px; text-align: center; font-size: 12px; color: {{t.muted}}; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif">示例图片占位 · 双击放大</figcaption>
+                      </figure>
+                    </sc-if>
+
+                    <sc-if value="{{b.isHr}}" hint-placeholder-val="{{ false }}">
+                      <sc-if value="{{b.showSrc}}" hint-placeholder-val="{{ false }}"><div style="color: {{t.muted}}; font-family: 'JetBrains Mono', monospace; text-align: center">---</div></sc-if>
+                      <sc-if value="{{b.hideSrc}}" hint-placeholder-val="{{ true }}"><div role="separator" style="text-align: center; color: {{t.muted}}; letter-spacing: .8em; padding-left: .8em">···</div></sc-if>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+                  <div ref="{{enterStagger}}" style="margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; font-family: 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: 12px">
+                    <sc-for list="{{emptyHints}}" as="eh" hint-placeholder-count="3">
+                      <button data-stag onClick="{{eh.pick}}" style="height: 32px; padding: 0 12px; border-radius: 9px; color: {{t.text}}; font: inherit; cursor: pointer; display: flex; align-items: center; gap: 8px; {{t.glassChip}}"><kbd style="font: inherit; color: {{t.accent}}; font-family: 'JetBrains Mono', monospace">{{eh.key}}</kbd>{{eh.label}}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </article>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="position: absolute; left: 0; right: 0; bottom: 0; height: 55%; overflow: hidden; pointer-events: none">
+              <div ref="{{aurora1}}" style="position: absolute; width: 60%; height: 90%; left: 18%; bottom: -44%; border-radius: 50%; background: radial-gradient(closest-side, {{t.aur1}}, transparent); filter: blur(30px)"></div>
+              <div ref="{{aurora2}}" style="position: absolute; width: 50%; height: 80%; right: 4%; bottom: -52%; border-radius: 50%; background: radial-gradient(closest-side, {{t.aur2}}, transparent); filter: blur(36px)"></div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{showTitleBar}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; top: 0; left: 0; right: 0; height: 40px; z-index: 6; display: flex; align-items: center; justify-content: center; font-size: 12px; pointer-events: none; opacity: {{edge}}; {{t.scrollEdge}}">
+              <span style="color: {{t.muted}}">{{currentHeading}}</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{showFocusVeil}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; pointer-events: none; background: linear-gradient({{t.sheetSolid}}, {{t.sheetClear}} 26%, {{t.sheetClear}} 74%, {{t.sheetSolid}})"></div>
+          </sc-if>
+          <sc-if value="{{showTypeBand}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="position: absolute; top: 45%; left: 0; right: 0; height: 44px; margin-top: -22px; z-index: 2; pointer-events: none; background: {{t.surface}}; border-top: 1px solid {{t.border}}; border-bottom: 1px solid {{t.border}}"></div>
+          </sc-if>
+
+          <sc-if value="{{showRail}}" hint-placeholder-val="{{ true }}">
+            <div aria-label="文档结构" style="position: absolute; top: 15%; bottom: 15%; right: 8px; width: 18px; z-index: 5">
+              <div aria-hidden="true" style="position: absolute; right: 0; width: 3px; height: 14%; border-radius: 3px; top: {{railThumb}}%; background: {{t.surfaceHover}}; transition: top 120ms ease-out"></div>
+              <sc-for list="{{rail}}" as="rt" hint-placeholder-count="5">
+                <button aria-label="跳转到 {{rt.text}}" title="{{rt.text}}" onClick="{{rt.pick}}" style="position: absolute; right: 0; top: {{rt.top}}%; width: 18px; height: 12px; padding: 0; border: 0; background: none; cursor: pointer; display: flex; justify-content: flex-end; align-items: center"><span style="display: block; height: 2px; border-radius: 2px; width: {{rt.w}}px; background: {{rt.color}}; transition: width {{m.snappy}}, background 120ms ease-out"></span></button>
+              </sc-for>
+              <sc-for list="{{railHits}}" as="rh" hint-placeholder-count="0">
+                <span aria-hidden="true" style="position: absolute; right: 0; top: {{rh.top}}%; width: 7px; height: 3px; border-radius: 2px; background: {{t.warning}}"></span>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{findOpen}}" hint-placeholder-val="{{ false }}">
+            <div role="search" ref="{{enterPopTop}}" style="position: absolute; top: {{findTop}}px; right: 34px; z-index: 15; width: 440px; max-width: calc(100% - 48px); box-sizing: border-box; padding: 6px; border-radius: 13px; display: flex; flex-direction: column; gap: 4px; {{t.glassPanel}}">
+              <div style="display: flex; align-items: center; gap: 2px">
+                <button aria-label="展开替换" onClick="{{toggleReplace}}" style="width: 24px; height: 28px; border: 0; border-radius: 7px; background: none; color: {{t.muted}}; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" style="transition: transform {{m.snappy}}; transform: rotate({{replaceRot}}deg)"><path d="m3.5 2 3 3-3 3"></path></svg></button>
+                <input aria-label="查找" value="{{fq}}" onChange="{{onFq}}" onKeyDown="{{onFindKey}}" ref="{{focusRef}}" placeholder="查找" style="flex: 1; min-width: 0; height: 28px; padding: 0 8px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; outline: none; margin-right: 4px">
+                <span style="font-size: 11px; color: {{t.muted}}; white-space: nowrap; min-width: 46px; text-align: center">{{findCount}}</span>
+                <sc-for list="{{findOpts}}" as="fo" hint-placeholder-count="3">
+                  <button aria-label="{{fo.name}}" aria-pressed="{{fo.on}}" title="{{fo.name}}" onClick="{{fo.pick}}" style="width: 26px; height: 26px; border: 0; border-radius: 7px; font-size: 11px; cursor: pointer; background: {{fo.bg}}; color: {{fo.color}}; transition: background 120ms ease-out">{{fo.glyph}}</button>
+                </sc-for>
+                <button aria-label="上一个" onClick="{{findPrev}}" style="width: 26px; height: 26px; border: 0; border-radius: 7px; background: none; color: {{t.muted}}; cursor: pointer">↑</button>
+                <button aria-label="下一个" onClick="{{findNext}}" style="width: 26px; height: 26px; border: 0; border-radius: 7px; background: none; color: {{t.muted}}; cursor: pointer">↓</button>
+                <button aria-label="关闭查找" onClick="{{closeFind}}" style="width: 26px; height: 26px; border: 0; border-radius: 7px; background: none; color: {{t.muted}}; cursor: pointer">×</button>
+              </div>
+              <sc-if value="{{replaceOpen}}" hint-placeholder-val="{{ false }}">
+                <div ref="{{enterCollapse}}" style="overflow: hidden; display: flex; align-items: center; gap: 4px; padding-left: 24px">
+                  <input aria-label="替换为" placeholder="替换为" style="flex: 1; min-width: 0; height: 28px; padding: 0 8px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; outline: none">
+                  <button onClick="{{noopToast}}" style="height: 28px; padding: 0 10px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; cursor: pointer">替换</button>
+                  <button onClick="{{noopToast}}" style="height: 28px; padding: 0 10px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; cursor: pointer">全部替换</button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{showCapsule}}" hint-placeholder-val="{{ true }}">
+            <div onMouseEnter="{{capIn}}" onMouseLeave="{{capOut}}" aria-live="polite" style="position: absolute; right: 34px; bottom: 16px; z-index: 10; display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px 0 9px; border-radius: 999px; font-size: 12px; white-space: nowrap; {{t.glassChip}}">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true" style="flex: none; transform: rotate(-90deg)"><circle cx="8" cy="8" r="6.5" stroke="{{t.border}}" stroke-width="1.5"></circle><circle cx="8" cy="8" r="6.5" stroke="{{t.accent}}" stroke-width="1.5" stroke-linecap="round" pathLength="100" stroke-dasharray="{{scrollPct}} 100"></circle></svg>
+              <span aria-hidden="true" style="{{capDot}}"></span>
+              <sc-if value="{{capCheck}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="{{t.success}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path ref="{{drawCheck}}" d="M2.5 6.5 5 9l4.5-6"></path></svg></sc-if>
+              <sc-if value="{{capSaving}}" hint-placeholder-val="{{ false }}"><span ref="{{pulse}}" aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{t.accent}}; box-shadow: 0 0 8px {{t.accentGlow}}"></span></sc-if>
+              <span>{{capLabel}}</span>
+              <span style="color: {{t.muted}}">{{wordCount}} 字</span>
+              <span style="overflow: hidden; color: {{t.muted}}; transition: max-width {{m.snappy}}, opacity 120ms ease-out; max-width: {{capExtra}}px; opacity: {{capExtraOp}}">约 {{readMins}} 分钟 · 第 {{caretLine}} 块</span>
+            </div>
+          </sc-if>
+        </div>
+      </main>
+    </div>
+  </sc-if>
+
+  <div aria-live="polite" style="position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 60; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none">
+    <sc-for list="{{notes}}" as="nt" hint-placeholder-count="0">
+      <div data-note="{{nt.id}}" data-fk="{{nt.fk}}" ref="{{enterToast}}" style="pointer-events: auto; position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; min-width: 300px; max-width: 460px; box-sizing: border-box; padding: 9px 9px 9px 13px; border-radius: 13px; {{t.glassPanel}}">
+        <span aria-hidden="true" style="width: 18px; height: 18px; flex: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: {{nt.iconFg}}; background: {{nt.iconBg}}; font-size: 11px; font-weight: 700">{{nt.glyph}}</span>
+        <span style="flex: 1; min-width: 0"><span style="display: block; font-weight: 500">{{nt.title}}</span><sc-if value="{{nt.desc}}" hint-placeholder-val="{{ false }}"><span style="display: block; font-size: 12px; color: {{t.muted}}; margin-top: 1px">{{nt.desc}}</span></sc-if></span>
+        <sc-if value="{{nt.action}}" hint-placeholder-val="{{ false }}"><button onClick="{{nt.act}}" style="height: 26px; padding: 0 10px; border: 0; border-radius: 7px; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 12px; cursor: pointer; flex: none">{{nt.action}}</button></sc-if>
+        <button aria-label="关闭通知" onClick="{{nt.close}}" style="width: 24px; height: 24px; flex: none; border: 0; border-radius: 7px; background: none; color: {{t.muted}}; cursor: pointer">×</button>
+        <sc-if value="{{nt.hasProgress}}" hint-placeholder-val="{{ false }}"><div aria-hidden="true" style="position: absolute; left: 0; bottom: 0; height: 2px; width: {{nt.progress}}%; background: {{t.brand}}; transition: width 160ms linear"></div></sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <sc-if value="{{paletteOpen}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{closeOverlay}}" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 40; background: {{t.scrim}}; display: flex; justify-content: center; align-items: flex-start; padding: 86px 16px 16px; box-sizing: border-box">
+      <div data-overlay-panel ref="{{flipPalette}}" role="dialog" aria-label="命令面板" onClick="{{stop}}" style="position: relative; width: 640px; max-width: 100%; max-height: 460px; display: flex; flex-direction: column; border-radius: 16px; overflow: hidden; {{t.glassStrong}}">
+        <div aria-hidden="true" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; pointer-events: none; overflow: hidden; border-radius: 16px; padding: 1px; -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude">
+          <div ref="{{glowSweep}}" style="position: absolute; left: -25%; top: -150%; width: 150%; height: 400%; background: conic-gradient(from 0deg, transparent 0 62%, {{t.a1}} 74%, {{t.a2}} 86%, {{t.a3}} 94%, transparent)"></div>
+        </div>
+        <div style="flex: none; display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 14px 0 16px; border-bottom: 1px solid {{t.border}}">
+          <span style="flex: none; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 600; display: flex; align-items: center; background: {{t.accentSoft}}; color: {{t.accent}}">{{palMode}}</span>
+          <input aria-label="搜索文件、命令或标题" value="{{pq}}" onChange="{{onPq}}" onKeyDown="{{onPaletteKey}}" ref="{{focusRef}}" placeholder="搜索文件；> 执行命令；@ 跳转标题" style="flex: 1; min-width: 0; height: 40px; border: 0; background: transparent; color: {{t.text}}; font: inherit; font-size: 16px; outline: none">
+        </div>
+        <div data-palette-list ref="{{enterStagger}}" data-pill-host style="position: relative; flex: 1; min-height: 0; overflow: auto; padding: 4px 8px 8px">
+          <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 9px; background: {{t.accentSoft}}; box-shadow: inset 0 0 0 1px {{t.accentRing}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}"></div>
+          <sc-for list="{{paletteItems}}" as="pi" hint-placeholder-count="6">
+            <div>
+              <sc-if value="{{pi.head}}" hint-placeholder-val="{{ false }}"><div style="padding: 9px 9px 4px; font-size: 11px; font-weight: 600; color: {{t.muted}}">{{pi.head}}</div></sc-if>
+              <button data-stag data-on="{{pi.on}}" data-noh onClick="{{pi.run}}" onMouseMove="{{pi.hover}}" style="position: relative; width: 100%; height: 40px; padding: 0 9px; border: 0; border-radius: 9px; font: inherit; color: {{t.text}}; cursor: pointer; display: flex; align-items: center; gap: 11px; text-align: left; background: none">
+                <span aria-hidden="true" style="width: 24px; height: 24px; flex: none; border-radius: 7px; display: flex; align-items: center; justify-content: center; background: {{t.surface}}; color: {{t.muted}}"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="{{pi.icon}}"></path></svg></span>
+                <span style="min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis"><sc-for list="{{pi.pieces}}" as="pc" hint-placeholder-count="1"><span style="{{pc.style}}">{{pc.text}}</span></sc-for></span>
+                <sc-if value="{{pi.sub}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: {{t.muted}}; white-space: nowrap">{{pi.sub}}</span></sc-if>
+                <sc-if value="{{pi.key}}" hint-placeholder-val="{{ false }}"><kbd style="margin-left: auto; flex: none; padding: 2px 7px; border-radius: 6px; font: inherit; font-size: 11px; color: {{t.muted}}; background: {{t.surface}}; border: 1px solid {{t.border}}; white-space: nowrap">{{pi.key}}</kbd></sc-if>
+              </button>
+            </div>
+          </sc-for>
+          <sc-if value="{{noPalette}}" hint-placeholder-val="{{ false }}"><p style="margin: 20px 9px; color: {{t.muted}}">没有匹配项。</p></sc-if>
+        </div>
+        <div style="flex: none; display: flex; align-items: center; justify-content: space-between; height: 36px; padding: 0 12px; border-top: 1px solid {{t.border}}; font-size: 11px; color: {{t.muted}}">
+          <span>↑↓ 选择 · Enter 执行 · Esc 关闭</span>
+          <span>{{palCount}} 项</span>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{lightOpen}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{closeLight}}" ref="{{enterFade}}" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 45; display: flex; align-items: center; justify-content: center; padding: 56px 72px 88px; box-sizing: border-box; {{t.lightScrim}}">
+      <figure data-overlay-panel ref="{{flipLight}}" onClick="{{stop}}" style="margin: 0; width: 100%; height: 100%; max-width: 980px; display: flex; align-items: center; justify-content: center; border-radius: 16px; background: {{t.art}}; color: #fff; font-family: {{t.display}}; font-size: 72px; letter-spacing: -.03em; box-shadow: 0 32px 80px rgba(0,0,0,.4); transition: transform {{m.smooth}}; transform: scale({{zoomScale}})">Aurink</figure>
+      <div ref="{{enterPopUp}}" onClick="{{stop}}" style="position: absolute; bottom: 26px; left: 50%; margin-left: -142px; width: 284px; box-sizing: border-box; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 13px; color: #fff; font-size: 12px; background: rgba(20,20,26,.46); backdrop-filter: blur(20px) saturate(1.4); border: 1px solid rgba(255,255,255,.16)">
+        <button aria-label="缩小" onClick="{{zoomOut}}" style="width: 32px; height: 30px; border: 0; border-radius: 8px; background: none; color: inherit; font-size: 16px; cursor: pointer">−</button>
+        <span style="width: 48px; text-align: center">{{zoomPct}}%</span>
+        <button aria-label="放大" onClick="{{zoomIn}}" style="width: 32px; height: 30px; border: 0; border-radius: 8px; background: none; color: inherit; font-size: 16px; cursor: pointer">+</button>
+        <span aria-hidden="true" style="width: 1px; height: 16px; background: rgba(255,255,255,.2); margin: 0 4px"></span>
+        <button onClick="{{zoomFit}}" style="height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: none; color: inherit; font: inherit; cursor: pointer">适应</button>
+        <button onClick="{{closeLight}}" style="flex: 1; height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: rgba(255,255,255,.14); color: inherit; font: inherit; cursor: pointer">关闭</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{settingsOpen}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{closeOverlay}}" ref="{{enterFade}}" style="position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 40; background: {{t.scrimStrong}}; display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="dialog" aria-label="设置" ref="{{enterPop}}" onClick="{{stop}}" style="width: 820px; max-width: 100%; height: 580px; max-height: 100%; display: flex; flex-wrap: wrap; overflow: auto; border-radius: 16px; {{t.glassStrong}}">
+        <nav aria-label="设置分类" data-pill-host style="position: relative; flex: 1 0 176px; max-width: 176px; padding: 18px 10px; box-sizing: border-box; background: {{t.surface}}; border-right: 1px solid {{t.border}}">
+          <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 8px; background: {{t.accentSoft}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}"></div>
+          <sc-for list="{{setCats}}" as="sc" hint-placeholder-count="5">
+            <button data-on="{{sc.on}}" onClick="{{sc.pick}}" style="position: relative; width: 100%; height: 32px; padding: 0 10px; border: 0; border-radius: 8px; font: inherit; text-align: left; cursor: pointer; background: none; color: {{sc.color}}; font-weight: {{sc.weight}}; transition: color 120ms ease-out">{{sc.label}}</button>
+          </sc-for>
+        </nav>
+        <div style="flex: 999 1 320px; min-width: 0; padding: 22px 26px; box-sizing: border-box; overflow: auto; height: 100%">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
+            <h2 style="margin: 0; font-family: {{t.display}}; font-size: 24px; font-weight: 500; letter-spacing: -.01em">{{setTitle}}</h2>
+            <button aria-label="关闭设置" onClick="{{closeOverlay}}" style="width: 32px; height: 32px; border: 0; border-radius: 8px; background: none; color: {{t.muted}}; font-size: 18px; cursor: pointer">×</button>
+          </div>
+          <sc-if value="{{setIsAppearance}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; gap: 12px; padding: 10px 0 14px; flex-wrap: wrap">
+              <sc-for list="{{themeCards}}" as="tc" hint-placeholder-count="3">
+                <button aria-pressed="{{tc.on}}" onClick="{{tc.pick}}" style="flex: 1 1 130px; padding: 0; border: 0; background: none; color: {{t.text}}; font: inherit; cursor: pointer; text-align: left">
+                  <span style="display: block; height: 82px; border-radius: 12px; overflow: hidden; background: {{tc.win}}; padding: 8px 8px 0 28px; box-sizing: border-box; transition: box-shadow 120ms ease-out; box-shadow: {{tc.ring}}">
+                    <span style="display: block; height: 100%; border-radius: 7px 7px 0 0; background: {{tc.sheet}}; padding: 10px; box-sizing: border-box"><span style="display: block; height: 5px; width: 54%; border-radius: 3px; background: {{tc.ink}}"></span><span style="display: block; height: 3px; width: 86%; border-radius: 3px; background: {{tc.line}}; margin-top: 8px"></span><span style="display: block; height: 3px; width: 72%; border-radius: 3px; background: {{tc.line}}; margin-top: 5px"></span></span>
+                  </span>
+                  <span style="display: block; margin-top: 6px; font-size: 12px; font-weight: {{tc.weight}}">{{tc.label}}</span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-for list="{{setRows}}" as="sr" hint-placeholder-count="5">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; padding: 11px 0; border-top: 1px solid {{t.border}}">
+              <div style="flex: 1 1 180px"><div>{{sr.label}}</div><sc-if value="{{sr.desc}}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: {{t.muted}}; margin-top: 2px">{{sr.desc}}</div></sc-if></div>
+              <sc-if value="{{sr.seg}}" hint-placeholder-val="{{ false }}">
+                <div data-pill-host style="position: relative; display: flex; padding: 2px; border-radius: 8px; background: {{t.surface}}">
+                  <div data-pill style="position: absolute; left: 0; top: 0; border-radius: 6px; {{t.tabPill}}; transition: transform {{m.snappy}}, width {{m.snappy}}, height {{m.snappy}}"></div>
+                  <sc-for list="{{sr.seg}}" as="o" hint-placeholder-count="3">
+                    <button data-on="{{o.on}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="position: relative; height: 26px; padding: 0 11px; border: 0; border-radius: 6px; font: inherit; font-size: 12px; cursor: pointer; background: none; color: {{o.color}}; transition: color 120ms ease-out">{{o.label}}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{sr.swatches}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 8px">
+                  <sc-for list="{{sr.swatches}}" as="sw" hint-placeholder-count="4">
+                    <button aria-label="{{sw.name}}" aria-pressed="{{sw.on}}" title="{{sw.name}}" onClick="{{sw.pick}}" style="width: 22px; height: 22px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; background: {{sw.color}}; transition: box-shadow 120ms ease-out; box-shadow: {{sw.ring}}"></button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{sr.range}}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; align-items: center; gap: 8px"><input type="range" aria-label="{{sr.label}}" min="{{sr.range.min}}" max="{{sr.range.max}}" step="{{sr.range.step}}" value="{{sr.range.value}}" onChange="{{sr.range.on}}" style="width: 150px; accent-color: {{t.accent}}"><span style="width: 40px; text-align: right; font-size: 12px; color: {{t.muted}}">{{sr.range.value}}</span></span>
+              </sc-if>
+              <sc-if value="{{sr.toggle}}" hint-placeholder-val="{{ false }}">
+                <button role="switch" aria-checked="{{sr.toggle.on}}" aria-label="{{sr.label}}" onClick="{{sr.toggle.pick}}" style="width: 38px; height: 22px; border: 0; border-radius: 999px; padding: 2px; cursor: pointer; display: block; background: {{sr.toggle.bg}}; transition: background 120ms ease-out"><span style="width: 18px; height: 18px; border-radius: 50%; background: #fff; display: block; box-shadow: 0 1px 3px rgba(0,0,0,.3); transition: transform {{m.snappy}}; transform: translateX({{sr.toggle.x}}px)"></span></button>
+              </sc-if>
+              <sc-if value="{{sr.key}}" hint-placeholder-val="{{ false }}">
+                <kbd style="padding: 2px 8px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.surface}}; font: inherit; font-size: 11px; color: {{t.muted}}">{{sr.key}}</kbd>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scene":{"editor":"enum","options":["default","dark","source","read","focus","welcome","palette","slash","format","conflict","find","settings","lightbox","notify","loading","lowpower"],"default":"default"},"dark":{"editor":"boolean","default":false},"lowPower":{"editor":"boolean","default":false},"reduceMotion":{"editor":"boolean","default":false},"accentHue":{"editor":"range","min":0,"max":360,"step":1,"default":182},"frameH":{"editor":null},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const scene = props.scene ?? 'default';
+    this.state = Object.assign({
+      dark: !!props.dark, screen: 'doc', side: true, sideTab: 'files', sideWidth: 248, resizing: false,
+      tabs: ['readme', 'notes'], activeTab: 'readme', dirty: { notes: true }, hoverTab: null, dragTab: null,
+      mode: 'live', active: 'p1', node: 'n1', sel: null, overlay: null, viewOpen: false,
+      pq: '', pIdx: 0, sq: '', fq: '', fIdx: 0, findOpen: false, replaceOpen: false,
+      fCase: false, fWord: false, fRegex: false, banner: false, save: 'saved',
+      capOpen: false, scrollTop: 0, scrollPct: 0, edge: 0, activeH: 'h1', notes_: [],
+      treeOpen: { docs: true, assets: false }, ctx: null, slash: false, slashQ: '', slashIdx: 0,
+      parent: { notes: 'docs', road: 'docs', meet: 'docs', cover: 'assets', readme: null },
+      names: {}, dragFile: null, dropDir: null, renaming: null, renameVal: '',
+      checks: { t1: true, t2: true, t3: false }, xRows: 0, xCols: 0, cell: null,
+      fontSize: 16, lineH: 1.75, contentW: 720, reveal: 'inline', softBreak: 'line',
+      serif: false, autoSave: true, showNonMd: false, sysAccent: false, setCat: 'appearance', hue: null,
+      ext: { math: true, mermaid: true, fm: true, mark: true, wiki: false },
+      fmt: {}, fmtLinkOpen: false, turn: 0, copied: false, light: false, zoom: 1, loadingDoc: false, loadHold: false, rendered: false, renderHold: false, low: !!props.lowPower
+    }, this.sceneState(scene));
+    this.ease = {
+      snappy: { d: 260, e: this.springEase(0.15, 9) }, smooth: { d: 360, e: this.springEase(0, 8) }, gentle: { d: 520, e: this.springEase(0.1, 9) }
+    };
+    const once = (fn) => (el) => { if (el && !el.__au) { el.__au = 1; try { fn(el); } catch (e) {} } };
+    this.focusRef = (el) => { if (el && el !== this._focused) { this._focused = el; try { el.focus({ preventScroll: true }); } catch (e) {} } };
+    this.enterFade = once((el) => this.play(el, { opacity: [0, 1] }, 120, 'ease-out'));
+    this.enterRise = once((el) => this.play(el, { opacity: [0, 1], transform: ['translateY(8px)', 'none'] }, 'smooth'));
+    this.enterPop = once((el) => this.play(el, { opacity: [0, 1], transform: ['scale(.96)', 'none'] }, 'snappy'));
+    this.enterPopTop = once((el) => { el.style.transformOrigin = 'top center'; this.play(el, { opacity: [0, 1], transform: ['translateY(-6px) scale(.96)', 'none'] }, 'snappy'); });
+    this.enterPopUp = once((el) => { el.style.transformOrigin = 'bottom center'; this.play(el, { opacity: [0, 1], transform: ['translateY(6px) scale(.96)', 'none'] }, 'snappy'); });
+    this.enterCollapse = once((el) => { const h = el.offsetHeight; this.play(el, { height: ['0px', h + 'px'], opacity: [0, 1] }, 'smooth'); });
+    this.enterStagger = once((el) => { Array.from(el.querySelectorAll('[data-stag]')).slice(0, 12).forEach((c, i) => this.play(c, { opacity: [0, 1], transform: ['translateY(6px)', 'none'] }, 'snappy', null, Math.min(i, 8) * 24)); });
+    this.enterToast = once((el) => this.play(el, { opacity: [0, 1], transform: ['translateY(14px) scale(.96)', 'none'] }, 'snappy'));
+    this.enterMark = once((el) => this.play(el, { opacity: [0, 1] }, 120, 'ease-out'));
+    this.caret = once((el) => { if (el.animate) el.animate({ opacity: [1, 1, 0, 0] }, { duration: 1060, iterations: Infinity, easing: 'linear' }); });
+    this.pulse = once((el) => { if (el.animate && !this.reduced()) el.animate({ transform: ['scale(1)', 'scale(1.45)', 'scale(1)'], opacity: [1, .55, 1] }, { duration: 900, iterations: Infinity, easing: 'ease-in-out' }); });
+    this.drawCheck = once((el) => { el.style.strokeDasharray = '14'; if (el.animate) el.animate({ strokeDashoffset: [14, 0] }, { duration: 220, easing: 'ease-out', fill: 'both' }); });
+    this.sweep = once((el) => { if (el.animate && !this.state.low) el.animate({ left: ['-45%', '100%'] }, { duration: 1100, iterations: Infinity, easing: 'ease-in-out' }); });
+    this.glowSweep = once((el) => { if (!el.animate || this.reduced() || this.state.low) { el.style.opacity = 0; return; } el.animate([{ transform: 'rotate(0deg)', opacity: 1 }, { transform: 'rotate(360deg)', opacity: 1, offset: .75 }, { transform: 'rotate(420deg)', opacity: 0 }], { duration: 1500, easing: 'ease-out', fill: 'forwards' }); });
+    const aur = (x, y) => once((el) => {
+      if (!el.animate || this.reduced() || this.state.low) return;
+      const a = el.animate({ transform: ['translate(0,0) scale(1)', 'translate(' + x + '%,' + y + '%) scale(1.14)', 'translate(0,0) scale(1)'] }, { duration: 16000, iterations: Infinity, easing: 'ease-in-out' });
+      this._later(() => a.pause(), 12000);
+    });
+    this.aurora1 = aur(18, 12); this.aurora2 = aur(-14, 16); this.aurora3 = aur(10, -14);
+    this.flipPalette = once((el) => {
+      const src = document.querySelector('[data-omni]'); if (!src) return;
+      const s = src.getBoundingClientRect(), d = el.getBoundingClientRect();
+      if (!d.width || !d.height) return;
+      const tx = (s.left + s.width / 2) - (d.left + d.width / 2), ty = (s.top + s.height / 2) - (d.top + d.height / 2);
+      this.play(el, { transform: ['translate(' + tx + 'px,' + ty + 'px) scale(' + (s.width / d.width) + ',' + (s.height / d.height) + ')', 'none'], opacity: [.3, 1] }, 'gentle');
+    });
+    this.flipLight = once((el) => {
+      const src = document.querySelector('[data-figure]'); if (!src) return;
+      const s = src.firstElementChild.getBoundingClientRect(), d = el.getBoundingClientRect();
+      if (!d.width || !d.height) return;
+      const tx = (s.left + s.width / 2) - (d.left + d.width / 2), ty = (s.top + s.height / 2) - (d.top + d.height / 2);
+      this.play(el, { transform: ['translate(' + tx + 'px,' + ty + 'px) scale(' + (s.width / d.width) + ',' + (s.height / d.height) + ')', 'none'] }, 'gentle');
+    });
+    this.noRef = () => {};
+  }
+
+  springEase(bounce, w) {
+    const z = Math.max(0.3, 1 - bounce * 2.2), wd = w * Math.sqrt(Math.max(0.0001, 1 - z * z)), pts = [];
+    for (let i = 0; i <= 28; i++) {
+      const t = i / 28, x = t * 1.05;
+      const v = z >= 0.999 ? 1 - Math.exp(-w * x) * (1 + w * x) : 1 - Math.exp(-z * w * x) * (Math.cos(wd * x) + (z * w / wd) * Math.sin(wd * x));
+      pts.push(i === 28 ? 1 : Number(v.toFixed(4)));
+    }
+    return 'linear(' + pts.join(',') + ')';
+  }
+
+  reduced() {
+    if (this.props.reduceMotion) return true;
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+  }
+
+  play(el, kf, token, easing, delay) {
+    if (!el || !el.animate) return null;
+    const frames = Object.assign({}, kf);
+    if (this.reduced()) { delete frames.transform; delete frames.height; delete frames.left; if (!frames.opacity) return null; }
+    const t = this.ease[token];
+    return el.animate(frames, { duration: t ? t.d : token, easing: t ? t.e : (easing || 'ease-out'), delay: delay || 0, fill: 'backwards' });
+  }
+
+  _later(fn, ms) { const id = setTimeout(fn, ms); (this._ts = this._ts || []).push(id); return id; }
+
+  sceneState(scene) {
+    const m = {
+      default: {}, dark: { dark: true }, source: { mode: 'source', active: 'p2' }, read: { mode: 'read', active: null },
+      focus: { mode: 'focus', active: 'p2', node: null }, welcome: { screen: 'welcome', tabs: [] },
+      palette: { overlay: 'palette', pq: '>' }, slash: { slash: true, active: 'slash', node: null },
+      format: { active: 'p2', sel: 'p2', node: null, fmt: { i: true } }, conflict: { banner: true, save: 'conflict' },
+      find: { findOpen: true, fq: 'Markdown', replaceOpen: true }, settings: { overlay: 'settings' },
+      lightbox: { light: true, active: 'img', node: null }, loading: { loadingDoc: true, loadHold: true },
+      notify: { notes_: [
+        { id: 1, kind: 'ok', title: '已将图片复制到 assets/', desc: 'workspace.png · 粘贴图片时自动完成', action: '撤销', sticky: true },
+        { id: 2, kind: 'run', title: '正在导出 PDF', desc: '第 3 页，共 8 页', progress: 42, sticky: true },
+        { id: 3, kind: 'warn', title: '公式渲染服务不可用', desc: '已显示公式源码，编辑不受影响', action: '重试', sticky: true }
+      ] }, lowpower: { low: true }
+    };
+    return m[scene] || {};
+  }
+
+  componentDidMount() {
+    this.syncPills(false);
+    this._later(() => this.syncPills(false), 350);
+    if (this.props.scene !== 'loading') this._later(() => this.setState({ rendered: true }), 900);
+    if (this.props.scene === 'notify') this.runProgress(2, 42, true);
+  }
+
+  componentDidUpdate(prev, prevState) {
+    if (prev.scene !== this.props.scene) this.setState(Object.assign({ mode: 'live', overlay: null, slash: false, sel: null, banner: false, findOpen: false, screen: 'doc', tabs: ['readme', 'notes'], dark: !!this.props.dark, side: true, active: 'p1', node: 'n1', fq: '', pq: '', save: 'saved', light: false, loadingDoc: false, loadHold: false, notes_: [], low: !!this.props.lowPower }, this.sceneState(this.props.scene)));
+    if (prev.dark !== this.props.dark) this.setState({ dark: !!this.props.dark });
+    if (prev.lowPower !== this.props.lowPower) this.setState({ low: !!this.props.lowPower });
+    if (!this.state.overlay && !this.state.findOpen && !this.state.slash && !this.state.renaming && !this.state.fmtLinkOpen) this._focused = null;
+    this.syncPills(true);
+    this.playFlip();
+    const on = document.querySelector('[data-palette-list] [data-on="true"]');
+    if (on && prevState && prevState.pIdx !== this.state.pIdx && on.scrollIntoView) on.scrollIntoView({ block: 'nearest' });
+    const sl = document.querySelector('[data-slash-scroll] [data-on="true"]');
+    if (sl && prevState && prevState.slashIdx !== this.state.slashIdx && sl.scrollIntoView) sl.scrollIntoView({ block: 'nearest' });
+  }
+
+  componentWillUnmount() {
+    (this._ts || []).forEach(clearTimeout);
+    (this._iv || []).forEach(clearInterval);
+    clearTimeout(this._saveT); clearTimeout(this._saveT2);
+    this.stopResize && this.stopResize();
+  }
+
+  syncPills(animate) {
+    document.querySelectorAll('[data-pill-host]').forEach((host) => {
+      const pill = host.querySelector(':scope > [data-pill]');
+      if (!pill) return;
+      const on = host.querySelector('[data-on="true"]');
+      if (!on) { pill.style.opacity = 0; pill.__placed = false; return; }
+      const first = !pill.__placed;
+      if (first || !animate) { const tr = pill.style.transition; pill.style.transition = 'none'; this.placePill(pill, on, host); pill.offsetWidth; pill.style.transition = tr; pill.__placed = true; }
+      else this.placePill(pill, on, host);
+      pill.style.opacity = 1;
+    });
+  }
+
+  placePill(pill, on, host) {
+    const hr = host.getBoundingClientRect(), r = on.getBoundingClientRect();
+    pill.style.transform = 'translate(' + (r.left - hr.left + host.scrollLeft - host.clientLeft) + 'px,' + (r.top - hr.top + host.scrollTop - host.clientTop) + 'px)';
+    pill.style.width = r.width + 'px'; pill.style.height = r.height + 'px';
+  }
+
+  captureFlip() {
+    const m = {};
+    document.querySelectorAll('[data-fk]').forEach((el) => { const k = el.getAttribute('data-fk'); const r = el.getBoundingClientRect(); m[k] = { x: r.left, y: r.top }; });
+    this._flip = m;
+  }
+
+  playFlip() {
+    const prev = this._flip, fly = this._fly; this._flip = null; this._fly = null;
+    if (prev) document.querySelectorAll('[data-fk]').forEach((el) => {
+      const k = el.getAttribute('data-fk'), o = prev[k], r = el.getBoundingClientRect();
+      if (!o) { this.play(el, { opacity: [0, 1] }, 120, 'ease-out'); return; }
+      const dx = o.x - r.left, dy = o.y - r.top;
+      if (Math.abs(dx) > .5 || Math.abs(dy) > .5) this.play(el, { transform: ['translate(' + dx + 'px,' + dy + 'px)', 'none'] }, 'smooth');
+    });
+    if (fly) {
+      const el = document.querySelector('[data-fk="tab-' + fly.id + '"]');
+      if (el) { const r = el.getBoundingClientRect(); this.play(el, { transform: ['translate(' + (fly.x - r.left) + 'px,' + (fly.y - r.top) + 'px) scale(1.15)', 'none'] }, 'gentle'); }
+    }
+  }
+
+  tokens() {
+    const S = this.state, d = S.dark, h = S.hue ?? (this.props.accentHue ?? 182), low = S.low;
+    const ac = d ? '0.82 0.12 ' + h : '0.50 0.11 ' + h;
+    const a1 = 'oklch(' + (d ? '0.80 0.13 ' : '0.66 0.14 ') + h + ')', a2 = 'oklch(' + (d ? '0.70 0.15 ' : '0.58 0.17 ') + ((h + 92) % 360) + ')', a3 = 'oklch(' + (d ? '0.74 0.15 ' : '0.66 0.17 ') + ((h + 165) % 360) + ')';
+    const a = (c, o) => c.replace(')', ' / ' + o + ')');
+    const display = "Newsreader,'Noto Serif SC','Source Han Serif SC',SimSun,Georgia,serif";
+    const base = d ? {
+      win: low ? '#0B0C11' : 'radial-gradient(90% 70% at 0% 0%, ' + a(a1, .10) + ', transparent 60%), radial-gradient(70% 60% at 100% 0%, ' + a(a2, .08) + ', transparent 60%), #090A0F',
+      sheet: '#111218', sheetSolid: '#111218', sheetClear: 'rgba(17,18,24,0)', sheetShadow: '0 0 0 1px rgba(255,255,255,.07), inset 0 1px 0 rgba(255,255,255,.04), 0 12px 40px rgba(0,0,0,.45)',
+      text: '#ECEDF2', muted: '#A2A4B3', faint: '#6C6E7E', surface: 'rgba(255,255,255,.045)', surfaceHover: 'rgba(255,255,255,.1)', border: 'rgba(255,255,255,.085)', hoverTint: 'rgba(255,255,255,.055)',
+      onAccent: '#08110F', mark: 'rgba(255,196,84,.26)', codeBg: '#0C0D12', codeShadow: 'inset 0 1px 0 rgba(255,255,255,.03)',
+      warning: '#FFB224', success: '#4CC38A', danger: '#FF6369', scrim: 'rgba(4,5,9,.35)', scrimStrong: 'rgba(4,5,9,.55)', sweep: 'rgba(255,255,255,.08)',
+      tabBg: 'rgba(255,255,255,.09)', tabShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 1px 3px rgba(0,0,0,.4)',
+      glassFill: 'rgba(26,27,36,.68)', glassStrongFill: 'rgba(22,23,31,.78)', chipFill: 'rgba(30,31,40,.62)', solidFill: '#1A1B23', hairline: 'rgba(255,255,255,.1)', spec: 'inset 0 1px 0 rgba(255,255,255,.1)', sh2: '0 12px 32px rgba(0,0,0,.45)', sh3: '0 32px 80px rgba(0,0,0,.6)', sh1: '0 4px 14px rgba(0,0,0,.3)',
+      edgeFill: 'rgba(17,18,24,.7)', art: 'radial-gradient(70% 90% at 15% 15%, ' + a1 + ', transparent 60%), radial-gradient(70% 90% at 85% 30%, ' + a2 + ', transparent 62%), radial-gradient(70% 90% at 55% 100%, ' + a3 + ', transparent 60%), #14151D',
+      syn: { k: 'oklch(0.78 0.13 ' + ((h + 110) % 360) + ')', f: ac ? 'oklch(' + ac + ')' : '', c: '#7F8192', s: '#E6C07B', t: '#ECEDF2' }
+    } : {
+      win: low ? '#E9EAEE' : 'radial-gradient(90% 70% at 0% 0%, ' + a(a1, .13) + ', transparent 60%), radial-gradient(70% 60% at 100% 0%, ' + a(a2, .10) + ', transparent 60%), #E8E9EE',
+      sheet: '#FFFFFF', sheetSolid: '#FFFFFF', sheetClear: 'rgba(255,255,255,0)', sheetShadow: '0 0 0 1px rgba(20,22,35,.06), 0 1px 2px rgba(20,22,35,.05), 0 12px 36px rgba(20,22,35,.09)',
+      text: '#15161C', muted: '#5F616E', faint: '#8B8D99', surface: 'rgba(20,22,35,.04)', surfaceHover: 'rgba(20,22,35,.09)', border: 'rgba(20,22,35,.09)', hoverTint: 'rgba(20,22,35,.05)',
+      onAccent: '#FFFFFF', mark: '#FFEFB0', codeBg: '#F7F7F9', codeShadow: 'none',
+      warning: '#C77A00', success: '#1E8A58', danger: '#D93D42', scrim: 'rgba(20,22,35,.14)', scrimStrong: 'rgba(20,22,35,.28)', sweep: 'rgba(255,255,255,.75)',
+      tabBg: '#FFFFFF', tabShadow: '0 0 0 1px rgba(20,22,35,.05), 0 1px 3px rgba(20,22,35,.12)',
+      glassFill: 'rgba(255,255,255,.72)', glassStrongFill: 'rgba(252,252,254,.82)', chipFill: 'rgba(255,255,255,.68)', solidFill: '#FBFBFC', hairline: 'rgba(20,22,35,.1)', spec: 'inset 0 1px 0 rgba(255,255,255,.8)', sh2: '0 12px 32px rgba(20,22,35,.16)', sh3: '0 32px 80px rgba(20,22,35,.26)', sh1: '0 4px 14px rgba(20,22,35,.1)',
+      edgeFill: 'rgba(255,255,255,.72)', art: 'radial-gradient(70% 90% at 15% 15%, ' + a1 + ', transparent 60%), radial-gradient(70% 90% at 85% 30%, ' + a2 + ', transparent 62%), radial-gradient(70% 90% at 55% 100%, ' + a3 + ', transparent 60%), #2A2B38',
+      syn: { k: 'oklch(0.46 0.16 ' + ((h + 110) % 360) + ')', f: 'oklch(' + ac + ')', c: '#70727F', s: '#946100', t: '#15161C' }
+    };
+    const blur = (px, sat) => low ? '' : 'backdrop-filter: blur(' + px + 'px) saturate(' + sat + ');';
+    return Object.assign(base, {
+      display, a1, a2, a3, accent: 'oklch(' + ac + ')', accentSoft: 'oklch(' + ac + ' / ' + (d ? .17 : .11) + ')', accentRing: 'oklch(' + ac + ' / ' + (d ? .25 : .2) + ')', selection: 'oklch(' + ac + ' / ' + (d ? .3 : .2) + ')', accentGlow: low ? 'transparent' : 'oklch(' + ac + ' / .55)',
+      brand: 'linear-gradient(90deg,' + a1 + ',' + a2 + ',' + a3 + ')',
+      aur1: low ? 'transparent' : a(a1, d ? .3 : .3), aur2: low ? 'transparent' : a(a2, d ? .26 : .24), aur3: low ? 'transparent' : a(a3, d ? .18 : .18),
+      tabPill: 'background:' + base.tabBg + ';box-shadow:' + base.tabShadow,
+      glassPanel: 'background:' + (low ? base.solidFill : base.glassFill) + ';' + blur(24, 1.5) + 'border:1px solid ' + base.hairline + ';box-shadow:' + base.spec + ',' + base.sh2 + ';',
+      glassStrong: 'background:' + (low ? base.solidFill : base.glassStrongFill) + ';' + blur(36, 1.6) + 'border:1px solid ' + base.hairline + ';box-shadow:' + base.spec + ',' + base.sh3 + ';',
+      glassChip: 'background:' + (low ? base.solidFill : base.chipFill) + ';' + blur(16, 1.4) + 'border:1px solid ' + base.hairline + ';box-shadow:' + base.spec + ',' + base.sh1 + ';',
+      scrollEdge: 'background:' + (low ? base.sheetSolid : base.edgeFill) + ';' + blur(14, 1.3) + 'border-bottom:1px solid ' + base.border + ';',
+      lightScrim: low ? 'background:rgba(6,7,11,.86);' : 'background:rgba(6,7,11,.6);backdrop-filter:blur(22px) saturate(1.2);'
+    });
+  }
+
+  docData() {
+    const S = this.state;
+    const rows = [['能力', '优先级', '状态'], ['实时渲染与源码模式', 'P0', '规划中'], ['表格网格编辑', 'P0', '规划中'], ['数学与 Mermaid', 'P1', '待验证']];
+    const table = rows.map((r) => r.concat(Array.from({ length: S.xCols }, (_, i) => r === rows[0] ? '列 ' + (i + 4) : '')));
+    for (let i = 0; i < S.xRows; i++) table.push(table[0].map(() => ''));
+    const tableSrc = table.map((r, i) => '| ' + r.join(' | ') + ' |' + (i === 0 ? '\n|' + r.map(() => ' --- ').join('|') + '|' : '')).join('\n');
+    return {
+      readme: { title: 'README.md', heading: 'Aurink 是什么', blocks: [
+        { id: 'fm', kind: 'fm', src: '---\ntitle: Aurink 产品说明\ntags: [markdown, editor]\nupdated: 2026-10-31\n---', tags: ['markdown', 'editor'] },
+        { id: 'h1', kind: 'h1', segs: [['m', '# ', 'block'], ['t', 'Aurink 是什么']] },
+        { id: 'p1', kind: 'lead', segs: [['t', '轻量、即开即写的 Markdown 编辑器。'], ['m', '**', 'n1'], ['b', 'Markdown 文件就是你的文件', 'n1'], ['m', '**', 'n1'], ['t', '：打开、编辑、保存，都不会改动你没碰过的任何一个字节。规划细节见 '], ['m', '[', 'n3'], ['l', '可行性报告', 'n3'], ['m', '](docs/01-feasibility.md)', 'n3'], ['t', '。'], ['f', '1', 'n4']] },
+        { id: 'h2a', kind: 'h2', segs: [['m', '## ', 'block'], ['t', '写作时的感受']] },
+        { id: 'p2', kind: 'p', segs: [['t', '光标进入一段文字时，它的 '], ['m', '`', 'n5'], ['c', '标记', 'n5'], ['m', '`', 'n5'], ['t', ' 才淡淡地出现；'], ['m', '*', 'n6'], ['i', '离开之后', 'n6', true], ['m', '*', 'n6'], ['t', '，页面又回到', 0, true], ['m', '==', 'n7'], ['h', '干净的排版', 'n7', true], ['m', '==', 'n7'], ['t', '。这只是显示上的变化，源码本身从未被改写。']] },
+        { id: 'slash', kind: 'p', cond: 'slash', segs: [['t', '/']], isSlash: true },
+        { id: 'quote', kind: 'quote', segs: [['t', '内容优先：编辑区之外的一切默认安静，需要时才出现。']] },
+        { id: 'u1', kind: 'ul', segs: [['t', '键盘即一切：所有功能都能通过命令面板与快捷键到达。']] },
+        { id: 'u2', kind: 'ul', segs: [['t', '动效服务于理解：说明东西从哪来、到哪去，可以随时打断。']] },
+        { id: 'u3', kind: 'ul', segs: [['t', '无损与可信：保存状态、外部修改与冲突永远可见、可恢复。']] },
+        { id: 'h3a', kind: 'h3', segs: [['m', '### ', 'block'], ['t', '上线前要确认的事']] },
+        { id: 't1', kind: 'task', segs: [['t', '冻结接口契约 contract-v1.0']] },
+        { id: 't2', kind: 'task', segs: [['t', '通过微软拼音真机候选框验证']] },
+        { id: 't3', kind: 'task', segs: [['t', '点击复选框时，只改动源码中的 1 个字节']] },
+        { id: 'h2b', kind: 'h2', segs: [['m', '## ', 'block'], ['t', '代码、表格与图表']] },
+        { id: 'code', kind: 'code', src: '```go\nfunc (s *Session) Apply(from, to int, text string) {\n\t// 所有编辑都是源码字节替换\n\ts.src = s.src[:from] + text + s.src[to:]\n\ts.reparse(from, to, len(text))\n}\n```', lines: [
+          [['k', 'func'], ['t', ' (s *Session) '], ['f', 'Apply'], ['t', '(from, to '], ['k', 'int'], ['t', ', text '], ['k', 'string'], ['t', ') {']],
+          [['c', '    // 所有编辑都是源码字节替换']],
+          [['t', '    s.src = s.src[:from] + text + s.src[to:]']],
+          [['t', '    s.'], ['f', 'reparse'], ['t', '(from, to, '], ['f', 'len'], ['t', '(text))']],
+          [['t', '}']]
+        ] },
+        { id: 'table', kind: 'table', table, src: tableSrc },
+        { id: 'math', kind: 'math', src: '$$\nT_{top} = \\sum_{i < k} h_i\n$$' },
+        { id: 'mermaid', kind: 'mermaid', src: '```mermaid\nflowchart LR\n  A[源码] --> B[解析器] --> C[按块投影] --> D[显示片段]\n```', nodes: ['源码', '解析器', '按块投影', '显示片段'] },
+        { id: 'img', kind: 'img', src: '![工作区示意](assets/workspace.png)' },
+        { id: 'hr', kind: 'hr', src: '---' },
+        { id: 'fn', kind: 'fn', segs: [['m', '[^1]: ', 'block'], ['t', '1. 校验方式：保存后逐字节比对未编辑的区域。']] }
+      ] },
+      notes: { title: '笔记.md', heading: '十月的笔记', blocks: [
+        { id: 'n-h1', kind: 'h1', segs: [['m', '# ', 'block'], ['t', '十月的笔记']] },
+        { id: 'n-p1', kind: 'lead', segs: [['t', '这个标签有未保存的内容，所以标签上显示圆点；把鼠标移到标签上，圆点会变成关闭按钮。']] },
+        { id: 'n-p2', kind: 'quote', segs: [['t', '原型里的文字不可真实输入。单击可移动光标，查看标记如何显隐。']] }
+      ] },
+      untitled: { title: '未命名.md', heading: '未命名', empty: true, blocks: [
+        { id: 'u-h', kind: 'h1', segs: [['t', '未命名']], placeholder: true },
+        { id: 'u-p1', kind: 'p', segs: [['t', '开始写作，或用下面的方式插入内容。']], placeholder: true }
+      ] }
+    };
+  }
+
+  text(b) { return (b.segs || []).map((s) => s[1]).join(''); }
+
+  src(b) {
+    if (b.src) return b.src;
+    const body = this.text(b);
+    if (b.kind === 'ul') return '- ' + body;
+    if (b.kind === 'quote') return '> ' + body;
+    if (b.kind === 'task') return '- [' + (this.state.checks[b.id] ? 'x' : ' ') + '] ' + body;
+    return body;
+  }
+
+  notify(n) {
+    const id = (this._nid = (this._nid || 100) + 1);
+    this.captureFlip();
+    this.setState({ notes_: this.state.notes_.concat(Object.assign({ id }, n)).slice(-4) });
+    if (!n.sticky) this._later(() => this.dismissNote(id), 3200);
+    return id;
+  }
+
+  flash(msg) { this.notify({ kind: 'info', title: msg }); }
+
+  dismissNote(id) {
+    const el = document.querySelector('[data-note="' + id + '"]');
+    const done = () => { this.captureFlip(); this.setState({ notes_: this.state.notes_.filter((x) => x.id !== id) }); };
+    const a = el && this.play(el, { opacity: [1, 0], transform: ['none', 'translateY(8px) scale(.97)'] }, 140, 'ease-in');
+    if (a) { a.effect.updateTiming({ fill: 'forwards' }); a.onfinish = done; } else done();
+  }
+
+  runProgress(id, from, loop) {
+    let p = from;
+    const iv = setInterval(() => {
+      p = Math.min(100, p + 7);
+      this.setState({ notes_: this.state.notes_.map((x) => x.id === id ? Object.assign({}, x, { progress: p, desc: p < 100 ? '第 ' + Math.max(1, Math.round(p / 12.5)) + ' 页，共 8 页' : '已写入 README.pdf' }, p >= 100 ? { kind: 'ok', title: '导出完成', action: '打开' } : {}) : x) });
+      if (p >= 100) {
+        clearInterval(iv);
+        if (loop) this._later(() => { this.setState({ notes_: this.state.notes_.map((x) => x.id === id ? Object.assign({}, x, { kind: 'run', title: '正在导出 PDF', action: '', progress: 0 }) : x) }); this.runProgress(id, 0, true); }, 1800);
+      }
+    }, 280);
+    (this._iv = this._iv || []).push(iv);
+  }
+
+  touch() {
+    const S = this.state;
+    this.setState({ save: 'editing', dirty: Object.assign({}, S.dirty, { [S.activeTab]: true }) });
+    clearTimeout(this._saveT); clearTimeout(this._saveT2);
+    if (!S.autoSave) return;
+    this._saveT = setTimeout(() => this.setState({ save: 'saving' }), 500);
+    this._saveT2 = setTimeout(() => {
+      this.setState({ save: 'justSaved', dirty: Object.assign({}, this.state.dirty, { [this.state.activeTab]: false }) });
+      this._saveT = setTimeout(() => this.setState({ save: 'saved' }), 1500);
+    }, 1300);
+  }
+
+  scrollToBlock(id, block) {
+    const el = document.getElementById('blk-' + id);
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: block || 'start', behavior: this.reduced() ? 'auto' : 'smooth' });
+  }
+
+  switchTheme(next, e) {
+    const apply = (cb) => this.setState({ dark: next }, cb);
+    const low = this.state.low || this.reduced();
+    if (low || !document.startViewTransition) { apply(); return; }
+    const x = e && e.clientX != null ? e.clientX : innerWidth / 2, y = e && e.clientY != null ? e.clientY : 24;
+    const R = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    try {
+      const vt = document.startViewTransition(() => new Promise((res) => { apply(res); setTimeout(res, 80); }));
+      vt.ready.then(() => document.documentElement.animate({ clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + R + 'px at ' + x + 'px ' + y + 'px)'] }, { duration: 400, easing: 'cubic-bezier(.2,.8,.2,1)', pseudoElement: '::view-transition-new(root)' })).catch(() => {});
+    } catch (err) { apply(); }
+  }
+
+  openTab(id, fly) {
+    const S = this.state;
+    if (fly) this._fly = { id, x: fly.left, y: fly.top };
+    this.captureFlip();
+    const switching = id !== S.activeTab || S.screen !== 'doc';
+    this.setState({ tabs: S.tabs.includes(id) ? S.tabs : S.tabs.concat(id), activeTab: id, screen: 'doc', overlay: null, pq: '', active: null, node: null, sel: null, ctx: null, slash: false, loadingDoc: switching, loadHold: false, scrollPct: 0, edge: 0 });
+    if (switching) this._later(() => this.setState({ loadingDoc: false }), 280);
+  }
+
+  closeTab(id) {
+    const S = this.state, tabs = S.tabs.filter((x) => x !== id);
+    this.captureFlip();
+    if (!tabs.length) return this.setState({ tabs, screen: 'welcome' });
+    this.setState({ tabs, activeTab: S.activeTab === id ? tabs[tabs.length - 1] : S.activeTab });
+  }
+
+  dismissPalette() {
+    const el = document.querySelector('[data-overlay-panel]');
+    const finish = () => this.setState({ overlay: null, pq: '', pIdx: 0 });
+    const a = el && this.play(el, { opacity: [1, 0], transform: ['none', 'translateY(-10px) scale(.97)'] }, 130, 'ease-in');
+    if (a) { a.effect.updateTiming({ fill: 'forwards' }); a.onfinish = finish; } else finish();
+  }
+
+  run(id) {
+    const S = this.state, close = { overlay: null, pq: '', pIdx: 0 };
+    const exp = (fmt, name) => () => {
+      this.setState(close);
+      const nid = this.notify({ kind: 'run', title: '正在导出 ' + fmt, desc: name, progress: 0, sticky: true });
+      let p = 0;
+      const iv = setInterval(() => {
+        p = Math.min(100, p + 12);
+        this.setState({ notes_: this.state.notes_.map((x) => x.id === nid ? Object.assign({}, x, { progress: p }, p >= 100 ? { kind: 'ok', title: '导出完成', action: '打开' } : {}) : x) });
+        if (p >= 100) { clearInterval(iv); this._later(() => this.dismissNote(nid), 2800); }
+      }, 220);
+      (this._iv = this._iv || []).push(iv);
+    };
+    const acts = {
+      theme: () => { this.setState(close); this.switchTheme(!S.dark); },
+      source: () => this.setState(Object.assign({ mode: S.mode === 'source' ? 'live' : 'source' }, close)),
+      read: () => this.setState(Object.assign({ mode: 'read', active: null }, close)),
+      focus: () => this.setState(Object.assign({ mode: S.mode === 'focus' ? 'live' : 'focus', active: S.active || 'p1' }, close)),
+      type: () => this.setState(Object.assign({ mode: S.mode === 'type' ? 'live' : 'type' }, close)),
+      side: () => this.setState(Object.assign({ side: !S.side }, close)),
+      outline: () => this.setState(Object.assign({ side: true, sideTab: 'outline' }, close)),
+      find: () => this.setState(Object.assign({ findOpen: true }, close)),
+      replace: () => this.setState(Object.assign({ findOpen: true, replaceOpen: true }, close)),
+      search: () => this.setState(Object.assign({ side: true, sideTab: 'search' }, close)),
+      settings: () => this.setState({ overlay: 'settings', pq: '', pIdx: 0 }),
+      newdoc: () => this.openTab('untitled'),
+      slash: () => this.setState(Object.assign({ slash: true, slashQ: '', slashIdx: 0, active: 'slash', node: null, activeTab: 'readme', mode: 'live' }, close)),
+      format: () => this.setState(Object.assign({ active: 'p2', sel: 'p2', node: null, activeTab: 'readme', mode: 'live' }, close)),
+      conflict: () => this.setState(Object.assign({ banner: true, save: 'conflict', screen: 'doc' }, close)),
+      light: () => this.setState(Object.assign({ light: true, zoom: 1, activeTab: 'readme', mode: 'live', screen: 'doc' }, close)),
+      welcome: () => this.setState(Object.assign({ screen: 'welcome', tabs: [] }, close)),
+      exportHtml: exp('HTML', 'README.html'), exportPdf: exp('PDF', 'README.pdf')
+    };
+    if (acts[id]) acts[id]();
+  }
+
+  commands() {
+    return [
+      ['theme', '切换浅色 / 深色', ''], ['source', '切换源码模式', 'Ctrl /'], ['read', '进入阅读模式', ''], ['focus', '切换专注模式', 'F8'], ['type', '切换打字机模式', 'F9'],
+      ['side', '切换侧栏', 'Ctrl Shift L'], ['outline', '打开大纲', 'Ctrl Shift 1'], ['find', '查找', 'Ctrl F'], ['replace', '替换', 'Ctrl H'], ['search', '工作区全文搜索', 'Ctrl Shift F'],
+      ['newdoc', '新建文档', 'Ctrl N'], ['exportHtml', '导出 HTML', ''], ['exportPdf', '导出 PDF', ''], ['settings', '打开设置', ''],
+      ['slash', '原型演示：斜杠菜单', ''], ['format', '原型演示：选区格式条', ''], ['light', '原型演示：图片预览', ''], ['conflict', '原型演示：外部修改冲突', ''], ['welcome', '原型演示：欢迎页', '']
+    ];
+  }
+
+  pieces(text, q, T) {
+    const out = []; let j = 0; const lq = q.toLowerCase();
+    for (const ch of text) {
+      const hit = j < lq.length && ch.toLowerCase() === lq[j];
+      if (hit) j++;
+      const last = out[out.length - 1];
+      if (last && last.hit === hit) last.text += ch; else out.push({ text: ch, hit });
+    }
+    if (j < lq.length) return null;
+    return out.map((p) => ({ text: p.text, style: p.hit ? 'color:' + T.accent + ';font-weight:600' : 'color:inherit' }));
+  }
+
+  palette(T, docs) {
+    const S = this.state, raw = S.pq;
+    const prefix = raw[0] === '>' ? '>' : raw[0] === '@' ? '@' : '';
+    const q = (prefix ? raw.slice(1) : raw).trim();
+    const out = []; let head;
+    const FILE = 'M4 1.8h5l3 3v9.4H4zM9 1.8v3h3', CMD = 'M3 4.5 7 8l-4 3.5M8.5 12H13', HEAD = 'M4 2.5v11M12 2.5v11M4 8h8';
+    const add = (group, icon, label, sub, key, run) => {
+      const pc = this.pieces(label, q, T);
+      if (!pc) return;
+      out.push({ head: group !== head ? group : '', icon, pieces: pc, sub, key, run });
+      head = group;
+    };
+    const rowRect = () => { const el = document.querySelector('[data-palette-list] [data-on="true"]'); return el ? el.getBoundingClientRect() : null; };
+    if (prefix === '>') this.commands().forEach((c) => add('命令', CMD, c[1], '', c[2], () => this.run(c[0])));
+    else if (prefix === '@') {
+      docs[S.activeTab].blocks.filter((b) => /^h[123]$/.test(b.kind)).forEach((b) => {
+        const label = b.segs.filter((s) => s[0] !== 'm').map((s) => s[1]).join('');
+        add('当前文档标题', HEAD, label, '', b.kind.toUpperCase(), () => { this.setState({ overlay: null, pq: '' }); this.scrollToBlock(b.id); });
+      });
+    } else {
+      add('最近', FILE, 'README.md', 'aurink-notes', '', () => this.openTab('readme', rowRect()));
+      add('最近', FILE, '笔记.md', 'aurink-notes/docs', '', () => this.openTab('notes', rowRect()));
+      add('文件', FILE, '路线图.md', 'aurink-notes/docs', '', () => this.flash('原型未包含此文件内容'));
+      add('文件', FILE, '会议记录.md', 'aurink-notes/docs', '', () => this.flash('原型未包含此文件内容'));
+      if (q) this.commands().slice(0, 14).forEach((c) => add('命令', CMD, c[1], '', c[2], () => this.run(c[0])));
+    }
+    return { items: out, mode: prefix === '>' ? '命令' : prefix === '@' ? '标题' : '文件' };
+  }
+
+  segStyle(type, T, hit, cur, sel, fmt) {
+    const m = { t: '', m: 'color:' + T.muted + ';font-weight:400;font-style:normal;font-family:\'JetBrains Mono\',monospace;font-size:.85em;', b: 'font-weight:650;', i: 'font-style:italic;', h: 'background:' + T.mark + ';border-radius:3px;padding:0 2px;', l: 'color:' + T.accent + ';text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px;cursor:pointer;', c: "font-family:'JetBrains Mono','Cascadia Code',monospace;font-size:.86em;padding:2px 6px;border-radius:5px;background:" + T.surface + ';border:1px solid ' + T.border + ';', f: 'font-size:.72em;vertical-align:super;line-height:0;color:' + T.accent + ';cursor:pointer;font-weight:600;', caret: 'display:inline-block;width:2px;height:1.2em;vertical-align:-0.22em;margin:0 -1px;border-radius:1px;background:' + T.accent + ';box-shadow:0 0 8px ' + T.accentGlow + ';' };
+    let st = m[type] || '';
+    if (sel) {
+      st += 'background:' + T.selection + ';';
+      if (fmt) { if (fmt.b) st += 'font-weight:700;'; if (fmt.i) st += 'font-style:italic;'; if (fmt.u) st += 'text-decoration:underline;'; if (fmt.s) st += 'text-decoration:line-through;'; if (fmt.c) st += "font-family:'JetBrains Mono',monospace;font-size:.88em;"; if (fmt.h) st += 'background:' + T.mark + ';'; }
+    }
+    if (hit) st += 'background:' + (cur ? T.warning : T.mark) + ';border-radius:3px;' + (cur ? 'color:#15161C;' : '');
+    return st || 'color:inherit';
+  }
+
+  buildBlocks(list, T) {
+    const S = this.state, focus = S.mode === 'focus', read = S.mode === 'read';
+    const fq = S.findOpen ? S.fq : '';
+    let fi = 0; const hits = [];
+    let needle = null;
+    if (fq) {
+      try { needle = new RegExp((S.fRegex ? fq : fq.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).replace(/^(.*)$/, S.fWord ? '\\b$1\\b' : '$1'), S.fCase ? 'g' : 'gi'); } catch (e) { needle = null; }
+    }
+    const visible = list.filter((b) => !b.cond || S[b.cond]);
+    const blocks = visible.map((b) => {
+      const isAct = !read && S.active === b.id;
+      const isText = !!b.segs;
+      const sel = S.sel === b.id;
+      const pick = () => {
+        this.setState({ active: b.id, node: null, sel: null, slash: b.id === 'slash' && S.slash, viewOpen: false, ctx: null, fmtLinkOpen: false, cell: S.active === b.id ? S.cell : null });
+        if (S.mode === 'type') this.scrollToBlock(b.id, 'center');
+      };
+      const showMark = (s) => {
+        if (read) return false;
+        if (S.reveal === 'always' || sel) return true;
+        if (!isAct) return false;
+        return S.reveal === 'block' || s[2] === 'block' || s[2] === S.node;
+      };
+      const segs = [];
+      const pushText = b.isSlash ? [['t', '/' + S.slashQ]] : (b.segs || []);
+      pushText.forEach((s, i) => {
+        if (s[0] === 'm' && !showMark(s)) return;
+        const selHere = sel && s[3] === true;
+        const pickSeg = s[2] && s[2] !== 'block' ? (e) => { e.stopPropagation(); this.setState({ active: b.id, node: s[2], sel: null, viewOpen: false, fmtLinkOpen: false }); } : this.noRef;
+        const ref = s[0] === 'm' ? this.enterMark : this.noRef;
+        const push = (text, hit, cur) => segs.push({ text, ref, pick: pickSeg, style: this.segStyle(s[0], T, hit, cur, selHere, S.fmt) + (b.placeholder ? 'color:' + T.faint + ';' : '') });
+        if (needle && s[0] !== 'm') {
+          let last = 0, mt; needle.lastIndex = 0;
+          while ((mt = needle.exec(s[1])) && mt[0]) {
+            if (mt.index > last) push(s[1].slice(last, mt.index));
+            hits.push(b.id);
+            push(mt[0], true, fi === S.fIdx); fi++;
+            last = mt.index + mt[0].length;
+          }
+          if (last < s[1].length) push(s[1].slice(last));
+        } else push(s[1]);
+        const next = pushText[i + 1];
+        if (isAct && S.node && s[2] === S.node && !(next && next[2] === S.node)) segs.push({ text: '', ref: this.caret, pick: this.noRef, style: this.segStyle('caret', T) });
+      });
+      if (isAct && isText && !S.node && !sel) segs.push({ text: '', ref: this.caret, pick: this.noRef, style: this.segStyle('caret', T) });
+
+      const serifH = "font-family:" + T.display + ";";
+      const typo = {
+        h1: serifH + 'font-size:2.6em;font-weight:500;letter-spacing:-0.025em;line-height:1.14;', h2: serifH + 'font-size:1.62em;font-weight:500;letter-spacing:-0.012em;line-height:1.3;', h3: 'font-size:1.12em;font-weight:650;line-height:1.45;',
+        lead: 'font-size:1.14em;line-height:1.7;color:' + T.text + ';', fn: 'font-size:.86em;color:' + T.muted + ';', quote: serifH + 'font-size:1.2em;line-height:1.55;font-style:italic;color:' + T.text + ';'
+      }[b.kind] || '';
+      const margin = { fm: '0 0 18px', h1: '0 0 .5em', lead: '0 0 1.2em', h2: '1.9em 0 .5em', h3: '1.5em 0 .4em', p: '0 0 .85em', quote: '1.5em 0', ul: '0 0 .2em', task: '0 0 .3em', code: '1.1em 0', table: '1.7em 0 1.1em', math: '1.1em 0', mermaid: '1.1em 0', img: '1.5em 0', hr: '1.8em 0', fn: '0' }[b.kind] || '0 0 .85em';
+      const done = !!S.checks[b.id];
+      const gutterMap = { h1: 'H1', h2: 'H2', h3: 'H3', p: '¶', lead: '¶', quote: '>', ul: '-', task: '[ ]', code: '```', table: '|', math: '$$', mermaid: '◇', img: '![]', fm: 'YAML', hr: '---', fn: '[^]' };
+      const out = {
+        domId: 'blk-' + b.id, pick, isText, segs, src: b.src, tags: b.tags,
+        opacity: focus && !isAct ? 0.28 : 1, wrap: 'margin:' + margin + ';', inner: '',
+        textStyle: typo + (done && b.kind === 'task' ? 'color:' + T.muted + ';text-decoration:line-through;text-decoration-color:' + T.faint + ';' : ''),
+        isQuote: b.kind === 'quote', isBullet: b.kind === 'ul', isTask: b.kind === 'task', isFm: b.kind === 'fm', isCode: b.kind === 'code', isTable: b.kind === 'table', isMath: b.kind === 'math', isMermaid: b.kind === 'mermaid', isImg: b.kind === 'img', isHr: b.kind === 'hr',
+        showSrc: isAct, hideSrc: !isAct, frame: isAct ? T.border : 'transparent',
+        showGutter: isAct && S.mode !== 'read', gutter: gutterMap[b.kind] || '', gutterTop: b.kind === 'h1' ? '.5em' : '.3em',
+        showFormat: sel, showLink: isAct && b.id === 'p1' && S.node === 'n3', showFn: isAct && b.id === 'p1' && S.node === 'n4', showSlash: !!b.isSlash && S.slash
+      };
+      if (b.kind === 'task') {
+        out.checked = done; out.taskBg = done ? T.accent : 'transparent'; out.taskBorder = done ? T.accent : T.faint;
+        out.toggle = (e) => {
+          e.stopPropagation();
+          this.play(e.currentTarget, { transform: ['scale(.8)', 'none'] }, 'snappy');
+          this.setState({ checks: Object.assign({}, this.state.checks, { [b.id]: !done }) }); this.touch();
+        };
+      }
+      if (b.kind === 'code') {
+        out.lines = b.lines.map((l, n) => ({ n: n + 1, toks: l.map((k) => ({ text: k[1], color: T.syn[k[0]] })) }));
+      }
+      if (b.kind === 'table') {
+        const last = b.table.length - 1;
+        out.rows = b.table.map((r, ri) => ({ weight: ri === 0 ? 600 : 400, color: ri === 0 ? T.muted : T.text, line: ri === last ? '0 none' : '1px solid ' + T.border, cells: r.map((text, ci) => {
+          const on = isAct && S.cell === ri + ':' + ci;
+          return { text, pick: () => this.setState({ cell: ri + ':' + ci }), bg: ri === 0 ? T.surface : 'transparent', ring: on ? 'inset 0 0 0 2px ' + T.accent + ',inset 0 0 12px ' + T.accentSoft : 'none' };
+        }) }));
+      }
+      if (b.kind === 'mermaid') out.nodes = b.nodes.map((label, i) => ({ label, arrow: i < b.nodes.length - 1 }));
+      return out;
+    });
+    return { blocks, count: fi, hits, visible };
+  }
+
+  tokLine(line, T) {
+    const heading = /^#{1,6} /.test(line);
+    if (heading) return [{ text: line, style: 'color:' + T.accent + ';font-weight:600' }];
+    if (/^(```|---|\$\$|\|)/.test(line)) return [{ text: line, style: 'color:' + T.muted }];
+    const parts = line.split(/(\*\*.+?\*\*|`[^`]+`|==.+?==|\[[^\]]+\]\([^)]+\)|\*[^*]+\*|^> |^- \[[ x]\] |^- )/);
+    const out = parts.filter((p) => p).map((p) => {
+      let style = 'color:' + T.text;
+      if (/^\*\*/.test(p)) style += ';font-weight:650';
+      else if (/^`/.test(p)) style = 'color:' + T.syn.s;
+      else if (/^==/.test(p)) style += ';background:' + T.mark;
+      else if (/^\[/.test(p)) style = 'color:' + T.accent;
+      else if (/^\*/.test(p)) style += ';font-style:italic';
+      else if (/^(> |- )/.test(p)) style = 'color:' + T.syn.k;
+      return { text: p, style };
+    });
+    return out.length ? out : [{ text: '', style: 'color:inherit' }];
+  }
+
+  renderVals() {
+    const S = this.state, T = this.tokens(), docs = this.docData();
+    const doc = docs[S.activeTab] || docs.readme;
+    const motion = {}; Object.keys(this.ease).forEach((k) => { motion[k] = this.reduced() ? '0ms' : this.ease[k].d + 'ms ' + this.ease[k].e; });
+    const isWelcome = S.screen === 'welcome', isDoc = !isWelcome, isRead = isDoc && S.mode === 'read', isFocus = isDoc && S.mode === 'focus', isSource = isDoc && S.mode === 'source';
+    const loading = isDoc && S.loadingDoc;
+    const built = this.buildBlocks(doc.blocks, T);
+    const allText = doc.blocks.map((b) => this.src(b)).join('\n');
+    const wc = allText.replace(/\s+/g, '').length;
+    const baseName = { readme: 'README.md', notes: '笔记.md', untitled: '未命名.md', road: '路线图.md', meet: '会议记录.md', cover: 'workspace.png', docs: 'docs', assets: 'assets' };
+    const nameOf = (id) => S.names[id] || baseName[id];
+
+    const tabs = S.tabs.map((id) => {
+      const on = id === S.activeTab && !isWelcome, dirty = !!S.dirty[id], hov = S.hoverTab === id;
+      return {
+        fk: 'tab-' + id, on, name: nameOf(id), color: on ? T.text : T.muted, weight: on ? 500 : 400, opacity: S.dragTab === id ? .45 : 1,
+        glyph: dirty && !hov ? '' : (hov || on ? '×' : ''), dot: dirty && !hov ? 'display:block;width:7px;height:7px;border-radius:50%;background:' + T.accent + ';' : 'color:inherit;',
+        pick: () => this.openTab(id), close: (e) => { e.stopPropagation(); this.closeTab(id); },
+        enter: () => this.setState({ hoverTab: id }), leave: () => this.setState({ hoverTab: null }),
+        dragStart: (e) => { e.dataTransfer.effectAllowed = 'move'; this.setState({ dragTab: id }); },
+        dragEnd: () => this.setState({ dragTab: null }),
+        dragOver: (e) => {
+          e.preventDefault();
+          const from = this.state.dragTab;
+          if (!from || from === id) return;
+          const list = this.state.tabs.filter((x) => x !== from);
+          list.splice(list.indexOf(id) + (this.state.tabs.indexOf(from) < this.state.tabs.indexOf(id) ? 1 : 0), 0, from);
+          this.captureFlip(); this.setState({ tabs: list });
+        }
+      };
+    });
+
+    const ICON = { live: 'M3 13V3h10M6 10l2-4 2 4M6.8 8.8h2.4', source: 'M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5', read: 'M2.5 3.5c2-.7 4-.5 5.5 1 1.5-1.5 3.5-1.7 5.5-1v9c-2-.7-4-.5-5.5 1-1.5-1.5-3.5-1.7-5.5-1zM8 4.5v9', focus: 'M2.5 5.5v-3h3M10.5 2.5h3v3M13.5 10.5v3h-3M5.5 13.5h-3v-3', type: 'M2 8h12M5 4.5h6M5 11.5h6' };
+    const modeNames = { live: '实时', source: '源码', read: '阅读', focus: '专注', type: '打字机' };
+    const modeItems = [['live', '实时编辑', '光标处显示标记', ''], ['source', '源码模式', '直接编辑 Markdown 字节', 'Ctrl /'], ['read', '阅读模式', '隐藏界面，只留文字', ''], ['focus', '专注模式', '淡化当前段落以外的内容', 'F8'], ['type', '打字机模式', '光标行保持在视口中部', 'F9']].map((m) => ({
+      label: m[1], desc: m[2], key: m[3], icon: ICON[m[0]], on: S.mode === m[0],
+      pick: () => this.setState({ mode: m[0], viewOpen: false, active: m[0] === 'read' ? null : (S.active || 'p1') })
+    }));
+
+    const sideTabs = [['files', '文件'], ['outline', '大纲'], ['search', '搜索']].map((x) => {
+      const on = S.sideTab === x[0];
+      return { label: x[1], on, color: on ? T.text : T.muted, weight: on ? 500 : 400, pick: () => this.setState({ sideTab: x[0] }) };
+    });
+
+    const P = S.parent;
+    const kids = (dir) => ['notes', 'road', 'meet', 'cover', 'readme'].filter((id) => P[id] === dir);
+    const treeData = [];
+    ['docs', 'assets'].forEach((dir) => { treeData.push({ id: dir, dir: true, d: 0 }); if (S.treeOpen[dir]) kids(dir).forEach((id) => treeData.push({ id, d: 1 })); });
+    kids(null).forEach((id) => treeData.push({ id, d: 0 }));
+    const tree = treeData.filter((n) => n.id !== 'cover' || S.showNonMd).map((n) => {
+      const on = !n.dir && n.id === S.activeTab, renaming = !!(S.renaming === n.id);
+      const dropOn = S.dropDir === n.id;
+      return {
+        fk: 'tree-' + n.id, name: nameOf(n.id), isDir: !!n.dir, pad: 6 + n.d * 16, rot: n.dir && S.treeOpen[n.id] ? 90 : 0,
+        bg: dropOn ? T.accentSoft : on ? T.surfaceHover : 'transparent', color: T.text, weight: on ? 500 : 400, opacity: S.dragFile === n.id ? .5 : 1,
+        lift: S.dragFile === n.id ? 'translateY(-2px) scale(1.02)' : 'none', ring: dropOn ? 'inset 0 0 0 1px ' + T.accent : 'none',
+        dirty: !n.dir && !!S.dirty[n.id], showCtx: S.ctx === n.id, renaming, notRenaming: !renaming,
+        pick: () => { if (n.dir) { this.captureFlip(); this.setState({ treeOpen: Object.assign({}, S.treeOpen, { [n.id]: !S.treeOpen[n.id] }), ctx: null }); } else if (docs[n.id]) this.openTab(n.id); else this.flash('原型未包含此文件内容'); },
+        rename: (e) => { e.preventDefault(); if (!n.dir) this.setState({ renaming: n.id, renameVal: nameOf(n.id), ctx: null }); },
+        ctx: (e) => { e.preventDefault(); this._ctxId = n.id; this.setState({ ctx: S.ctx === n.id ? null : n.id }); },
+        dragStart: (e) => { if (n.dir) { e.preventDefault(); return; } e.dataTransfer.effectAllowed = 'move'; this.setState({ dragFile: n.id }); },
+        dragOver: (e) => { if (n.dir && this.state.dragFile) { e.preventDefault(); if (this.state.dropDir !== n.id) this.setState({ dropDir: n.id }); } },
+        dragLeave: () => { if (this.state.dropDir === n.id) this.setState({ dropDir: null }); },
+        drop: (e) => {
+          e.preventDefault();
+          const f = this.state.dragFile; if (!f || !n.dir) return;
+          this.captureFlip();
+          this.setState({ parent: Object.assign({}, this.state.parent, { [f]: n.id }), treeOpen: Object.assign({}, this.state.treeOpen, { [n.id]: true }), dragFile: null, dropDir: null });
+          this.notify({ kind: 'ok', title: '已移动到 ' + n.id + '/', desc: nameOf(f), action: '撤销' });
+        },
+        dragEnd: () => this.setState({ dragFile: null, dropDir: null })
+      };
+    });
+    const closeCtx = (msg) => () => { this.setState({ ctx: null }); this.flash(msg); };
+    const ctxItems = [{ label: '重命名', key: 'F2', color: T.text, pick: () => this.setState({ renaming: this._ctxId, renameVal: nameOf(this._ctxId), ctx: null }) }, { label: '在资源管理器中显示', key: '', color: T.text, pick: closeCtx('原型：在资源管理器中显示') }, { label: '复制路径', key: '', color: T.text, pick: closeCtx('已复制路径') }, { label: '移到回收站', key: 'Del', color: T.danger, pick: () => { this.setState({ ctx: null }); this.notify({ kind: 'ok', title: '已移到回收站', action: '撤销' }); } }];
+    const renameConflict = !!S.renaming && Object.keys(baseName).some((id) => id !== S.renaming && nameOf(id) === S.renameVal.trim());
+    const commitRename = () => {
+      const S2 = this.state; if (!S2.renaming) return;
+      const v = S2.renameVal.trim();
+      this.setState(renameConflict || !v ? { renaming: null } : { names: Object.assign({}, S2.names, { [S2.renaming]: v }), renaming: null });
+    };
+
+    const hBlocks = doc.blocks.filter((b) => /^h[123]$/.test(b.kind));
+    const hIndex = Math.max(0, hBlocks.findIndex((b) => b.id === S.activeH));
+    const hText = (b) => b.segs.filter((s) => s[0] !== 'm').map((s) => s[1]).join('');
+    const outline = hBlocks.map((b, i) => ({
+      text: hText(b), pad: 12 + (Number(b.kind[1]) - 1) * 12, color: i === hIndex ? T.text : T.muted, weight: i === hIndex ? 600 : 400,
+      pick: () => { this.setState({ activeH: b.id }); this.scrollToBlock(b.id); }
+    }));
+    const total = Math.max(1, built.visible.length);
+    const rail = hBlocks.map((b, i) => ({ text: hText(b), top: Math.round(built.visible.indexOf(b) / total * 100), w: i === hIndex ? 16 : (b.kind === 'h1' ? 12 : b.kind === 'h2' ? 9 : 6), color: i === hIndex ? T.accent : T.faint, pick: () => this.scrollToBlock(b.id) }));
+    const railHits = built.hits.map((id) => ({ top: Math.round(built.visible.findIndex((b) => b.id === id) / total * 100) }));
+
+    const searchHits = [];
+    if (S.sq.trim()) {
+      const lq = S.sq.trim().toLowerCase();
+      ['readme', 'notes'].forEach((id) => docs[id].blocks.forEach((b) => {
+        const tx = this.text(b), at = tx.toLowerCase().indexOf(lq);
+        if (at >= 0) searchHits.push({ file: docs[id].title, pre: tx.slice(Math.max(0, at - 10), at), hit: tx.slice(at, at + lq.length), post: tx.slice(at + lq.length, at + lq.length + 24), pick: () => { this.openTab(id); this.setState({ active: b.id }); this._later(() => this.scrollToBlock(b.id), 320); } });
+      }));
+    }
+
+    const srcLines = [];
+    built.visible.forEach((b) => {
+      this.src(b).split('\n').forEach((line) => srcLines.push({ line, blk: b }));
+      srcLines.push({ line: '', blk: b });
+    });
+    const sourceLines = srcLines.map((l, i) => {
+      const cur = l.blk.id === S.active && l.line;
+      return { n: i + 1, toks: this.tokLine(l.line, T), bg: cur ? T.surface : 'transparent', numColor: cur ? T.text : T.faint, pick: () => this.setState({ active: l.blk.id, node: null }) };
+    });
+
+    const dotBase = 'display:inline-block;width:7px;height:7px;border-radius:50%;box-sizing:border-box;';
+    const cap = {
+      editing: ['已编辑', dotBase + 'border:1.5px solid ' + T.muted + ';'], saving: ['保存中', 'display:none;'], justSaved: ['已保存', 'display:none;'],
+      saved: ['已保存', dotBase + 'background:' + T.success + ';'], conflict: ['有冲突，未写入', dotBase + 'background:' + T.warning + ';']
+    }[S.save];
+
+    const pal = S.overlay === 'palette' ? this.palette(T, docs) : { items: [], mode: '文件' };
+    const pIdx = Math.min(S.pIdx, Math.max(0, pal.items.length - 1));
+    const palItems = pal.items.map((p, i) => Object.assign(p, { on: i === pIdx, hover: () => { if (this.state.pIdx !== i) this.setState({ pIdx: i }); } }));
+
+    const slashAll = [
+      ['基础', 'H1', '标题 1', '文档或章节的主标题', '# 标题'], ['基础', 'H2', '标题 2', '章节标题', '## 标题'], ['基础', 'H3', '标题 3', '小节标题', '### 标题'],
+      ['基础', '•', '无序列表', '回车续行，空项回车退出', '- 项目'], ['基础', '1.', '有序列表', '自动延续编号', '1. 项目'], ['基础', '[ ]', '任务列表', '点击复选框只改 1 个字节', '- [ ] 待办'], ['基础', '>', '引用', '渲染为引语样式', '> 引用内容'],
+      ['媒体与结构', '{}', '代码块', '下一步选择语言', '```go\n\n```'], ['媒体与结构', '▦', '表格', '下一步选择尺寸', '| 列 | 列 |\n| --- | --- |'], ['媒体与结构', '▣', '图片', '粘贴或拖入时自动复制到资源目录', '![说明](assets/图片.png)'], ['媒体与结构', '—', '分隔线', '渲染为分节符', '---'], ['媒体与结构', '≡', '目录', '根据标题自动生成', '[TOC]'], ['媒体与结构', 'ⁿ', '脚注', '上标引用，悬停预览定义', '[^1]: 定义'],
+      ['高级', '∑', '数学块', '依赖 WebView 渲染，不可用时显示源码', '$$\nE = mc^2\n$$'], ['高级', '◇', 'Mermaid', '依赖 WebView 渲染，不可用时显示源码', '```mermaid\nflowchart LR\n```']
+    ];
+    const sq = S.slashQ.toLowerCase();
+    const slashF = slashAll.filter((x) => !sq || x[2].toLowerCase().includes(sq) || x[1].toLowerCase().includes(sq));
+    const sIdx = Math.min(S.slashIdx, Math.max(0, slashF.length - 1));
+    const insertSlash = (x) => { this.setState({ slash: false, slashQ: '', active: 'p2', node: null }); this.notify({ kind: 'ok', title: '已插入' + x[2], desc: '原型未写入内容' }); };
+    let shead;
+    const slashItems = slashF.map((x, i) => { const head = x[0] !== shead ? x[0] : ''; shead = x[0]; return { head, glyph: x[1], label: x[2], on: i === sIdx, pick: (e) => { e.stopPropagation(); insertSlash(x); }, hover: () => { if (this.state.slashIdx !== i) this.setState({ slashIdx: i }); } }; });
+    const sp = slashF[sIdx] || ['', '', '无结果', '继续输入或按 Esc', '/'];
+
+    const fm = S.fmt, turns = ['正文', '标题 1', '标题 2', '引用'];
+    const formatItems = [['b', 'B', '加粗', 'Ctrl+B', 'font-weight:700;'], ['i', 'I', '斜体', 'Ctrl+I', 'font-style:italic;font-family:Georgia,serif;'], ['u', 'U', '下划线', 'Ctrl+U', 'text-decoration:underline;'], ['s', 'S', '删除线', 'Ctrl+Shift+X', 'text-decoration:line-through;'], ['c', '<>', '行内代码', 'Ctrl+Shift+`', "font-family:'JetBrains Mono',monospace;font-size:11px;"], ['l', '🔗', '链接', 'Ctrl+K', ''], ['h', 'H', '高亮', 'Ctrl+Shift+H', 'font-weight:600;']].map((f) => ({
+      glyph: f[0] === 'l' ? '⌁' : f[1], name: f[2], key: f[3], style: f[4], on: !!fm[f[0]], bg: fm[f[0]] ? T.accentSoft : 'transparent', color: fm[f[0]] ? T.accent : T.text,
+      pick: (e) => { e.stopPropagation(); if (f[0] === 'l') { this.setState({ fmtLinkOpen: true }); return; } this.setState({ fmt: Object.assign({}, fm, { [f[0]]: !fm[f[0]] }) }); this.touch(); }
+    }));
+
+    const findOpts = [['Aa', '区分大小写', 'fCase'], ['W', '全词匹配', 'fWord'], ['.*', '正则表达式', 'fRegex']].map((o) => ({ glyph: o[0], name: o[1], on: !!S[o[2]], bg: S[o[2]] ? T.accentSoft : 'transparent', color: S[o[2]] ? T.accent : T.muted, pick: () => this.setState({ [o[2]]: !S[o[2]], fIdx: 0 }) }));
+    const stepFind = (d) => () => {
+      const n = built.count; if (!n) return;
+      const next = (S.fIdx + d + n) % n;
+      this.setState({ fIdx: next });
+      this.scrollToBlock(built.hits[next], 'center');
+    };
+
+    const seg = (key, opts) => opts.map((o) => { const on = S[key] === o[0]; return { label: o[1], on, color: on ? T.text : T.muted, pick: () => this.setState({ [key]: o[0] }) }; });
+    const toggle = (on, pick) => ({ on, pick, bg: on ? T.accent : T.surfaceHover, x: on ? 16 : 0 });
+    const range = (key, min, max, step) => ({ min, max, step, value: S[key], on: (e) => this.setState({ [key]: Number(e.target.value) }) });
+    const extRow = (key, label, desc) => ({ label, desc, toggle: toggle(!!S.ext[key], () => this.setState({ ext: Object.assign({}, S.ext, { [key]: !S.ext[key] }) })) });
+    const hues = [['极光青', 182], ['鸢尾紫', 278], ['余烬橙', 48], ['苔藓绿', 140]].map((x) => {
+      const curHue = S.hue ?? (this.props.accentHue ?? 182), on = curHue === x[1];
+      return { name: x[0], on, color: 'oklch(0.62 0.14 ' + x[1] + ')', ring: on ? '0 0 0 2px ' + T.sheetSolid + ',0 0 0 4px oklch(0.62 0.14 ' + x[1] + ')' : 'none', pick: () => this.setState({ hue: x[1] }) };
+    });
+    const ring = (on) => on ? '0 0 0 2px ' + T.accent : '0 0 0 1px ' + T.border;
+    const sysDark = () => { try { return window.matchMedia('(prefers-color-scheme: dark)').matches; } catch (e) { return false; } };
+    const themeCards = [
+      { label: '浅色 · Paper', on: !S.dark && !S.sysTheme, win: '#E8E9EE', sheet: '#FFFFFF', ink: '#15161C', line: 'rgba(20,22,35,.18)', pick: (e) => { this.setState({ sysTheme: false }); if (S.dark) this.switchTheme(false, e); } },
+      { label: '深色 · Midnight Ink', on: S.dark && !S.sysTheme, win: '#090A0F', sheet: '#111218', ink: '#ECEDF2', line: 'rgba(255,255,255,.2)', pick: (e) => { this.setState({ sysTheme: false }); if (!S.dark) this.switchTheme(true, e); } },
+      { label: '跟随系统', on: !!S.sysTheme, win: 'linear-gradient(115deg,#E8E9EE 50%,#090A0F 50%)', sheet: 'linear-gradient(115deg,#FFFFFF 50%,#111218 50%)', ink: '#808290', line: 'rgba(128,130,144,.4)', pick: (e) => { this.setState({ sysTheme: true }); if (sysDark() !== S.dark) this.switchTheme(sysDark(), e); } }
+    ].map((c) => Object.assign(c, { ring: ring(c.on), weight: c.on ? 600 : 400 }));
+    const setMap = {
+      appearance: ['外观', [
+        { label: '强调色', desc: '只用于光标、选中与当前位置', swatches: hues }, { label: '跟随系统强调色', toggle: toggle(S.sysAccent, () => this.setState({ sysAccent: !S.sysAccent })) },
+        { label: '正文字体', seg: [{ label: '无衬线', on: !S.serif, color: !S.serif ? T.text : T.muted, pick: () => this.setState({ serif: false }) }, { label: '衬线', on: S.serif, color: S.serif ? T.text : T.muted, pick: () => this.setState({ serif: true }) }] },
+        { label: '字号', desc: '13–24', range: range('fontSize', 13, 24, 1) }, { label: '行高', desc: 'CJK 默认 1.75', range: range('lineH', 1.4, 2.2, 0.05) }, { label: '内容宽度', desc: '600–960', range: range('contentW', 600, 960, 20) }
+      ]],
+      editor: ['编辑器', [
+        { label: '标记显隐粒度', desc: '光标处如何显示 Markdown 标记', seg: seg('reveal', [['inline', '内联'], ['block', '块'], ['always', '始终显示']]) },
+        { label: '软换行显示', desc: '段落内单个换行的显示方式', seg: seg('softBreak', [['line', '换行'], ['space', '空格']]) }
+      ]],
+      files: ['文件', [
+        { label: '自动保存', desc: '默认开启', toggle: toggle(S.autoSave, () => this.setState({ autoSave: !S.autoSave })) },
+        { label: '文件树显示非 Markdown 文件', toggle: toggle(S.showNonMd, () => this.setState({ showNonMd: !S.showNonMd })) }
+      ]],
+      ext: ['扩展语法', [extRow('math', '数学公式', '依赖系统 WebView，不可用时显示源码'), extRow('mermaid', 'Mermaid', '依赖系统 WebView，不可用时显示源码'), extRow('fm', 'YAML Front Matter', '渲染为文档抬头'), extRow('mark', '==高亮==', ''), extRow('wiki', '[[Wiki 链接]]', '')]],
+      keys: ['快捷键', [['命令面板', 'Ctrl+Shift+P'], ['快速打开', 'Ctrl+P'], ['源码模式', 'Ctrl+/'], ['专注 / 打字机', 'F8 / F9'], ['侧栏', 'Ctrl+Shift+L'], ['查找 / 替换', 'Ctrl+F / Ctrl+H'], ['全局搜索', 'Ctrl+Shift+F'], ['链接', 'Ctrl+K']].map((k) => ({ label: k[0], key: k[1] }))]
+    };
+    const setCats = Object.keys(setMap).map((k) => ({ label: setMap[k][0], on: S.setCat === k, color: S.setCat === k ? T.text : T.muted, weight: S.setCat === k ? 500 : 400, pick: () => this.setState({ setCat: k }) }));
+    const setRows = setMap[S.setCat][1].map((r) => Object.assign({ desc: '', seg: null, range: null, toggle: null, key: '', swatches: null }, r));
+
+    const noteKinds = { ok: ['✓', T.onAccent, T.success], info: ['i', T.muted, T.surfaceHover], warn: ['!', '#15161C', T.warning], run: ['↻', T.accent, T.accentSoft] };
+    const notes = S.notes_.map((n) => {
+      const nk = noteKinds[n.kind] || noteKinds.info;
+      return { id: n.id, fk: 'note-' + n.id, title: n.title, desc: n.desc || '', glyph: nk[0], iconFg: nk[1], iconBg: nk[2], action: n.action || '', hasProgress: n.progress != null && n.kind === 'run', progress: n.progress || 0, close: () => this.dismissNote(n.id), act: () => { this.dismissNote(n.id); if (n.action === '撤销') this.flash('已撤销'); } };
+    });
+
+    const showSide = isDoc && S.side && !isRead && !isFocus;
+    const showChromeInset = isDoc && !isRead && !isFocus;
+    const sideW = showSide ? S.sideWidth : 0;
+
+    return {
+      t: T, m: motion, rootH: this.props.frameH ? this.props.frameH + 'px' : '100vh',
+      hoverOn: this.hoverOn || (this.hoverOn = (e) => this.tint(e, true)), hoverOff: this.hoverOff || (this.hoverOff = (e) => this.tint(e, false)),
+      pressOn: this.pressOn || (this.pressOn = (e) => this.press(e, true)), pressOff: this.pressOff || (this.pressOff = (e) => this.press(e, false)),
+      enterFade: this.enterFade, enterRise: this.enterRise, enterPop: this.enterPop, enterPopTop: this.enterPopTop, enterPopUp: this.enterPopUp, enterCollapse: this.enterCollapse, enterStagger: this.enterStagger, enterToast: this.enterToast, pulse: this.pulse, drawCheck: this.drawCheck, sweep: this.sweep, glowSweep: this.glowSweep, aurora1: this.aurora1, aurora2: this.aurora2, aurora3: this.aurora3, flipPalette: this.flipPalette, flipLight: this.flipLight, focusRef: this.focusRef,
+      isWelcome, isDoc, isRead, isSource: isSource && !loading, isRich: isDoc && !isSource && !loading, isLoadingDoc: loading,
+      headMargin: isRead ? -46 : 0, headOpacity: isRead ? 0 : isFocus ? .55 : 1, omniOpacity: S.overlay === 'palette' ? 0 : 1, themeRot: S.dark ? 180 : 0, viewRot: S.viewOpen ? 180 : 0,
+      tabs, modeItems, modeLabel: modeNames[S.mode], viewOpen: S.viewOpen && !isRead, viewBtnBg: S.viewOpen ? T.surfaceHover : 'transparent',
+      sideW, sideInner: S.sideWidth, sideOpacity: showSide ? 1 : 0, sideTrans: S.resizing || this.reduced() ? 'opacity 120ms' : 'flex-basis ' + motion.smooth + ', width ' + motion.smooth + ', opacity 200ms ease-out',
+      resizeDisplay: showSide ? 'flex' : 'none', resizeColor: S.resizing ? T.accent : 'transparent', startResize: this.startResize || (this.startResize = (e) => this.beginResize(e)),
+      sheetMargin: showChromeInset ? (showSide ? '0 8px 8px 0' : '0 8px 8px 8px') : '0', sheetRadius: showChromeInset ? 14 : 0, sheetShadow: showChromeInset ? T.sheetShadow : 'none',
+      sideTabs, sideFiles: S.sideTab === 'files', sideOutline: S.sideTab === 'outline', sideSearch: S.sideTab === 'search',
+      tree, ctxItems, outline, outlineTop: hIndex * 28 + 5, sq: S.sq, searchHits, noSearchHits: !!S.sq.trim() && !searchHits.length,
+      renameVal: S.renameVal, renameConflict, renameBorder: renameConflict ? T.danger : T.accent, onRename: (e) => this.setState({ renameVal: e.target.value }), commitRename, onRenameKey: (e) => { if (e.key === 'Enter') commitRename(); else if (e.key === 'Escape') this.setState({ renaming: null }); },
+      blocks: built.blocks, sourceLines, banner: S.banner && isDoc, isEmpty: isDoc && !!doc.empty && !loading,
+      emptyHints: [{ key: '/', label: '插入内容', pick: () => this.run('slash') }, { key: 'Ctrl P', label: '打开文件', pick: () => this.setState({ overlay: 'palette', pq: '' }) }, { key: '>', label: '执行命令', pick: () => this.setState({ overlay: 'palette', pq: '>' }) }],
+      skeleton: [{ h: 40, w: 58, mb: 14 }, { h: 14, w: 96, mb: 0 }, { h: 14, w: 88, mb: 0 }, { h: 14, w: 71, mb: 22 }, { h: 22, w: 34, mb: 6 }, { h: 14, w: 92, mb: 0 }, { h: 14, w: 64, mb: 0 }],
+      slashItems, noSlash: !slashF.length, slashPrev: { label: sp[2], desc: sp[3], src: sp[4] }, slashQ: S.slashQ,
+      onSlashQ: (e) => this.setState({ slashQ: e.target.value, slashIdx: 0 }),
+      onSlashKey: (e) => {
+        const n = slashF.length;
+        if (e.key === 'ArrowDown' && n) { e.preventDefault(); this.setState({ slashIdx: (sIdx + 1) % n }); }
+        else if (e.key === 'ArrowUp' && n) { e.preventDefault(); this.setState({ slashIdx: (sIdx - 1 + n) % n }); }
+        else if (e.key === 'Enter' && n) { e.preventDefault(); insertSlash(slashF[sIdx]); }
+        else if (e.key === 'Escape') this.setState({ slash: false, slashQ: '' });
+      },
+      formatItems, fmtButtons: !S.fmtLinkOpen, fmtLink: S.fmtLinkOpen, fmtW: S.fmtLinkOpen ? 320 : 322, turnLabel: turns[S.turn],
+      cycleTurn: (e) => { e.stopPropagation(); this.setState({ turn: (S.turn + 1) % turns.length }); },
+      applyLink: (e) => { e.stopPropagation(); this.setState({ fmtLinkOpen: false, fmt: Object.assign({}, fm, { l: true }) }); this.touch(); },
+      onLinkKey: (e) => { if (e.key === 'Enter') { this.setState({ fmtLinkOpen: false, fmt: Object.assign({}, fm, { l: true }) }); this.touch(); } else if (e.key === 'Escape') this.setState({ fmtLinkOpen: false }); },
+      contentW: S.contentW, articleW: isRead ? Math.min(S.contentW, 680) : S.contentW, fontSize: isRead ? S.fontSize + 1 : S.fontSize, lineH: isRead ? Math.max(S.lineH, 1.9) : S.lineH,
+      bodyFont: S.serif || isRead ? T.display : 'inherit',
+      scrollPct: S.scrollPct, scrollFrac: S.scrollPct / 100, edge: S.edge, docTitle: doc.heading, currentHeading: doc.title + '  ›  ' + (hBlocks[hIndex] ? hText(hBlocks[hIndex]) : ''),
+      showTitleBar: isDoc && !isRead && !S.banner && !isFocus && !loading,
+      showFocusVeil: isFocus, showTypeBand: isDoc && S.mode === 'type', showRail: isDoc && !isSource && !loading && !isFocus && hBlocks.length > 1, rail, railHits, railThumb: Math.round(S.scrollPct * .86),
+      renderPending: !S.rendered, renderDone: S.rendered,
+      recents: [{ name: 'README.md', path: 'aurink-notes' }, { name: '笔记.md', path: 'aurink-notes/docs' }, { name: '路线图.md', path: 'aurink-notes/docs' }, { name: 'aurink-notes', path: '文件夹' }],
+      showCapsule: isDoc && !isRead, capLabel: cap[0], capDot: cap[1], capCheck: S.save === 'justSaved', capSaving: S.save === 'saving',
+      capExtra: S.capOpen ? 150 : 0, capExtraOp: S.capOpen ? 1 : 0, wordCount: wc.toLocaleString('en-US'), readMins: Math.max(1, Math.round(wc / 400)), caretLine: Math.max(1, doc.blocks.findIndex((b) => b.id === S.active) + 1),
+      notes,
+      paletteOpen: S.overlay === 'palette', pq: S.pq, paletteItems: palItems, noPalette: !palItems.length, palMode: pal.mode, palCount: palItems.length,
+      settingsOpen: S.overlay === 'settings', setCats, setRows, setTitle: setMap[S.setCat][0], setIsAppearance: S.setCat === 'appearance', themeCards,
+      findOpen: S.findOpen && isDoc && !isSource, findTop: S.banner ? 66 : 14, fq: S.fq, findOpts, replaceOpen: S.replaceOpen, replaceRot: S.replaceOpen ? 90 : 0,
+      findCount: S.fq ? (built.count ? (Math.min(S.fIdx, built.count - 1) + 1) + ' / ' + built.count : '无结果') : '',
+      findPrev: stepFind(-1), findNext: stepFind(1),
+      lightOpen: S.light, lightSrcOpacity: S.light ? 0 : 1, zoomScale: S.zoom, zoomPct: Math.round(S.zoom * 100),
+      openLight: (e) => { e.stopPropagation(); this.setState({ light: true, zoom: 1 }); },
+      closeLight: (e) => {
+        if (e) e.stopPropagation();
+        const el = document.querySelector('[data-overlay-panel]'), src = document.querySelector('[data-figure]');
+        const finish = () => this.setState({ light: false, zoom: 1 });
+        if (!el || !src || !src.firstElementChild) return finish();
+        const s = src.firstElementChild.getBoundingClientRect(), d = el.getBoundingClientRect();
+        const a = this.play(el, { transform: ['none', 'translate(' + ((s.left + s.width / 2) - (d.left + d.width / 2)) + 'px,' + ((s.top + s.height / 2) - (d.top + d.height / 2)) + 'px) scale(' + (s.width / d.width) + ',' + (s.height / d.height) + ')'] }, 'smooth');
+        if (a) { a.effect.updateTiming({ fill: 'forwards' }); a.onfinish = finish; } else finish();
+      },
+      zoomIn: () => this.setState({ zoom: Math.min(1.6, +(S.zoom + .2).toFixed(1)) }), zoomOut: () => this.setState({ zoom: Math.max(.6, +(S.zoom - .2).toFixed(1)) }), zoomFit: () => this.setState({ zoom: 1 }),
+      toggleSide: () => this.setState({ side: !S.side }), newTab: () => this.openTab('untitled'), openReadme: () => { this.setState({ tabs: S.tabs.length ? S.tabs : ['readme', 'notes'], activeTab: 'readme', screen: 'doc', active: 'p1', node: 'n1' }); },
+      openPalette: () => this.setState({ overlay: 'palette', pq: '', pIdx: 0, viewOpen: false }), openSettings: () => this.setState({ overlay: 'settings', viewOpen: false }),
+      toggleView: () => this.setState({ viewOpen: !S.viewOpen }), toggleTheme: (e) => this.switchTheme(!S.dark, e), exitRead: () => this.setState({ mode: 'live', active: 'p1' }),
+      closeOverlay: () => { if (S.overlay === 'palette') this.dismissPalette(); else this.setState({ overlay: null }); }, stop: (e) => e.stopPropagation(),
+      onSq: (e) => this.setState({ sq: e.target.value }), onFq: (e) => this.setState({ fq: e.target.value, fIdx: 0 }),
+      onPq: (e) => this.setState({ pq: e.target.value, pIdx: 0 }),
+      onPaletteKey: (e) => {
+        const n = palItems.length;
+        if (e.key === 'ArrowDown' && n) { e.preventDefault(); this.setState({ pIdx: (pIdx + 1) % n }); }
+        else if (e.key === 'ArrowUp' && n) { e.preventDefault(); this.setState({ pIdx: (pIdx - 1 + n) % n }); }
+        else if (e.key === 'Enter' && n) { e.preventDefault(); palItems[pIdx].run(); }
+        else if (e.key === 'Escape') this.dismissPalette();
+      },
+      onFindKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); stepFind(e.shiftKey ? -1 : 1)(); } else if (e.key === 'Escape') this.setState({ findOpen: false }); },
+      toggleReplace: () => this.setState({ replaceOpen: !S.replaceOpen }), closeFind: () => this.setState({ findOpen: false }),
+      keepMine: () => { this.setState({ banner: false }); this.touch(); this.notify({ kind: 'ok', title: '已保留你的版本', desc: '正在写入磁盘' }); },
+      loadDisk: () => { this.setState({ banner: false, save: 'saved' }); this.notify({ kind: 'ok', title: '已载入磁盘版本', action: '撤销' }); },
+      capIn: () => this.setState({ capOpen: true }), capOut: () => this.setState({ capOpen: false }),
+      copyLabel: S.copied ? '✓ 已复制' : '复制', copyBg: S.copied ? T.accentSoft : T.surface, copyColor: S.copied ? T.accent : T.text,
+      copyCode: (e) => { e.stopPropagation(); this.setState({ copied: true }); this._later(() => this.setState({ copied: false }), 1500); },
+      noopToast: (e) => { e.stopPropagation(); this.flash('原型未执行实际修改'); },
+      addRow: (e) => { e.stopPropagation(); this.setState({ xRows: S.xRows + 1 }); this.touch(); }, addCol: (e) => { e.stopPropagation(); this.setState({ xCols: S.xCols + 1 }); this.touch(); },
+      onScroll: (e) => {
+        const el = e.currentTarget, top = el.scrollTop, max = el.scrollHeight - el.clientHeight;
+        let cur = hBlocks[0] && hBlocks[0].id;
+        hBlocks.forEach((b) => { const n = document.getElementById('blk-' + b.id); if (n && n.offsetTop - 120 <= top) cur = b.id; });
+        const pct = max > 0 ? Math.round(top / max * 100) : 0, edge = Math.round(Math.max(0, Math.min(1, (top - 90) / 60)) * 10) / 10;
+        if (pct !== this.state.scrollPct || cur !== this.state.activeH || edge !== this.state.edge) this.setState({ scrollPct: pct, activeH: cur, edge });
+      }
+    };
+  }
+
+  tint(e, on) {
+    const el = e.target.closest && e.target.closest('button,[data-h]');
+    if (!el || el.disabled || el.hasAttribute('data-noh')) return;
+    if (on) { if (el.__h) return; el.__h = 1; el.style.backgroundImage = 'linear-gradient(' + this.tokens().hoverTint + ',' + this.tokens().hoverTint + ')'; }
+    else if (!e.relatedTarget || !el.contains(e.relatedTarget)) { el.__h = 0; el.style.backgroundImage = ''; }
+  }
+
+  press(e, down) {
+    const el = e.target.closest && e.target.closest('button');
+    if (!el || el.disabled || !el.animate || this.reduced()) return;
+    if (down) { this._pressEl = el; el.__p = el.animate({ transform: ['none', 'scale(.965)'] }, { duration: 90, easing: 'ease-out', fill: 'forwards' }); }
+    else if (this._pressEl) { const p = this._pressEl; this._pressEl = null; if (p.__p) p.__p.cancel(); this.play(p, { transform: ['scale(.965)', 'none'] }, 'snappy'); }
+  }
+
+  beginResize(e) {
+    e.preventDefault();
+    const startX = e.clientX, startW = this.state.sideWidth;
+    this.setState({ resizing: true });
+    const mv = (ev) => this.setState({ sideWidth: Math.max(160, Math.min(420, startW + ev.clientX - startX)) });
+    const up = () => { document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); this.stopResize = null; this.setState({ resizing: false }); };
+    document.addEventListener('mousemove', mv); document.addEventListener('mouseup', up);
+    this.stopResize = up;
+  }
+}
+</script>
+</body>
+</html>

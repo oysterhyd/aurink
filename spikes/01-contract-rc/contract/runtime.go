@@ -16,15 +16,26 @@ const (
 	NoticeError
 )
 
-// Notice 是服务请求界面显示的一条通知（Toast）。
+// Notice 是服务请求界面显示的一条通知。
 type Notice struct {
 	Level   NoticeLevel
-	Message string // 已本地化的文本
+	Message string // 已本地化的标题
+	Detail  string // 可选的已本地化说明
 	Action  string // 可选按钮文本
 	Run     func() // 按钮动作（主线程）
+	// Progress 为 nil 时不显示进度条，否则为 0–1。
+	Progress *float32
+	// Sticky 为 true 时不自动消失。
+	Sticky bool
+}
+
+// NoticeHandle 指向一条已显示的通知。主线程调用。
+type NoticeHandle interface {
+	Update(n Notice)
+	Dismiss()
 }
 
 // Notifier 显示通知（views/shell 实现）。主线程调用。
 type Notifier interface {
-	Notify(n Notice)
+	Notify(n Notice) NoticeHandle
 }

@@ -52,6 +52,7 @@ const (
 	CmdBlockToggleTask  CommandID = "block.toggleTask"
 	CmdBlockCode        CommandID = "block.code" // EditCommand.Text = 语言
 	CmdBlockMath        CommandID = "block.math"
+	CmdBlockMermaid     CommandID = "block.mermaid"
 	CmdBlockHR          CommandID = "block.hr"
 	CmdBlockTOC         CommandID = "block.toc"
 	CmdBlockIndent      CommandID = "block.indent"
@@ -80,6 +81,7 @@ const (
 	CmdViewFiles         CommandID = "view.files"
 	CmdViewOutline       CommandID = "view.outline"
 	CmdViewSearch        CommandID = "view.search"
+	CmdViewLive          CommandID = "view.live"
 	CmdViewSource        CommandID = "view.source"
 	CmdViewRead          CommandID = "view.read"
 	CmdViewFocus         CommandID = "view.focus"

@@ -35,7 +35,9 @@ type Controller interface {
 
 	Mode() Mode
 	SetMode(m Mode)
+	FocusMode() bool
 	SetFocusMode(on bool)
+	Typewriter() bool
 	SetTypewriter(on bool)
 
 	// RevealOffset 滚动使源码偏移可见并把光标放在那里（大纲跳转、搜索结果）。
@@ -48,6 +50,10 @@ type Controller interface {
 	VisibleHeading() (contract.BlockID, bool)
 	// ScrollFraction 返回阅读进度 0–1。
 	ScrollFraction() float32
+	// ScrollOffset 返回滚动偏移（DIP），用于滚动联动标题。
+	ScrollOffset() float32
+	// CaretBlock 返回光标所在块的序号（从 1 开始）与块总数，用于状态胶囊。
+	CaretBlock() (index, total int)
 	// SelectionRect 返回主选区（或光标）在窗口坐标中的包围盒，用于浮层定位。
 	SelectionRect() (Rect, bool)
 

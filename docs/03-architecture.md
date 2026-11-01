@@ -16,10 +16,10 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 │  shell     窗口外壳/侧栏/标签   │  projection 显示投影（纯函数）                │
 │  palette   命令面板/快速打开     │  document   文档模型/事务/历史               │
 │  panels    设置/导出/欢迎       │  editing    编辑意图/命令/输入规则            │
-│  kit       设计系统组件         │  fsstore    文件读写（原子、编码、换行）       │
+│  kit       设计系统组件/滑动药丸 │  fsstore    文件读写（原子、编码、换行）       │
 │  theme     令牌                │  docsession 打开文档会话/自动保存/恢复/冲突     │
 │  motion    动效令牌             │  workspace  工作区/文件树/监听/资源导入        │
-│  effects   Glass/Shader 包装    │  search     查找/全文搜索/模糊匹配            │
+│  effects   材质/极光/低功耗切换 │  search     查找/全文搜索/模糊匹配            │
 │                               │  export     HTML/PDF 导出编排                  │
 │                               │  render     数学/Mermaid 渲染服务              │
 │                               │  settings   设置存储                         │
@@ -178,15 +178,15 @@ EditorView(c, ctrl)                       // 外层：滚动容器 + 编辑表�
           .HandleInput(onInput)            // 键盘/指针/滚动 → Intent
           .Draw(paint)                     // 只绘制可见块：文本、光标、选区、装饰
      └─ 可见块的交互子元素（Absolute 定位）：代码块复制按钮/语言标签、表格手柄、
-        图片悬停控件、数学预览卡片、复选框命中区
- └─ Overlay：斜杠菜单、格式条、链接弹层、查找高亮浮层
+        图片悬停控件、数学源码与预览面板、复选框命中区
+ └─ Overlay：斜杠菜单、格式条、链接与脚注弹层、图片灯箱、活动块页边标签、结构导轨、查找高亮浮层
 ```
 
 ### 6.2 每帧流水线
 1. 读取 `DocumentModel.Version()`，若变化则处理积压的 DocEvent（作废脏块缓存）。
 2. 由滚动偏移 + 视口高度，经高度索引（Fenwick 树）求可见叶子块区间 `[first, last]`，上下各多取 1 屏作为预排区。
 3. 对每个可见块：取投影（缓存键 `BlockID + 块修订 + Reveal 签名`）→ 样式解析（主题令牌 → `ui.Span`）→ 排版（缓存键 `投影修订 + 宽度 + 主题修订`）→ 回写实测高度到 Fenwick 树。
-4. 绘制：块背景/装饰（引用竖条、列表符号、代码块底、表格网格）→ `p.TextLayout` → 内联对象（图片/公式 SVG）→ 选区矩形 → 光标（可选平滑移动）。
+4. 绘制：块背景/装饰（悬挂引号、列表符号、代码块底、表格容器）→ `p.TextLayout` → 内联对象（图片/公式 SVG）→ 选区矩形 → 光标（可选平滑移动）。
 5. 滚动锚定：以"视口顶部块 + 块内偏移"为锚；上方块实测高度变化时补偿滚动偏移，避免跳动。
 
 ### 6.3 输入映射
@@ -210,7 +210,7 @@ EditorView(c, ctrl)                       // 外层：滚动容器 + 编辑表�
 - 跨块选区期间：报告主光标所在块，IME 输入先删除选区（一个事务）再组字。
 
 ### 6.5 块组件注册
-`BlockWidget` 注册表（键：块种类 / 代码语言），每个组件提供：测量高度、绘制、交互子元素、激活/未激活两种形态。内置：代码块、表格、图片段落、数学块、Mermaid、Front Matter 卡片、TOC、分隔线、脚注定义、HTML 块。新增语法 = 解析扩展 + 投影规则 + 组件注册，三处均为注册表，不改引擎核心。
+`BlockWidget` 注册表（键：块种类 / 代码语言），每个组件提供：测量高度、绘制、交互子元素、激活/未激活两种形态。内置：代码块、表格、图片段落、数学块、Mermaid、Front Matter 编辑式页眉、TOC、分隔线、脚注定义、HTML 块。新增语法 = 解析扩展 + 投影规则 + 组件注册，三处均为注册表，不改引擎核心。
 
 ### 6.6 视图层内部契约 `views/editorapi`
 供 shell/palette 等其他前端模块调用编辑器（由 FE-1 实现、随契约冻结）：
@@ -224,10 +224,18 @@ type EditorController interface {
     VisibleHeading() (contract.BlockID, bool)       // 大纲 scroll spy
     SelectionAnchorRect() (x, y, w, h float32, ok bool) // 浮层定位
     Mode() EditorMode; SetMode(EditorMode)          // Live / Source / Read
-    SetFocusMode(bool); SetTypewriter(bool)
-    ScrollFraction() float32                        // 阅读进度条
+    FocusMode() bool; SetFocusMode(bool)            // 视图菜单显示当前状态
+    Typewriter() bool; SetTypewriter(bool)
+    ScrollFraction() float32                        // 胶囊进度环、阅读进度条
+    ScrollOffset() float32                          // 滚动联动标题
+    CaretBlock() (index, total int)                 // 胶囊「第 N 块」
 }
 ```
+
+以上为示意，权威定义见 `editorapi.go`。
+
+### 6.7 视觉职责划分
+FE-1 负责编辑区内的一切（块样式、页边标签、结构导轨、斜杠菜单、格式条、弹层、灯箱、模式下的正文变化）；FE-2 负责编辑区外的一切（窗口材质、标题栏、侧栏、胶囊、横幅、通知、命令面板、查找栏、设置）。FE-1 的浮层一律使用 `views/kit` 与 `views/effects`，不自行实现玻璃、选中药丸或动效曲线。
 
 ## 7. 应用外壳与状态管理（FE-2 + INT）
 
@@ -238,13 +246,16 @@ type AppState struct {
     Workspace  *WorkspaceUIState   // 根、展开集合、选中、重命名中
     Tabs       *TabsState          // 有序 DocID、活动标签、MRU
     Editors    map[DocID]*editorState
-    Chrome     ChromeState         // 侧栏开合/宽度/面板、模式、面板（命令面板/设置）开关
+    Chrome     ChromeState         // 侧栏开合/宽度/面板、模式、浮层（命令面板/设置）及其触发源
+    Notices    *NoticeStack        // 通知栈（最多 4 条）、进度
     Settings   contract.Settings   // 订阅快照
 }
 ```
 
 - 状态只在主线程读写；视图读状态构建 UI，交互调用控制器方法（如 `tabs.Close(id)`），控制器调用服务；服务事件回主线程更新状态并 `Invalidate`。
 - 不在状态中保存 `ui.Element`；需要持久焦点身份时用 `ui.Handle`。
+- 低功耗路径 = `!p.Accelerated()` 或 `ReduceTransparency`，由 `views/effects` 统一判断；其他组件不直接判断。
+- 共享元素用 `ElementTransition.Match`（omnibox→面板、面板行→标签、图片→灯箱），Match 键类型定义在 `views/motion`。
 - 每个视图组件是 `struct{ deps…; View(c *ui.Context) }`，依赖通过构造函数注入窄接口（contract 接口或 views 内部接口），便于 `ui.NewTester` + mock 测试。
 
 ## 8. 扩展机制
@@ -268,13 +279,13 @@ type AppState struct {
 | Code | 呈现 |
 |---|---|
 | `conflict` | 编辑区顶部冲突横幅 |
-| `not_found`、`permission`、`read_only` | 横幅（文档级）或 Toast（操作级） |
+| `not_found`、`permission`、`read_only` | 横幅（文档级）或通知（操作级） |
 | `too_large` | 对话框：以大文件模式打开 / 取消 |
 | `binary`、`encoding` | 对话框说明，可只读打开 |
 | `unavailable`（渲染服务） | 静默降级为源码 + 首次一次性提示 |
 | `render` | 组件内红色细边 + 错误文本 |
 | `canceled` | 不提示 |
-| `io`、`internal` | Toast（带"复制详情"）+ 日志 |
+| `io`、`internal` | 常驻通知（带"复制详情"）+ 日志 |
 
 - 日志：`log/slog`，`component` 属性；文件日志写 `PathUserData/logs/aurink.log`（滚动 5×5 MB）；开发构建输出到控制台。
 
@@ -288,7 +299,9 @@ type AppState struct {
 | 1 万块文档滚动 | 60 fps，无整屏重排 | 帧统计 + 排版计数断言 |
 | 空闲 CPU / 帧 | 0 帧 | Tester `FramePending()==false` |
 | 空闲内存（100 KB 文档，无渲染服务） | < 150 MB | `internal/idlemem` 同类测量 |
-| 发布体积（不含渲染资源） | < 25 MB | CI 记录 |
+| 发布体积（不含渲染资源，含打包字体） | < 40 MB（其中字体目标 ≤ 15 MB，S4 实测后由 ADR 确认） | CI 记录 |
+| 字体注册（首次需要衬线时） | 不阻塞首帧 | 启动埋点 [待验证 S4] |
+| 极光 Shader | 12 s 后 0 帧 | Tester `FramePending()==false` |
 
 测试中按"计数"而不是"时间"断言（排版次数、分配次数），遵循 MyGo 的测试准则。
 
@@ -297,7 +310,7 @@ type AppState struct {
 ```
 Aurink_claude/
 ├─ main.go                         # 仅调用 app.Run()                         [INT]
-├─ go.mod / go.sum                 # 模块 aurink（路径待定）                    [INT 解决冲突]
+├─ go.mod / go.sum                 # 模块 aurink                                [INT 解决冲突]
 ├─ mygo.json                       # 应用配置、文件关联、i18n                   [INT]
 ├─ internal/
 │  ├─ contract/                    # ★冻结契约                                [INT 实现 / CEO 审批]
@@ -311,12 +324,13 @@ Aurink_claude/
 │  └─ app/                         # 组合根、菜单、窗口                          [INT]
 ├─ i18n/fragments/<owner>.{en,zh-Hans}.json   # 按模块分片的文案               [各自]
 ├─ locales/                        # 由 tools/i18nmerge 生成                   [INT]
-├─ resources/{icons,fonts}/        #                                          [FE-2]
+├─ resources/{icons,fonts}/        # fonts 含子集字体与 OFL 许可证             [FE-2]
 ├─ resources/render/               # MathJax/Mermaid 离线包                   [BE-2]
 ├─ testdata/corpus/                # 保真语料                                  [QA]
 ├─ tests/{arch,e2e,perf}/          #                                          [QA]
 ├─ tools/{i18nmerge,gate}/         #                                          [INT]
 ├─ scripts/gate.ps1, gate.sh       # 合并门禁                                  [INT]
 ├─ spikes/                         # Spike 原型与报告（独立模块）                 [各 Spike 负责人]
-└─ docs/                           # 规划与决策                                 [CEO]
+├─ reports/parity/                # Native 与基线的对照截图                    [FE-1、FE-2]
+└─ docs/                           # 规划、决策、design/ 界面基线                [CEO]
 ```

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Ink and Aurora 设计系统</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1960px; height: 1400px; box-sizing: border-box; padding: 56px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: 300px 420px 1fr; gap: 24px; background: #E8E9EE; color: #15161C; font-family: 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: 14px">
+
+  <section style="grid-column: span 7; position: relative; overflow: hidden; border-radius: 20px; padding: 40px; background: #0B0C12; color: #ECEDF2; display: flex; flex-direction: column; justify-content: space-between">
+    <div aria-hidden="true" style="position: absolute; width: 520px; height: 340px; left: -80px; top: -150px; border-radius: 50%; background: radial-gradient(closest-side, oklch(0.8 0.13 182 / .4), transparent); filter: blur(30px)"></div>
+    <div aria-hidden="true" style="position: absolute; width: 480px; height: 320px; right: -60px; top: -40px; border-radius: 50%; background: radial-gradient(closest-side, oklch(0.7 0.15 274 / .36), transparent); filter: blur(36px)"></div>
+    <div aria-hidden="true" style="position: absolute; width: 420px; height: 260px; left: 42%; bottom: -170px; border-radius: 50%; background: radial-gradient(closest-side, oklch(0.74 0.15 347 / .26), transparent); filter: blur(40px)"></div>
+    <div style="position: relative; display: flex; align-items: center; gap: 20px">
+      <svg width="72" height="72" viewBox="0 0 24 24" fill="none" role="img" aria-label="Aurink 标志">
+        <defs><linearGradient id="dsmk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="oklch(0.8 0.13 182)"></stop><stop offset=".55" stop-color="oklch(0.7 0.15 274)"></stop><stop offset="1" stop-color="oklch(0.74 0.15 347)"></stop></linearGradient></defs>
+        <path d="M3 20C4.5 11 7.8 4 12 4s7.5 7 9 16" stroke="url(#dsmk)" stroke-width="2.6" stroke-linecap="round"></path>
+        <path d="M12 11.5c1.9 2.5 3 4 3 5.4a3 3 0 0 1-6 0c0-1.4 1.1-2.9 3-5.4z" fill="#ECEDF2"></path>
+      </svg>
+      <div style="font-family: Newsreader, 'Noto Serif SC', serif; font-size: 72px; line-height: 1; letter-spacing: -.03em">Aurink</div>
+    </div>
+    <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 32px">
+      <p style="margin: 0; max-width: 520px; font-family: Newsreader, 'Noto Serif SC', serif; font-size: 25px; line-height: 1.35">墨滴是不变的源码，极光是光标经过时的表现。</p>
+      <p style="margin: 0; font-size: 13px; color: #A2A4B3; white-space: nowrap">Ink &amp; Aurora · 设计系统 v2</p>
+    </div>
+  </section>
+
+  <section style="grid-column: span 5; border-radius: 20px; padding: 32px; background: #fff; display: flex; flex-direction: column; gap: 14px">
+    <h2 style="margin: 0 0 4px; font: 500 26px Newsreader, 'Noto Serif SC', serif">排版</h2>
+    <div style="font: 500 44px/1.1 Newsreader, 'Noto Serif SC', serif; letter-spacing: -.025em">H1 文档标题 Editorial</div>
+    <div style="font: 500 26px/1.3 Newsreader, 'Noto Serif SC', serif; letter-spacing: -.012em">H2 章节标题，衬线承担气质</div>
+    <div style="font-size: 18px; font-weight: 650">H3 小节标题回到无衬线</div>
+    <div style="font-size: 16px; line-height: 1.75">正文 16 / 1.75，CJK 优先，无衬线保证长时间可读。</div>
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #5F616E">JetBrains Mono · **标记** 与代码</div>
+  </section>
+
+  <section style="grid-column: span 6; border-radius: 20px; padding: 32px; background: #fff">
+    <h2 style="margin: 0 0 20px; font: 500 26px Newsreader, 'Noto Serif SC', serif">Paper · 浅色</h2>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{light}}" as="c" hint-placeholder-count="10">
+        <div><div style="height: 72px; border-radius: 12px; background: {{c.v}}; box-shadow: inset 0 0 0 1px rgba(20,22,35,.1)"></div><div style="margin-top: 8px; font-size: 13px; font-weight: 600">{{c.n}}</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5F616E">{{c.h}}</div></div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="grid-column: span 6; border-radius: 20px; padding: 32px; background: #111218; color: #ECEDF2">
+    <h2 style="margin: 0 0 20px; font: 500 26px Newsreader, 'Noto Serif SC', serif">Midnight Ink · 深色</h2>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{dark}}" as="c" hint-placeholder-count="10">
+        <div><div style="height: 72px; border-radius: 12px; background: {{c.v}}; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12)"></div><div style="margin-top: 8px; font-size: 13px; font-weight: 600">{{c.n}}</div><div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #A2A4B3">{{c.h}}</div></div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="grid-column: span 7; position: relative; overflow: hidden; border-radius: 20px; padding: 32px; background: radial-gradient(60% 80% at 15% 20%, oklch(0.66 0.14 182 / .55), transparent 65%), radial-gradient(60% 80% at 80% 30%, oklch(0.58 0.17 274 / .5), transparent 65%), radial-gradient(60% 70% at 50% 100%, oklch(0.66 0.17 347 / .35), transparent 65%), #DADBE3">
+    <h2 style="margin: 0 0 8px; font: 500 26px Newsreader, 'Noto Serif SC', serif">材质层级</h2>
+    <p style="margin: 0 0 24px; color: #2B2C36">每层只增加一种变化：高度、模糊或高光。正文永远在实色纸面上。</p>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px">
+      <div style="height: 196px; padding: 16px; box-sizing: border-box; border-radius: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(20,22,35,.06), 0 12px 36px rgba(20,22,35,.09)"><b>0 · 纸面</b><p style="font-size: 13px; color: #5F616E">编辑区。实色，始终保证阅读对比度。</p></div>
+      <div style="height: 196px; padding: 16px; box-sizing: border-box; border-radius: 12px; background: rgba(255,255,255,.68); backdrop-filter: blur(16px) saturate(1.4); border: 1px solid rgba(20,22,35,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 4px 14px rgba(20,22,35,.1)"><b>1 · 胶囊</b><p style="font-size: 13px; color: #33343F">状态胶囊、横幅。模糊 16。</p></div>
+      <div style="height: 196px; padding: 16px; box-sizing: border-box; border-radius: 13px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px) saturate(1.5); border: 1px solid rgba(20,22,35,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 12px 32px rgba(20,22,35,.16)"><b>2 · 浮层</b><p style="font-size: 13px; color: #33343F">格式条、菜单、通知。模糊 24。</p></div>
+      <div style="height: 196px; padding: 16px; box-sizing: border-box; border-radius: 16px; background: rgba(252,252,254,.82); backdrop-filter: blur(36px) saturate(1.6); border: 1px solid rgba(20,22,35,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 32px 80px rgba(20,22,35,.26)"><b>3 · 模态</b><p style="font-size: 13px; color: #33343F">命令面板、设置。模糊 36。</p></div>
+    </div>
+  </section>
+
+  <section style="grid-column: span 5; border-radius: 20px; padding: 32px; background: #fff; display: flex; flex-direction: column; gap: 20px">
+    <h2 style="margin: 0; font: 500 26px Newsreader, 'Noto Serif SC', serif">组件</h2>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+      <button style="height: 36px; padding: 0 16px; border: 0; border-radius: 10px; background: #15161C; color: #fff; font: inherit; font-weight: 600">主操作</button>
+      <button style="height: 36px; padding: 0 14px; border: 1px solid rgba(20,22,35,.1); border-radius: 10px; background: rgba(20,22,35,.04); color: #15161C; font: inherit">次操作</button>
+      <kbd style="padding: 3px 8px; border-radius: 6px; font: inherit; font-size: 12px; color: #5F616E; background: rgba(20,22,35,.04); border: 1px solid rgba(20,22,35,.09)">Ctrl P</kbd>
+      <span role="img" aria-label="开关已开启" style="width: 38px; height: 22px; border-radius: 999px; padding: 2px; box-sizing: border-box; background: oklch(0.5 0.11 182); display: flex; justify-content: flex-end"><span style="width: 18px; height: 18px; border-radius: 50%; background: #fff; display: block"></span></span>
+    </div>
+    <div style="display: inline-flex; align-self: flex-start; padding: 3px; border-radius: 10px; background: rgba(20,22,35,.04)">
+      <span style="padding: 5px 16px; border-radius: 7px; background: #fff; box-shadow: 0 0 0 1px rgba(20,22,35,.05), 0 1px 3px rgba(20,22,35,.12); font-weight: 500">文件</span><span style="padding: 5px 16px; color: #5F616E">大纲</span><span style="padding: 5px 16px; color: #5F616E">搜索</span>
+    </div>
+    <div style="font-size: 16px; line-height: 1.8">行内 <code style="font-family: 'JetBrains Mono', monospace; font-size: .86em; padding: 2px 6px; border-radius: 5px; background: rgba(20,22,35,.04); border: 1px solid rgba(20,22,35,.09)">代码</code>、<a href="#" style="color: oklch(0.5 0.11 182)">链接</a>、<mark style="background: #FFEFB0; border-radius: 3px; padding: 0 2px">高亮</mark>、<span style="background: oklch(0.5 0.11 182 / .2)">选区</span><span style="display: inline-block; width: 2px; height: 1.2em; vertical-align: -.22em; background: oklch(0.5 0.11 182)"></span></div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; align-items: end; font-size: 12px; color: #5F616E; text-align: center">
+      <div><div style="height: 40px; border: 1px solid rgba(20,22,35,.2); border-radius: 6px"></div>控件 6–8</div>
+      <div><div style="height: 40px; border: 1px solid rgba(20,22,35,.2); border-radius: 10px"></div>行项 10</div>
+      <div><div style="height: 40px; border: 1px solid rgba(20,22,35,.2); border-radius: 13px"></div>浮层 13</div>
+      <div><div style="height: 40px; border: 1px solid rgba(20,22,35,.2); border-radius: 16px"></div>模态 16</div>
+      <div><div style="height: 40px; border: 1px solid rgba(20,22,35,.2); border-radius: 999px"></div>胶囊</div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1960,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      light: [
+        { n: 'Window', v: '#E8E9EE', h: '#E8E9EE' }, { n: 'Sheet', v: '#FFFFFF', h: '#FFFFFF' }, { n: 'Ink', v: '#15161C', h: '#15161C' }, { n: 'Muted', v: '#5F616E', h: '#5F616E' }, { n: 'Faint', v: '#8B8D99', h: '#8B8D99 仅占位' },
+        { n: 'Accent', v: 'oklch(0.5 0.11 182)', h: 'oklch .50 .11 182' }, { n: 'Aurora 1', v: 'oklch(0.66 0.14 182)', h: 'hue 182' }, { n: 'Aurora 2', v: 'oklch(0.58 0.17 274)', h: 'hue 274' }, { n: 'Aurora 3', v: 'oklch(0.66 0.17 347)', h: 'hue 347' }, { n: 'Mark', v: '#FFEFB0', h: '#FFEFB0' }
+      ],
+      dark: [
+        { n: 'Window', v: '#090A0F', h: '#090A0F' }, { n: 'Sheet', v: '#111218', h: '#111218' }, { n: 'Ink', v: '#ECEDF2', h: '#ECEDF2' }, { n: 'Muted', v: '#A2A4B3', h: '#A2A4B3' }, { n: 'Faint', v: '#6C6E7E', h: '#6C6E7E 仅占位' },
+        { n: 'Accent', v: 'oklch(0.82 0.12 182)', h: 'oklch .82 .12 182' }, { n: 'Aurora 1', v: 'oklch(0.8 0.13 182)', h: 'hue 182' }, { n: 'Aurora 2', v: 'oklch(0.7 0.15 274)', h: 'hue 274' }, { n: 'Aurora 3', v: 'oklch(0.74 0.15 347)', h: 'hue 347' }, { n: 'Mark', v: 'rgba(255,196,84,.26)', h: '琥珀 26%' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

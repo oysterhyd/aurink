@@ -62,6 +62,8 @@ type ExportOptions struct {
 	BaseDir  string     // 解析相对图片路径
 	PageSize string     // PDF："A4"、"Letter"
 	Margins  [4]float32 // PDF 页边距（英寸）：上、右、下、左
+	// OnProgress 可为 nil；在 Export 的调用 goroutine 上以 0–1 回调。
+	OnProgress func(fraction float32)
 }
 
 // Exporter 导出文档（core/export 实现）。阻塞，禁止在主线程调用。

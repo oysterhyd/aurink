@@ -14,7 +14,7 @@
 ## 1. 准备 ✅ 已完成（2026-11-01，CEO 按用户要求执行）
 
 - 已安装 MyGo 的 Agent 技能：`.agents/skills/mygo-maintenance/SKILL.md`（commit `2eb37fe`，CI 三平台通过）。
-- 已创建 6 个 worktree，均从 `main` 的 `2eb37fe` 开始：
+- 已创建 6 个 worktree；2026-11-01 已快进到包含界面基线的 `main`：
 
 ```text
 D:/mygo/project/Aurink_claude               [main]        ← 只给 INT 做合并，其他 Agent 不在这里工作
@@ -136,7 +136,7 @@ D:/mygo/project/Aurink_claude-wt/qa         [qa/tests]
 Go 标准：见 docs/01 §6（1 万块滚动无整屏重排；击键 p95 < 8 ms；微软拼音组字、提交、候选框位置正确；Tester 测试通过）。No-Go 后备：块级源码切换。
 交付：spikes/s1-liveedit/REPORT.md，含数据（标注 [实测]）、用户真机检查结果（由用户告诉你后填入）、Go/No-Go 建议、对 contract/projection.go 与 editorapi 的修改建议（需要就写 CR）。
 
-额外阅读：docs/03 §6 全部、docs/04 §4.3、docs/02 §5.1–5.2、docs/01 §4.1–4.3；MyGo docs/ui/text-input-client.md、custom-widgets.md、rich-text-editor.md、testing.md，以及 ui/richtext 源码中的 heights.go。
+额外阅读：docs/03 §6 全部、docs/04 §4.3、docs/02 §4.2 与 §5.1–5.2、docs/design/README.md 和 docs/design/baseline/Main.png（S1 不要求达到视觉基线，但块缓存与排版结构必须能支撑衬线混排、页边标签和结构导轨，在 REPORT.md 中说明）、docs/01 §4.1–4.3；MyGo docs/ui/text-input-client.md、custom-widgets.md、rich-text-editor.md、testing.md，以及 ui/richtext 源码中的 heights.go。
 ````
 
 ### 2.3 BE-1 · 后端 · 文档核心工程师
@@ -255,20 +255,26 @@ Go 标准：见 docs/01 §6（解析且视觉正确 ≥ 95%，冷渲染 < 50 ms�
 
 位置：spikes/s4-look/，独立 Go 模块 aurink.local/spikes/s4-look，require github.com/egoist/mygo v0.7.3。
 
-做一个演示窗口：
-- Windows 11 Vibrancy 侧栏；顶部 Liquid Glass 工具栏覆盖在可滚动的长内容上；ScrollEdge 效果。
-- 一个 Spring 动画面板（展开/收起）；亮→暗主题切换的 Shader 过渡。
+目标效果：docs/design/baseline/Main.png、Dark.png、Palette.png、Welcome.png、LowPower.png。先按 docs/design/README.md 运行原型，亲眼看过再动手。
+
+做一个演示窗口，复现主界面外壳（正文可用静态排版，不需要编辑能力）：
+- Windows 11 Vibrancy 窗口材质，透明标题栏与侧栏直接在材质上，编辑区是圆角 14 的浮动纸张；可滚动长内容 + ScrollEdge。
+- Chip / Panel / Modal 三级玻璃（02 §4.3）；状态胶囊；从 omnibox 长出并返回的命令面板（ElementTransition.Match，Gentle）；标签与面板列表共用的滑动选中药丸。
+- 带极光 Shader 的欢迎页，12 s 后停止请求帧；Paper↔Midnight Ink 径向溶解。
+- 打包字体：Newsreader + Noto Serif SC 子集 + JetBrains Mono，用 ui.RegisterFont 注册，渲染 H1/H2/引用/中西混排，子集外的字要有回退。
 - 颜色、圆角、动效全部取自 docs/02 §4 的令牌（可在 spike 内先写成常量）。
 
 测量：
 - GPU 路径滚动时的帧时间（MYGO_FRAME_STATS）；MYGO_GPU=0（CPU 路径）的帧时间与外观；"减少透明度"降级方案的外观；空闲时是否 0 帧。
-- 截图：GPU / CPU / 减少透明度 三态 × 亮 / 暗，放在 spikes/s4-look/shots/。
+- 截图：GPU / CPU / 减少透明度 三态 × 亮 / 暗，放在 spikes/s4-look/shots/；与对应基线并排对照，逐项列出差异及原因（MyGo 能力限制 / 待调参）。
+- 字体：子集范围、各字体文件体积、发布体积增量、注册耗时、文件格式支持、子集外回退效果。
+- MyGo 无法达到基线的效果，给出最接近的替代方案，并写 CR 或在 REPORT.md 中请 CEO 裁决。
 - 在 REPORT.md 写好如何启动、请用户在自己屏幕上检查哪几点（玻璃质感、文字可读性、动画是否顺滑），然后告诉用户"可以进行外观检查"。
 
-Go 标准：见 docs/01 §6（GPU 路径滚动 60 fps；CPU 路径有可接受的降级方案）。No-Go 后备：玻璃只用于浮层。
+Go 标准：见 docs/01 §6（GPU 路径滚动与动画 60 fps；空闲 0 帧；低功耗路径与基线一致；字体满足预算；用户确认观感差异可接受）。No-Go 后备见同表。
 交付：spikes/s4-look/REPORT.md，含数据（标注 [实测]）、截图、用户检查结果、Go/No-Go 建议。
 
-额外阅读：docs/02 §4 §6、docs/03 §7；MyGo docs/plugins/glass.md、docs/ui/motion.md、docs/ui/shaders.md、docs/ui/windows.md（Vibrancy）。
+额外阅读：docs/02 §3 §4 §5.4 §6、docs/design/README.md、docs/03 §6.7 §7 §10；MyGo docs/plugins/glass.md、docs/ui/motion.md、docs/ui/transitions.md、docs/ui/shaders.md、docs/ui/windows.md（Vibrancy）、docs/ui/text.md（RegisterFont）。
 ````
 
 ### 2.6 QA · 测试工程师
@@ -305,7 +311,7 @@ Go 标准：见 docs/01 §6（GPU 路径滚动 60 fps；CPU 路径有可接受�
 
 3) QA-0.1 Mock 与一致性套件（等 INT 报告 INT-0.2 已合入 main）：internal/mock 与 internal/contracttest，按 docs/04 §7。每个接口至少覆盖 docs/04 §4 列出的不变式；所有 mock 必须通过同一套 contracttest。
 
-额外阅读：docs/03 §1.1、docs/04 全文（尤其 §4 与 §7）、MyGo docs/ui/testing.md。
+额外阅读：docs/03 §1.1、docs/04 全文（尤其 §4 与 §7，mock 的 Notifier 要实现 NoticeHandle）、docs/design/README.md（后续阶段要复核基线对照）、MyGo docs/ui/testing.md。
 ````
 
 ## 3. Phase 0 期间你要做的事
@@ -314,7 +320,7 @@ Go 标准：见 docs/01 §6（GPU 路径滚动 60 fps；CPU 路径有可接受�
 2. **转交 CR**：Agent 说"有 CR 需要 CEO 评审"时，回到 CEO 会话说："评审 docs/cr/CR-xxx"。CEO 批复写回该文件后，告诉 INT 按 05 §4.2 第 3 步落地。
 3. **真机检查**（只有你能做，CI 和 Agent 都替代不了）：
    - FE-1 通知后：按 `spikes/s1-liveedit/REPORT.md` 的清单，用**微软拼音**在演示窗口里输入中文，约 5 分钟；把结果（截图或文字）告诉 FE-1。
-   - FE-2 通知后：按 `spikes/s4-look/REPORT.md` 的说明看一眼外观与动画，把感受告诉 FE-2。
+   - FE-2 通知后：打开原型和 S4 演示窗口并排比较（`docs/design/README.md`），把外观、动画和字体上的差异告诉 FE-2。这是 M0 的必要项，请确认你能接受这些差异。
 4. **关注 CI**：<https://github.com/oysterhyd/aurink/actions>。`main` 变红时告诉 INT 当天修复或回滚。每次运行大约消耗 22 个计费分钟（Pro 计划每月 3000 分钟）。
 5. **出现以下情况时直接找 CEO**：Spike 明显达不到 Go 标准；两个 Agent 对同一文件有争议；某个 Agent 声称完成却拿不出运行证据；任何你拿不准的事。
 
@@ -324,7 +330,7 @@ Go 标准：见 docs/01 §6（GPU 路径滚动 60 fps；CPU 路径有可接受�
 
 - [ ] INT-0.1、INT-0.2 已合入 main，标签 `contract-v1.0-rc` 已推送
 - [ ] `spikes/s1-liveedit`、`s2-render`、`s3-ast`、`s4-look` 的代码与 `REPORT.md` 已合入 main
-- [ ] 你已完成 S1（微软拼音）与 S4（外观）的真机检查，结果已写进对应 REPORT.md
+- [ ] 你已完成 S1（微软拼音）与 S4（与设计基线对照）的真机检查，结果已写进对应 REPORT.md
 - [ ] QA-0.2（语料 + 架构规则）已合入；QA-0.1（Mock + 一致性测试）已合入或给出进度
 - [ ] main 最新一次 CI 三平台全绿
 

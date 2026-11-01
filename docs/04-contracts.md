@@ -14,7 +14,7 @@
 | 线程 | 见 §3。阻塞接口禁止主线程调用；异步接口的回调与事件保证在主线程 |
 | 错误 | 导出方法返回的非 nil 错误必须是 `*contract.Error`；按 `Code` 判断，不比较字符串；不得跨模块 panic |
 | 身份 | 文档用 `DocID`（会话级，与路径无关）；块用 `BlockID`（编辑中存活的块保持不变）；命令用 `CommandID` |
-| 文案 | 契约中 `Title`/`Category`/`Label` 字段是 **i18n 文案键**，由视图本地化；`Notice.Message` 例外，为已本地化文本 |
+| 文案 | 契约中 `Title`/`Category`/`Label` 字段是 **i18n 文案键**，由视图本地化；`Notice.Message`/`Detail` 例外，为已本地化文本 |
 | 依赖 | `contract` 只依赖标准库；`editorapi` 只依赖 `contract` |
 
 ## 2. 契约总览
@@ -30,7 +30,7 @@
 | `services.go` | `FileStore` `Session` `Sessions` `Workspace` `Assets` `Recent` `Finder` `WorkspaceSearch` `Fuzzy` | BE-2 | FE-2、FE-1、INT |
 | `render.go` | `Renderer` `Exporter` `Printer` | BE-2；`Printer` 由 INT 用 WebView 实现 | FE-1、FE-2、INT |
 | `settings.go` | `Settings` 及子结构、`SettingsStore` | BE-2 `core/settings` | 全部 |
-| `runtime.go` | `Dispatcher` `Notifier` `Notice` | INT（Dispatcher）、FE-2（Notifier） | BE-2、全部 |
+| `runtime.go` | `Dispatcher` `Notifier` `Notice` `NoticeHandle` | INT（Dispatcher）、FE-2（Notifier） | BE-2、全部 |
 | `errors.go` | `Code` `Error` `E` `CodeOf` | — | 全部 |
 | `editorapi` | `Controller` `Registry` `Mode` | FE-1 | FE-2、INT |
 
@@ -113,19 +113,19 @@
 
 | Code | 典型来源 | 界面呈现（shell 统一实现） |
 |---|---|---|
-| `not_found` | 打开已删除文件 | Toast；文件树刷新 |
+| `not_found` | 打开已删除文件 | 通知；文件树刷新 |
 | `permission` | 无写权限 | 文档顶部横幅"只读"，提供"另存为" |
 | `exists` | 新建/重命名重名 | 行内红字提示 |
 | `conflict` | 保存时磁盘已变 | 冲突横幅：保留我的 / 载入磁盘版本 |
 | `too_large` | 超过 `MaxSize` | 对话框：大文件模式打开 / 取消 |
 | `binary` / `encoding` | 非文本、非 UTF | 对话框说明，可只读打开 |
-| `io` | 磁盘满、网络盘断开 | Toast（带"复制详情"），会话保留未保存内容并写恢复副本 |
+| `io` | 磁盘满、网络盘断开 | 常驻通知（带"复制详情"），会话保留未保存内容并写恢复副本 |
 | `invalid` | 非法区间、坏正则 | 开发期断言；正则错误在查找栏内提示 |
-| `read_only` | 只读文档上编辑 | 状态胶囊抖动 + Toast（一次） |
+| `read_only` | 只读文档上编辑 | 状态胶囊抖动 + 通知（一次） |
 | `canceled` | 用户取消 | 不提示 |
 | `unavailable` | 无 WebView 运行时 | 公式/图表显示源码；首次一次性提示 |
 | `timeout` / `render` | 渲染失败 | 组件内红色细边 + 错误文本 |
-| `internal` | 不应发生 | Toast + 日志（含堆栈） |
+| `internal` | 不应发生 | 常驻通知 + 日志（含堆栈） |
 
 ## 7. Mock 与一致性测试（Contract-First 的执行机制）
 
@@ -143,3 +143,17 @@
   - **次版本（1.x）**：只允许新增（新类型、新常量、新接口、在结构体末尾新增字段、新命令 ID）。不得修改既有签名或语义。
   - **主版本（2.0）**：破坏性变更，只在阶段边界进行，需 CEO 批准并给出迁移说明。
 - CR 流程见 `05-delivery-plan.md §4`。
+
+## 附：为界面基线所做的 RC 修订（2026-11-01，冻结前）
+
+依据 `docs/design`，已直接修改 `spikes/01-contract-rc`：
+
+| 文件 | 变更 | 原因 |
+|---|---|---|
+| `settings.go` | `Appearance.Accent string` 改为 `AccentHue int`（默认 182） | 强调色、语法色、极光都由一个色相推导 |
+| `runtime.go` | `Notice` 增加 `Detail` `Progress` `Sticky`；`Notify` 返回 `NoticeHandle`（`Update` `Dismiss`） | 通知有说明、进度条和导出进度更新 |
+| `render.go` | `ExportOptions.OnProgress` | 导出进度 |
+| `commands.go` | `CmdViewLive`、`CmdBlockMermaid` | 视图菜单的「实时」、斜杠菜单的 Mermaid |
+| `editorapi.go` | `FocusMode` `Typewriter` `ScrollOffset` `CaretBlock` | 视图菜单状态、滚动联动标题、胶囊 |
+
+页边标签、结构导轨、灯箱属于 `liveedit` 内部，不进入契约。
