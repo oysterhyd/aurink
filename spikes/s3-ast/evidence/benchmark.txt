@@ -1,0 +1,60 @@
+goos: windows
+goarch: amd64
+pkg: aurink.local/spikes/s3-ast
+cpu: AMD Ryzen 7 8845H w/ Radeon 780M Graphics
+BenchmarkCurve/100KiB/ParserFull         	      10	   3368470 ns/op	  30.40 MB/s	 4708775 B/op	    7617 allocs/op
+BenchmarkCurve/100KiB/ParserFull         	      10	   3206260 ns/op	  31.94 MB/s	 4697489 B/op	    7616 allocs/op
+BenchmarkCurve/100KiB/ParserFull         	      10	   3114840 ns/op	  32.87 MB/s	 4697491 B/op	    7616 allocs/op
+BenchmarkCurve/100KiB/ParserEdit         	      10	    496920 ns/op	 1385083 B/op	    2283 allocs/op
+BenchmarkCurve/100KiB/ParserEdit         	      10	    639280 ns/op	 1385081 B/op	    2283 allocs/op
+BenchmarkCurve/100KiB/ParserEdit         	      10	    684470 ns/op	 1385081 B/op	    2283 allocs/op
+BenchmarkCurve/100KiB/AdapterFull        	      10	   6566490 ns/op	12295363 B/op	   37186 allocs/op
+BenchmarkCurve/100KiB/AdapterFull        	      10	   6511980 ns/op	12295363 B/op	   37186 allocs/op
+BenchmarkCurve/100KiB/AdapterFull        	      10	   7293270 ns/op	12295358 B/op	   37186 allocs/op
+BenchmarkCurve/100KiB/AdapterEdit        	      10	   7071990 ns/op	10490145 B/op	   37285 allocs/op
+BenchmarkCurve/100KiB/AdapterEdit        	      10	   8389410 ns/op	10490145 B/op	   37285 allocs/op
+BenchmarkCurve/100KiB/AdapterEdit        	      10	   7403020 ns/op	10490145 B/op	   37285 allocs/op
+BenchmarkCurve/100KiB/ClosedShardEdit    	      10	    177560 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/100KiB/ClosedShardEdit    	      10	    185440 ns/op	  424932 B/op	     739 allocs/op
+BenchmarkCurve/100KiB/ClosedShardEdit    	      10	    199580 ns/op	  424932 B/op	     739 allocs/op
+BenchmarkCurve/100KiB/DefinitionBroadcast         	      10	   1560620 ns/op	 1436592 B/op	    5187 allocs/op
+BenchmarkCurve/100KiB/DefinitionBroadcast         	      10	   1808710 ns/op	 1436592 B/op	    5187 allocs/op
+BenchmarkCurve/100KiB/DefinitionBroadcast         	      10	   1886630 ns/op	 1436590 B/op	    5187 allocs/op
+BenchmarkCurve/1024KiB/ParserFull                 	      10	  32001010 ns/op	  32.77 MB/s	48954860 B/op	   77715 allocs/op
+BenchmarkCurve/1024KiB/ParserFull                 	      10	  35029170 ns/op	  29.93 MB/s	48954857 B/op	   77715 allocs/op
+BenchmarkCurve/1024KiB/ParserFull                 	      10	  38809730 ns/op	  27.02 MB/s	48954862 B/op	   77715 allocs/op
+BenchmarkCurve/1024KiB/ParserEdit                 	      10	  15574290 ns/op	14329043 B/op	   23314 allocs/op
+BenchmarkCurve/1024KiB/ParserEdit                 	      10	  17646150 ns/op	14329044 B/op	   23314 allocs/op
+BenchmarkCurve/1024KiB/ParserEdit                 	      10	  10596800 ns/op	14329044 B/op	   23314 allocs/op
+BenchmarkCurve/1024KiB/AdapterFull                	      10	  95431030 ns/op	126763374 B/op	  380636 allocs/op
+BenchmarkCurve/1024KiB/AdapterFull                	      10	  85183450 ns/op	126763374 B/op	  380636 allocs/op
+BenchmarkCurve/1024KiB/AdapterFull                	      10	  81001540 ns/op	126763369 B/op	  380636 allocs/op
+BenchmarkCurve/1024KiB/AdapterEdit                	      10	  92285930 ns/op	105084516 B/op	  381330 allocs/op
+BenchmarkCurve/1024KiB/AdapterEdit                	      10	  95944530 ns/op	105073552 B/op	  381329 allocs/op
+BenchmarkCurve/1024KiB/AdapterEdit                	      10	 117416620 ns/op	105043216 B/op	  381328 allocs/op
+BenchmarkCurve/1024KiB/ClosedShardEdit            	      10	    270750 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/1024KiB/ClosedShardEdit            	      10	    274840 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/1024KiB/ClosedShardEdit            	      10	    265120 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/1024KiB/DefinitionBroadcast        	      10	  17218690 ns/op	13339769 B/op	   48171 allocs/op
+BenchmarkCurve/1024KiB/DefinitionBroadcast        	      10	  16181610 ns/op	13339768 B/op	   48171 allocs/op
+BenchmarkCurve/1024KiB/DefinitionBroadcast        	      10	  17563020 ns/op	13339769 B/op	   48171 allocs/op
+BenchmarkCurve/5120KiB/ParserFull                 	      10	 228869830 ns/op	  22.91 MB/s	245725584 B/op	  388402 allocs/op
+BenchmarkCurve/5120KiB/ParserFull                 	      10	 124064760 ns/op	  42.26 MB/s	245725584 B/op	  388402 allocs/op
+BenchmarkCurve/5120KiB/ParserFull                 	      10	 137420200 ns/op	  38.15 MB/s	245725584 B/op	  388402 allocs/op
+BenchmarkCurve/5120KiB/ParserEdit                 	      10	  58306550 ns/op	72030446 B/op	  116518 allocs/op
+BenchmarkCurve/5120KiB/ParserEdit                 	      10	  46418540 ns/op	72030446 B/op	  116518 allocs/op
+BenchmarkCurve/5120KiB/ParserEdit                 	      10	  54283240 ns/op	72030444 B/op	  116518 allocs/op
+BenchmarkCurve/5120KiB/AdapterFull                	      10	 399467170 ns/op	634709171 B/op	 1902975 allocs/op
+BenchmarkCurve/5120KiB/AdapterFull                	      10	 384488790 ns/op	634709172 B/op	 1902975 allocs/op
+BenchmarkCurve/5120KiB/AdapterFull                	      10	 306632110 ns/op	634709172 B/op	 1902975 allocs/op
+BenchmarkCurve/5120KiB/AdapterEdit                	      10	 441171380 ns/op	553933134 B/op	 1907943 allocs/op
+BenchmarkCurve/5120KiB/AdapterEdit                	      10	 454331900 ns/op	554014376 B/op	 1907952 allocs/op
+BenchmarkCurve/5120KiB/AdapterEdit                	      10	 538223670 ns/op	553999601 B/op	 1907951 allocs/op
+BenchmarkCurve/5120KiB/ClosedShardEdit            	      10	    284690 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/5120KiB/ClosedShardEdit            	      10	    110070 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/5120KiB/ClosedShardEdit            	      10	    117970 ns/op	  424931 B/op	     739 allocs/op
+BenchmarkCurve/5120KiB/DefinitionBroadcast        	      10	  81604380 ns/op	65877932 B/op	  237893 allocs/op
+BenchmarkCurve/5120KiB/DefinitionBroadcast        	      10	 132914490 ns/op	65877932 B/op	  237893 allocs/op
+BenchmarkCurve/5120KiB/DefinitionBroadcast        	      10	  99279220 ns/op	65877932 B/op	  237893 allocs/op
+PASS
+ok  	aurink.local/spikes/s3-ast	52.227s
