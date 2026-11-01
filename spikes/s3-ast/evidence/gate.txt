@@ -1,0 +1,74 @@
+Modules: . spikes/00-probe spikes/01-contract-rc spikes/s1-liveedit spikes/s3-ast
+=== 1. gofmt
+=== 2-3. go vet and go build
+. windows/amd64
+. linux/amd64
+. darwin/arm64
+spikes/00-probe windows/amd64
+spikes/00-probe linux/amd64
+spikes/00-probe darwin/arm64
+spikes/01-contract-rc windows/amd64
+spikes/01-contract-rc linux/amd64
+spikes/01-contract-rc darwin/arm64
+spikes/s1-liveedit windows/amd64
+spikes/s1-liveedit linux/amd64
+spikes/s1-liveedit darwin/arm64
+spikes/s3-ast windows/amd64
+spikes/s3-ast linux/amd64
+spikes/s3-ast darwin/arm64
+=== 4. mygo vet
+.
+spikes/00-probe
+spikes/s1-liveedit
+=== Contract depends on the standard library only
+=== 5. go test
+.
+?   	aurink	[no test files]
+?   	aurink/internal/adapters/clipboard	[no test files]
+?   	aurink/internal/adapters/richpaste	[no test files]
+?   	aurink/internal/adapters/watch	[no test files]
+?   	aurink/internal/adapters/webviewhost	[no test files]
+ok  	aurink/internal/app	0.990s
+?   	aurink/internal/contract	[no test files]
+?   	aurink/internal/contracttest	[no test files]
+?   	aurink/internal/core/commands	[no test files]
+?   	aurink/internal/core/docsession	[no test files]
+?   	aurink/internal/core/document	[no test files]
+?   	aurink/internal/core/editing	[no test files]
+?   	aurink/internal/core/export	[no test files]
+?   	aurink/internal/core/fsstore	[no test files]
+?   	aurink/internal/core/markdown	[no test files]
+?   	aurink/internal/core/projection	[no test files]
+?   	aurink/internal/core/render	[no test files]
+?   	aurink/internal/core/search	[no test files]
+?   	aurink/internal/core/settings	[no test files]
+?   	aurink/internal/core/text	[no test files]
+?   	aurink/internal/core/workspace	[no test files]
+?   	aurink/internal/mock	[no test files]
+?   	aurink/internal/views/editorapi	[no test files]
+?   	aurink/internal/views/effects	[no test files]
+?   	aurink/internal/views/kit	[no test files]
+?   	aurink/internal/views/liveedit	[no test files]
+?   	aurink/internal/views/motion	[no test files]
+?   	aurink/internal/views/palette	[no test files]
+?   	aurink/internal/views/panels	[no test files]
+?   	aurink/internal/views/shell	[no test files]
+?   	aurink/internal/views/source	[no test files]
+?   	aurink/internal/views/theme	[no test files]
+?   	aurink/locales	[no test files]
+?   	aurink/tests/arch	[no test files]
+?   	aurink/tests/e2e	[no test files]
+?   	aurink/tests/perf	[no test files]
+spikes/00-probe
+ok  	aurink.local/spikes/probe	3.323s
+spikes/01-contract-rc
+?   	aurink.local/spikes/contract-rc/contract	[no test files]
+?   	aurink.local/spikes/contract-rc/editorapi	[no test files]
+spikes/s1-liveedit
+?   	aurink.local/spikes/s1-liveedit	[no test files]
+ok  	aurink.local/spikes/s1-liveedit/liveedit	16.202s
+spikes/s3-ast
+ok  	aurink.local/spikes/s3-ast	13.957s
+=== 6. i18nmerge
+SKIPPED: tools/i18nmerge does not exist yet
+Gate passed
