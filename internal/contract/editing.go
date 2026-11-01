@@ -106,6 +106,9 @@ type FormatState struct {
 type Editing interface {
 	// HandleIntent 在选区处执行意图，包含输入规则；ok=false 表示不处理。
 	HandleIntent(ctx EditContext, in Intent) (tx Transaction, ok bool)
+	// FollowUp 在键入的事务应用之后调用，返回该状态触发的输入规则事务（OriginInputRule），
+	// 成为独立的一步撤销；ok=false 表示没有规则触发。
+	FollowUp(ctx EditContext) (tx Transaction, ok bool)
 	// Run 执行命令；ok=false 表示当前上下文不适用。
 	Run(ctx EditContext, cmd EditCommand) (tx Transaction, ok bool, err error)
 	Formatting(ctx EditContext) FormatState
