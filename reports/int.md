@@ -22,3 +22,16 @@
 - [实测] 反向检查：放入未格式化文件、放入失败的测试，两个脚本都返回退出码 1。
 - [实测] `go tool mygo dev` 构建并启动 `Aurink Dev.exe`，出现标题为 `Aurink` 的顶层窗口；我查的是进程和窗口标题，没有截图看窗口内容。
 - [待验证] macOS、Linux 上的有窗口运行。CI 只跑无窗口测试。
+- [实测-CI] 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41301818863>（`5cf3305`）。Linux 跑全部检查和 5 个目标，Windows、macOS 跑测试。
+
+## INT-0.2 契约落地
+
+变更摘要
+- `spikes/01-contract-rc/contract` → `internal/contract`（12 个文件），`editorapi` → `internal/views/editorapi`，只改 import 路径。RC 目录保留未动。
+
+门禁结果
+- [实测] `diff -r spikes/01-contract-rc/contract internal/contract`：无差异，退出码 0。
+- [实测] `diff -r spikes/01-contract-rc/editorapi internal/views/editorapi`：只有第 7 行不同：
+  `import "aurink.local/spikes/contract-rc/contract"` → `import "aurink/internal/contract"`。
+- [实测] `go list -deps` 显示 `internal/contract` 的非标准库依赖只有它自身。
+- [实测] `scripts/gate.ps1`：`Gate passed`（第 6 项跳过，原因同上）。
