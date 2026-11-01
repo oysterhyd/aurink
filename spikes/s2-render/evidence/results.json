@@ -1,0 +1,610 @@
+{
+  "platform": "windows/amd64",
+  "go": "go1.27.3",
+  "page_ready": {
+    "mathjax": "3.2.2",
+    "mermaid": "10.9.3",
+    "networkResources": 0,
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0",
+    "visibility": "hidden"
+  },
+  "startup_ms": 813.6013,
+  "formulas": [
+    {
+      "id": "F01",
+      "group": "fraction",
+      "tex": "\\frac{a}{b}",
+      "parse_ok": true,
+      "render_ms": 18.7805,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.010308972073677956
+    },
+    {
+      "id": "F02",
+      "group": "fraction",
+      "tex": "\\frac{1}{1+\\frac{1}{x}}",
+      "parse_ok": true,
+      "render_ms": 6.4795,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.00318770783167068
+    },
+    {
+      "id": "F03",
+      "group": "fraction",
+      "tex": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}",
+      "parse_ok": true,
+      "render_ms": 11.7718,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.01172379692080025
+    },
+    {
+      "id": "F04",
+      "group": "fraction",
+      "tex": "\\binom{n}{k}=\\frac{n!}{k!(n-k)!}",
+      "parse_ok": true,
+      "render_ms": 10.3671,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.015755225166989874
+    },
+    {
+      "id": "F05",
+      "group": "fraction",
+      "tex": "\\dfrac{\\partial f}{\\partial x}",
+      "parse_ok": true,
+      "render_ms": 4.5118,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.03804466230936819
+    },
+    {
+      "id": "F06",
+      "group": "root",
+      "tex": "\\sqrt{x^2+y^2}",
+      "parse_ok": true,
+      "render_ms": 4.6789,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.04356001565780577
+    },
+    {
+      "id": "F07",
+      "group": "root",
+      "tex": "\\sqrt[3]{x+1}",
+      "parse_ok": true,
+      "render_ms": 6.4839,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.01552060639070443
+    },
+    {
+      "id": "F08",
+      "group": "root",
+      "tex": "\\sqrt{1+\\sqrt{1+x}}",
+      "parse_ok": true,
+      "render_ms": 161.2036,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.007762827449619209
+    },
+    {
+      "id": "F09",
+      "group": "root",
+      "tex": "\\sqrt{\\frac{a+b}{c+d}}",
+      "parse_ok": true,
+      "render_ms": 44.6927,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.025433667442880767
+    },
+    {
+      "id": "F10",
+      "group": "sum-integral",
+      "tex": "\\sum_{i=1}^{n}i=\\frac{n(n+1)}{2}",
+      "parse_ok": true,
+      "render_ms": 39.5639,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.014340410720501219
+    },
+    {
+      "id": "F11",
+      "group": "sum-integral",
+      "tex": "\\sum_{n=0}^{\\infty}\\frac{x^n}{n!}=e^x",
+      "parse_ok": true,
+      "render_ms": 39.5976,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.019804619002072373
+    },
+    {
+      "id": "F12",
+      "group": "sum-integral",
+      "tex": "\\prod_{k=1}^{n}k=n!",
+      "parse_ok": true,
+      "render_ms": 23.7609,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.015124484004127968
+    },
+    {
+      "id": "F13",
+      "group": "sum-integral",
+      "tex": "\\int_0^1 x^2\\,dx=\\frac13",
+      "parse_ok": true,
+      "render_ms": 19.8204,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.008278811524609844
+    },
+    {
+      "id": "F14",
+      "group": "sum-integral",
+      "tex": "\\int_{-\\infty}^{\\infty}e^{-x^2}\\,dx=\\sqrt{\\pi}",
+      "parse_ok": true,
+      "render_ms": 15.1523,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.017251494017843014
+    },
+    {
+      "id": "F15",
+      "group": "sum-integral",
+      "tex": "\\iint_D f(x,y)\\,dx\\,dy",
+      "parse_ok": true,
+      "render_ms": 10.2623,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.014798878494295311
+    },
+    {
+      "id": "F16",
+      "group": "sum-integral",
+      "tex": "\\oint_C \\mathbf{F}\\cdot d\\mathbf{r}",
+      "parse_ok": true,
+      "render_ms": 9.1533,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.023141814865481076
+    },
+    {
+      "id": "F17",
+      "group": "matrix",
+      "tex": "\\begin{pmatrix}a\u0026b\\\\c\u0026d\\end{pmatrix}",
+      "parse_ok": true,
+      "render_ms": 12.5678,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.016688948306595366
+    },
+    {
+      "id": "F18",
+      "group": "matrix",
+      "tex": "\\begin{bmatrix}1\u00260\u00260\\\\0\u00261\u00260\\\\0\u00260\u00261\\end{bmatrix}",
+      "parse_ok": true,
+      "render_ms": 10.8981,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.016049827965012642
+    },
+    {
+      "id": "F19",
+      "group": "matrix",
+      "tex": "\\begin{vmatrix}a\u0026b\\\\c\u0026d\\end{vmatrix}=ad-bc",
+      "parse_ok": true,
+      "render_ms": 7.3017,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.017481491202169658
+    },
+    {
+      "id": "F20",
+      "group": "matrix",
+      "tex": "\\left[\\begin{array}{cc|c}1\u00262\u00263\\\\4\u00265\u00266\\end{array}\\right]",
+      "parse_ok": true,
+      "render_ms": 7.6073,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.020681436210847975
+    },
+    {
+      "id": "F21",
+      "group": "align",
+      "tex": "\\begin{aligned}a\u0026=b+c\\\\\u0026=d+e\\end{aligned}",
+      "parse_ok": true,
+      "render_ms": 3.5458,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.00644206556633609
+    },
+    {
+      "id": "F22",
+      "group": "align",
+      "tex": "\\begin{align}x+y\u0026=2\\\\x-y\u0026=0\\end{align}",
+      "parse_ok": true,
+      "render_ms": 6.1996,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.009666170763769176
+    },
+    {
+      "id": "F23",
+      "group": "align",
+      "tex": "\\begin{gathered}a+b=c\\\\d+e=f\\end{gathered}",
+      "parse_ok": true,
+      "render_ms": 10.2632,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.01398127926358208
+    },
+    {
+      "id": "F24",
+      "group": "align",
+      "tex": "f(x)=\\begin{cases}x^2\u0026x\\ge0\\\\-x\u0026x\u003c0\\end{cases}",
+      "parse_ok": true,
+      "render_ms": 7.689,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.019350726516501916
+    },
+    {
+      "id": "F25",
+      "group": "scripts",
+      "tex": "x_i^2+y_j^{n+1}",
+      "parse_ok": true,
+      "render_ms": 4.7189,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.024516757057432902
+    },
+    {
+      "id": "F26",
+      "group": "scripts",
+      "tex": "a_{i_j}^{b^c}",
+      "parse_ok": true,
+      "render_ms": 5.7383,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.019495396724998244
+    },
+    {
+      "id": "F27",
+      "group": "scripts",
+      "tex": "{}^{14}_{6}\\mathrm{C}",
+      "parse_ok": true,
+      "render_ms": 4.405,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.01787322336341944
+    },
+    {
+      "id": "F28",
+      "group": "scripts",
+      "tex": "\\lim_{x\\to0}\\frac{\\sin x}{x}=1",
+      "parse_ok": true,
+      "render_ms": 9.4289,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.03222578505086245
+    },
+    {
+      "id": "F29",
+      "group": "scripts",
+      "tex": "\\underbrace{a+\\cdots+a}_{n\\text{ times}}=na",
+      "parse_ok": true,
+      "render_ms": 8.4805,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.014673255238756802
+    },
+    {
+      "id": "F30",
+      "group": "scripts",
+      "tex": "\\overbrace{x+\\cdots+x}^{n}",
+      "parse_ok": true,
+      "render_ms": 6.787,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.009770988498758676
+    },
+    {
+      "id": "F31",
+      "group": "accents",
+      "tex": "\\hat{x}+\\bar{y}+\\vec{v}+\\dot{a}+\\ddot{b}",
+      "parse_ok": true,
+      "render_ms": 6.9113,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.018444044284380418
+    },
+    {
+      "id": "F32",
+      "group": "accents",
+      "tex": "\\widehat{ABC}+\\widetilde{xyz}",
+      "parse_ok": true,
+      "render_ms": 8.1119,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.026732886136910904
+    },
+    {
+      "id": "F33",
+      "group": "delimiters",
+      "tex": "\\left\\langle\\frac{x}{y},\\sqrt{z}\\right\\rangle",
+      "parse_ok": true,
+      "render_ms": 6.0359,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.01725857728283441
+    },
+    {
+      "id": "F34",
+      "group": "delimiters",
+      "tex": "\\left\\{x\\in\\mathbb{R}\\mid x^2\u003c2\\right\\}",
+      "parse_ok": true,
+      "render_ms": 8.8555,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.02160552843892048
+    },
+    {
+      "id": "F35",
+      "group": "greek",
+      "tex": "\\alpha+\\beta+\\gamma+\\Delta+\\Omega+\\varphi",
+      "parse_ok": true,
+      "render_ms": 5.3738,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.032447540419676645
+    },
+    {
+      "id": "F36",
+      "group": "operators",
+      "tex": "\\sin^2\\theta+\\cos^2\\theta=1",
+      "parse_ok": true,
+      "render_ms": 6.5378,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.01995017015070491
+    },
+    {
+      "id": "F37",
+      "group": "operators",
+      "tex": "\\log_a x=\\frac{\\ln x}{\\ln a}",
+      "parse_ok": true,
+      "render_ms": 7.3268,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.019378389653733834
+    },
+    {
+      "id": "F38",
+      "group": "arrows",
+      "tex": "A\\xrightarrow{f}B\\xrightarrow{g}C",
+      "parse_ok": true,
+      "render_ms": 5.1751,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.015853645019341823
+    },
+    {
+      "id": "F39",
+      "group": "arrows",
+      "tex": "P\\implies Q\\iff\\neg P\\lor Q",
+      "parse_ok": true,
+      "render_ms": 6.2611,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.07248832866479925
+    },
+    {
+      "id": "F40",
+      "group": "fonts",
+      "tex": "\\mathbf{v}+\\mathcal{F}+\\mathbb{R}+\\mathrm{d}x",
+      "parse_ok": true,
+      "render_ms": 5.545,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.03266319185902209
+    },
+    {
+      "id": "F41",
+      "group": "sets",
+      "tex": "A\\cup B,\\quad A\\cap B,\\quad x\\notin\\varnothing",
+      "parse_ok": true,
+      "render_ms": 83.9486,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.016835016835016835
+    },
+    {
+      "id": "F42",
+      "group": "physics",
+      "tex": "E=mc^2,\\quad F=ma",
+      "parse_ok": true,
+      "render_ms": 19.7541,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.062092422898807766
+    },
+    {
+      "id": "F43",
+      "group": "physics",
+      "tex": "\\nabla\\cdot\\mathbf{E}=\\frac{\\rho}{\\varepsilon_0}",
+      "parse_ok": true,
+      "render_ms": 4.7181,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.015286791215994756
+    },
+    {
+      "id": "F44",
+      "group": "probability",
+      "tex": "P(A\\mid B)=\\frac{P(B\\mid A)P(A)}{P(B)}",
+      "parse_ok": true,
+      "render_ms": 5.2298,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.012793633626416178
+    },
+    {
+      "id": "F45",
+      "group": "statistics",
+      "tex": "\\bar{x}=\\frac1n\\sum_{i=1}^n x_i,\\quad \\sigma^2=\\frac1n\\sum_i(x_i-\\bar{x})^2",
+      "parse_ok": true,
+      "render_ms": 7.8997,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.010989126313508828
+    },
+    {
+      "id": "F46",
+      "group": "text",
+      "tex": "\\text{area}=\\pi r^2",
+      "parse_ok": true,
+      "render_ms": 4.8367,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.021668788727612256
+    },
+    {
+      "id": "F47",
+      "group": "text",
+      "tex": "v=20\\,\\text{m/s}",
+      "parse_ok": true,
+      "render_ms": 3.6663,
+      "text_elements": 0,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.03773374445267746
+    },
+    {
+      "id": "F48",
+      "group": "cjk",
+      "tex": "\\text{中文}",
+      "parse_ok": true,
+      "render_ms": 48.1574,
+      "text_elements": 2,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.1764795008912656
+    },
+    {
+      "id": "F49",
+      "group": "cjk",
+      "tex": "\\text{面积}=\\pi r^2",
+      "parse_ok": true,
+      "render_ms": 5.7427,
+      "text_elements": 2,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.10248265460030166
+    },
+    {
+      "id": "F50",
+      "group": "cjk",
+      "tex": "\\begin{cases}1\u0026\\text{当 }x\u003e0\\\\0\u0026\\text{其他}\\end{cases}",
+      "parse_ok": true,
+      "render_ms": 10.745,
+      "text_elements": 3,
+      "error_elements": 0,
+      "pixel_mae_0_to_1": 0.055063068947218026
+    }
+  ],
+  "uncached": {
+    "count": 50,
+    "p50_ms": 7.6073,
+    "p95_ms": 48.1574,
+    "max_ms": 161.2036
+  },
+  "cached": {
+    "count": 470,
+    "p50_ms": 0.00010561,
+    "p95_ms": 0.00016973000000000002,
+    "max_ms": 0.00069172
+  },
+  "cached_batch_size": 10000,
+  "stability_count": 1000,
+  "stability": {
+    "count": 1000,
+    "p50_ms": 2.6145,
+    "p95_ms": 7.0614,
+    "max_ms": 106.6035
+  },
+  "mermaid": [
+    {
+      "height": 111,
+      "kind": "flowchart",
+      "ms": 71.7423,
+      "width": 487
+    },
+    {
+      "height": 279,
+      "kind": "sequence",
+      "ms": 41.3131,
+      "width": 450
+    },
+    {
+      "height": 238,
+      "kind": "class",
+      "ms": 29.3606,
+      "width": 102
+    },
+    {
+      "height": 289,
+      "kind": "state",
+      "ms": 35.1281,
+      "width": 221
+    },
+    {
+      "height": 465,
+      "kind": "er",
+      "ms": 32.0533,
+      "width": 140
+    },
+    {
+      "height": 450,
+      "kind": "pie",
+      "ms": 56.7077,
+      "width": 546
+    }
+  ],
+  "failure_detection": {
+    "canceled_context": true,
+    "javascript_exception": true,
+    "nonresolving_promise_timeout": true,
+    "rejected_promise": true,
+    "responsive_after_timeout": true
+  },
+  "memory": [
+    {
+      "stage": "ready",
+      "page_process_id": 46800,
+      "webview_processes": 6,
+      "working_set_bytes": 378875904,
+      "private_bytes": 208392192
+    },
+    {
+      "stage": "after_formulas",
+      "page_process_id": 46800,
+      "webview_processes": 6,
+      "working_set_bytes": 454701056,
+      "private_bytes": 278958080
+    },
+    {
+      "stage": "after_1000_eval",
+      "page_process_id": 46800,
+      "webview_processes": 6,
+      "working_set_bytes": 560476160,
+      "private_bytes": 381841408
+    },
+    {
+      "stage": "final",
+      "page_process_id": 46800,
+      "webview_processes": 6,
+      "working_set_bytes": 592084992,
+      "private_bytes": 406884352
+    }
+  ],
+  "webview_ever_placed": false
+}

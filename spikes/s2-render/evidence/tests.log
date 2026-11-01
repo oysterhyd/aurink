@@ -1,0 +1,20 @@
+=== RUN   TestCacheAvoidsBridgeAndCanceledRequests
+--- PASS: TestCacheAvoidsBridgeAndCanceledRequests (0.00s)
+=== RUN   TestUnavailableAndFailuresDoNotPoisonCache
+=== RUN   TestUnavailableAndFailuresDoNotPoisonCache/bridge_failure
+=== RUN   TestUnavailableAndFailuresDoNotPoisonCache/invalid_SVG
+=== RUN   TestUnavailableAndFailuresDoNotPoisonCache/empty_result
+=== RUN   TestUnavailableAndFailuresDoNotPoisonCache/unsupported_text
+=== RUN   TestUnavailableAndFailuresDoNotPoisonCache/TeX_error
+--- PASS: TestUnavailableAndFailuresDoNotPoisonCache (0.00s)
+    --- PASS: TestUnavailableAndFailuresDoNotPoisonCache/bridge_failure (0.00s)
+    --- PASS: TestUnavailableAndFailuresDoNotPoisonCache/invalid_SVG (0.00s)
+    --- PASS: TestUnavailableAndFailuresDoNotPoisonCache/empty_result (0.00s)
+    --- PASS: TestUnavailableAndFailuresDoNotPoisonCache/unsupported_text (0.00s)
+    --- PASS: TestUnavailableAndFailuresDoNotPoisonCache/TeX_error (0.00s)
+=== RUN   TestMeasuredCorpusParseAndNativeDrawing
+--- PASS: TestMeasuredCorpusParseAndNativeDrawing (0.02s)
+=== RUN   TestFallbackStaysNativeAndIdle
+--- PASS: TestFallbackStaysNativeAndIdle (0.00s)
+PASS
+ok  	aurink.local/spikes/s2-render	0.222s

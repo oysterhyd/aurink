@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' data:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'">
+<style>body{margin:0;background:white;color:#111;font:20px 'Segoe UI',sans-serif}#stage{display:inline-block}svg{overflow:visible}</style>
+<script>
+window.MathJax = {
+  startup: {typeset: false},
+  svg: {fontCache: 'none'},
+  tex: {packages: ['base', 'ams', 'newcommand', 'noundefined', 'configmacros']},
+  options: {enableMenu: false}
+};
+</script>
+<script src="data:text/javascript;base64,{{MATHJAX}}"></script>
+<script src="data:text/javascript;base64,{{MERMAID}}"></script>
+</head><body><div id="stage"></div><script>
+window.s2 = (() => {
+  const stage = document.getElementById('stage');
+  let sequence = 0;
+  const ready = MathJax.startup.promise.then(() => {
+    mermaid.initialize({startOnLoad: false, securityLevel: 'strict', theme: 'default',
+      fontFamily: 'Segoe UI, Microsoft YaHei, sans-serif',
+      flowchart: {htmlLabels: false, useMaxWidth: false}});
+    return {mathjax: MathJax.version, mermaid: '10.9.3', visibility: document.visibilityState,
+      userAgent: navigator.userAgent, networkResources: performance.getEntriesByType('resource').filter(r => /^https?:/.test(r.name)).length};
+  });
+  // Use explicit pixels: MyGo does not resolve the browser's ex/em units.
+  function serialize(svg, width, height) {
+    const copy = svg.cloneNode(true);
+    // MathJax puts array rules in host-page CSS (e.g. .mjx-solid).
+    // Preserve it when exporting a standalone SVG, otherwise BOTH the
+    // browser reference and Native output silently lose the separator.
+    const rules = svg.querySelectorAll('[data-line]');
+    copy.querySelectorAll('[data-line]').forEach((line, i) => {
+      const css = getComputedStyle(rules[i]);
+      for (const property of ['stroke-width', 'stroke-dasharray', 'stroke-linecap'])
+        line.style.setProperty(property, css.getPropertyValue(property));
+    });
+    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    copy.setAttribute('width', String(width)); copy.setAttribute('height', String(height));
+    copy.style.color = '#111'; copy.style.maxWidth = 'none';
+    return new XMLSerializer().serializeToString(copy);
+  }
+  async function math(source) {
+    await ready;
+    MathJax.texReset();
+    const node = await MathJax.tex2svgPromise(source, {display: true, em: 20, ex: 10, containerWidth: 900});
+    const stylesheet = MathJax.svgStylesheet();
+    if (stylesheet && !stylesheet.isConnected) document.head.appendChild(stylesheet);
+    stage.replaceChildren(node);
+    const svg = node.querySelector('svg'), box = svg.getBoundingClientRect();
+    return {svg: serialize(svg, box.width, box.height), width: box.width, height: box.height,
+      textElements: svg.querySelectorAll('text').length,
+      errorElements: svg.querySelectorAll('[data-mml-node="merror"]').length};
+  }
+  async function raster(svg, width, height) {
+    const url = URL.createObjectURL(new Blob([svg], {type: 'image/svg+xml;charset=utf-8'}));
+    try {
+      const img = new Image(); img.src = url;
+      await new Promise((resolve, reject) => {img.onload = resolve; img.onerror = () => reject(new Error('SVG image decode failed'));});
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.ceil(width); canvas.height = Math.ceil(height);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = 'white'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, width, height);
+      return canvas.toDataURL('image/png');
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function diagram(source) {
+    await ready;
+    const {svg: markup} = await mermaid.render('s2diagram' + (++sequence), source);
+    stage.innerHTML = markup;
+    const svg = stage.querySelector('svg'), box = svg.viewBox.baseVal;
+    if (svg.querySelector('foreignObject')) throw new Error('foreignObject is not canvas portable');
+    const width = Math.ceil(box.width), height = Math.ceil(box.height);
+    const data = serialize(svg, width, height);
+    return {png: await raster(data, width, height), width, height};
+  }
+  async function probe(index, source) {
+    const result = await math(source);
+    return {index, bytes: result.svg.length, errors: result.errorElements};
+  }
+  return {ready, math, raster, diagram, probe};
+})();
+</script></body></html>
