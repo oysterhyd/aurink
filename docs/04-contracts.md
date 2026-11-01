@@ -63,18 +63,27 @@
 ### 4.2 AST
 1. `AST.Version() == Text.Version()`（同一快照）。
 2. 块按文档顺序；`Block(0)` 为根；子块位于 `(i, Block(i).Next)`。
-3. 叶子块（`Paragraph Heading ThematicBreak Code HTML Math TableCell FrontMatter TOC`）构成 `Leaves()` 序列，即编辑器虚拟化的行；表格单元格作为叶子，表格行/表格本身为容器。
+3. 叶子块（`Paragraph Heading ThematicBreak Code HTML Math TableCell FrontMatter TOC Blank LinkDef`）构成 `Leaves()` 序列，即编辑器虚拟化的行；表格单元格作为叶子，表格行/表格本身为容器。
 4. 前缀不变式：对段落/标题叶子，`源码[Range] 去掉 Prefixes 与 Markers 后` 与 parser 的内容行一致（S3 验证）。
 5. 内联：`Open`/`Close` 为空区间表示无定界符；子节点范围位于 `[Open.End, Close.Start)` 内。
 6. `BlockID` 稳定性：未与任何 `Change` 相交的块保持 ID；与 `Change` 相交但"种类相同且映射后起点相同"的块保持 ID；其余为新 ID。ID 永不复用。
 7. Front Matter 仅在 `ExtFrontMatter` 开启且位于文档首行时识别。
+8. 覆盖不变式（CR-001）：按 `Leaves()` 顺序，第一个叶子的 `Lead.Start == 0`；每个叶子 `Lead.End == Range.Start`、`Range.End == Trailer.Start`；下一个叶子的 `Lead.Start` 等于本叶子的 `Trailer.End`；最后一个叶子的 `Trailer.End` 等于源码长度。即所有叶子的 `[Lead.Start, Trailer.End)` 无缝无叠地覆盖整个文档，`LeafAt` 对任何偏移都返回拥有它的叶子（偏移等于源码长度时返回最后一个叶子）。
+9. `BlockBlank` 只在以下位置产生（CR-001）：
+   1. 叶子的 `Trailer` 已含一个分隔行（去掉容器前缀后只剩空白的行）后，其后每多一个分隔行产生一个：`Lead` 为该行容器前缀，`Range` 为剩余空白，`Trailer` 为行终止符；
+   2. 没有叶子后代的容器（空列表项、空引用、空脚注定义）产生一个子块，`Range` 是容器语法之后的空区间；
+   3. 最后一个叶子的 `Trailer` 以分隔行结尾时，在源码末尾追加一个三个区间都为空的；
+   4. 空文档恰有一个，三个区间都是 `[0,0)`。
+   `BlockBlank` 的 `Parent` 是包含该行的最内层容器（没有则为根），BlockID 规则（第 6 条）同样适用。解析器不产生块的链接引用定义行归 `BlockLinkDef`。
 
 ### 4.3 Projection
-1. 片段覆盖叶子块完整 `Range`，按源码顺序首尾相接（**无缝无叠**）。
-2. `SegText`/`SegMarker` 的 `Display` 必须等于对应源码子串；`SegHidden` 的 `Display` 为空；`SegObject` 的 `Display` 为 `"￼"`。
+1. 片段覆盖叶子块的 `[Lead.Start, Trailer.End)`，按源码顺序首尾相接（**无缝无叠**）；`Lead`、`Trailer` 一律为 `SegHidden`，容器语法的视觉由 `ContainerDecor` 表达（CR-001）。
+2. `SegText`/`SegMarker` 的 `Display` 必须等于对应源码字节，但不得引用 `Text.String()` 的底层字节（投影会被长期缓存，实现可对一个块克隆一次，CR-002）；`SegHidden` 的 `Display` 为空；`SegObject` 的 `Display` 为 `"￼"`。
 3. `ToSource(ToDisplay(s)) == Snap(s)`；`ToDisplay` 单调不减；`Snap` 的结果不落在 `SegHidden`/`SegObject` 内部、不切开字素。
-4. 同一 `(AST 版本, leaf, Reveal)` 输入产生相同 `Sig`；任一影响显示的输入变化必须改变 `Sig`。
+4. `Sig` 是排版缓存键（CR-002）：覆盖 `Kind`、`Level`、`Lang`、`Revealed`、`Containers`（不含 `Block`、`TaskSrc`）与各片段的 `Kind`、`Display`、`Style`、`Object`；不含 `Block`、`Index` 与绝对偏移，块整体平移时不变；任一影响排版的输出变化必须改变 `Sig`。`Sig` 相同不代表 `Src` 映射相同（如 `&amp;` 与 `&#x26;`）。
 5. `RevealNone`（阅读模式）下不存在 `SegMarker`。
+6. 投影的输入（CR-002）：`Project` 的输出在平移后只取决于该叶子 `[Lead.Start, Trailer.End)` 的字节与容器链、`Reveal` 中与本块相关的部分，以及全局表 `LinkDefs`、`Footnotes`、`Outline`（`[TOC]` 用）、`Exts`、`ObjectLangs`。缓存的投影只有在本块未与任何 `Change` 相交且全局表未变时才能平移复用（`Segments[].Src` 与 `Containers[].TaskSrc` 一起平移）；不能以 `Sig` 相同为复用条件。
+7. `Affinity`（CR-002）：显示索引 `d` 处夹着连续的零宽片段（`SegHidden`，含 `Lead`、`Trailer`）时，`d` 对应源码区间 `[h0, h1]`：`Upstream` 取 `h0`，`Downstream` 取 `h1`。`ToSource` 与 `Snap` 的结果限制在 `[Range.Start, Range.End]` 内（不进入 `Lead`、不越过 `Trailer`）；`ToDisplay` 对该区间内任何偏移返回同一个 `d`。
 
 ### 4.4 Editing
 1. 纯函数：同输入同输出，不读写全局状态、不做 I/O。
@@ -157,3 +166,13 @@
 | `editorapi.go` | `FocusMode` `Typewriter` `ScrollOffset` `CaretBlock` | 视图菜单状态、滚动联动标题、胶囊 |
 
 页边标签、结构导轨、灯箱属于 `liveedit` 内部，不进入契约。
+
+## 附：CR-001、CR-002 修订（2026-11-01，冻结前，`contract-v1.0-rc2`）
+
+| 文件 | 变更 | 依据 |
+|---|---|---|
+| `ast.go` | 新增 `BlockBlank`、`BlockLinkDef`；`Block` 末尾新增 `Lead`、`Trailer`；`LeafAt` 注释改为覆盖语义 | CR-001 批复；§4.2.3、§4.2.8、§4.2.9 |
+| `projection.go` | `Segment.Display` 不得引用整份源码；`Sig` 只作排版缓存键；`Affinity` 的精确定义 | CR-002 批复；§4.3.1、§4.3.2、§4.3.4、§4.3.6、§4.3.7 |
+| `document.go` | 注释示例 `"undo.typing"` 改为 `"editing_undo_typing"` | 05 §3.4（只改注释） |
+
+由 INT 在 `internal/contract` 落地；`spikes/01-contract-rc` 保持原样，作为历史记录。

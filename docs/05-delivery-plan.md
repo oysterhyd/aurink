@@ -108,7 +108,7 @@ MyGo 对键名的约束 [源码 `internal/i18ngen/load.go:180`、MyGo `docs/i18n
   - 静态文案直接调用生成的函数，如 `locales.ShellTabsClose()`；
   - 契约字段里传的是键（`Command.Title`、`Command.Category`、`Transaction.Label`），视图用 `locales.Catalog.Format(i18n.Locale(), key, args)` 取文本 [源码 `locales/catalog_gen.go`、MyGo `i18n/catalog.go`]。
 - **现有键 `appName`**：改名为 `app_name`，生成函数仍是 `AppName()`，调用方不用改；i18nmerge 出现后移入 `i18n/fragments/int.*.json`。
-- **契约注释**：`internal/contract/document.go` 中的示例 `"undo.typing"` 改为 `"editing_undo_typing"`。这只改注释、不改语义，由 INT 在冻结 `contract-v1.0` 时一并落地；`spikes/01-contract-rc` 作为历史记录保持原样。
+- **契约注释**：`internal/contract/document.go` 中的示例 `"undo.typing"` 改为 `"editing_undo_typing"`。这只改注释、不改语义，由 INT 随 CR-001、CR-002 一并落地（`contract-v1.0-rc2`）；`spikes/01-contract-rc` 作为历史记录保持原样。
 
 ## 4. 契约冻结、Mock 与变更流程
 
