@@ -31,7 +31,7 @@ type RenderResult struct {
 	SVG []byte
 	// PNG 用于图表，以及 SVG 子集不能完整表示的数学公式。像素 = DIP × Scale；
 	// 数学的 Ascent 仍须有效。
-	PNG []byte
+	PNG    []byte
 	Width  float32
 	Height float32
 	Ascent float32 // 行内公式基线以上的高度
