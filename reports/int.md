@@ -55,3 +55,4 @@
 | `5cf3305` | int/app：INT-0.1 |
 | `53dd09a` | int/app：INT-0.2，标签 `contract-v1.0-rc` |
 | `7362e21` | fe/editor：S1（`spikes/s1-liveedit`、`reports/fe-1.md`、CR-001、CR-002）。改动路径都在 FE-1 归属内，CR 文件任何人可新增。[实测] 本地门禁通过；CI 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41303528521> |
+| `970127e` | int/app：`tools/i18nmerge`、`app_name` 移入分片（05 §3.4）。[实测] 本地门禁通过，第 6 项已启用；CI 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41304476943> |
