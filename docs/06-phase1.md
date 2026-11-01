@@ -111,7 +111,7 @@ git worktree add -b codex/<卡ID> D:/mygo/project/Aurink_claude-wt/<卡ID> main
 codex exec -m gpt-6.1-sol -c model_reasoning_effort="xhigh" --approve-for-me -C D:/mygo/project/Aurink_claude-wt/<卡ID> -o <scratchpad>/codex-<卡ID>.md < <scratchpad>/brief-<卡ID>.md
 ```
 
-Codex 作为后台命令启动，进程退出后负责人被唤醒。模型名和这组参数还没有真正跑过 [待验证]，批次 1 会验证。`--approve-for-me` 没有沙箱，所以每份任务说明都写明：
+Codex 作为后台命令启动，进程退出后负责人被唤醒。这组参数在批次 1 实际跑通 [实测]。`--approve-for-me` 没有沙箱，所以每份任务说明都写明：
 
 - 不提交、不推送、不切分支，只改自己 worktree 内的文件。
 - 不改 `internal/contract`、`internal/contracttest`、`docs/`。认为契约要改时，停在那一项并在最终报告里说明原因和最小反例。
@@ -279,5 +279,5 @@ Front Matter 只做识别和块生成，YAML 语义留给 BE-1.7。
 
 | 批次 | 状态 | 提交 | 实际耗时 | 备注 |
 |---|---|---|---|---|
-| 1 | 进行中 | — | — | BE-1.1、BE-2.1 并行，同时验证 Codex 流程 |
+| 1 | 已完成 | ff87453、本批合并提交 | 约一轮对话 | BE-1.1、BE-2.1 并行。覆盖率 98.2%、92.9%；语料 85/85 字节一致；Unix 行为只交叉编译，CI 上运行前算 [待验证] |
 | 2–16 | 未开始 | — | — | |
