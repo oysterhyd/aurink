@@ -165,3 +165,9 @@ ok  	aurink/tests/arch	0.646s	coverage: [no statements]
 The complete suite includes contracttest.TestAST, all three 10,000-step seeds, the corpus matrix, snapshot immutability and all prior regressions. Focused concurrent snapshot readers also pass with -race. No contract concern was found. Other operating systems and hardware were not measured.
 
 The temporary zz_accept_test.go and stray coverage / coverage.out files are absent.
+
+## BE-1.2b long blank runs
+
+Root cause: `maxWindowTops` counted coverage-only blank rows, so a run of about 30 blank lines forced a full parse on every edit. The lookahead and the limit now count nonblank subtrees; the 24 KiB limit and the anchor checks are unchanged.
+
+Owner's rerun, 300 consecutive edits without undo, including events, no full rebuilds [实测]: worst p95 1.71 ms at 200 KB and 3.50 ms at 1 MB. Before: p50 about 15 ms and 76 ms. Single samples reach 28 ms at 200 KB, on a machine also running other builds; the cause of these is not established. Long differential run passed (236 s). Three mutations of the change all fail the tests.
