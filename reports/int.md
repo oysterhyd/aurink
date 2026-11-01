@@ -56,3 +56,7 @@
 | `53dd09a` | int/app：INT-0.2，标签 `contract-v1.0-rc` |
 | `7362e21` | fe/editor：S1（`spikes/s1-liveedit`、`reports/fe-1.md`、CR-001、CR-002）。改动路径都在 FE-1 归属内，CR 文件任何人可新增。[实测] 本地门禁通过；CI 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41303528521> |
 | `970127e` | int/app：`tools/i18nmerge`、`app_name` 移入分片（05 §3.4）。[实测] 本地门禁通过，第 6 项已启用；CI 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41304476943> |
+| `c09c451` | be/core：S3（`spikes/s3-ast`、`reports/be-1.md`、CR-003-content-line-mapping、CR-004）。[实测] 本地门禁通过；CI 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41304836657> |
+| `35c2251` | be/services：S2（`spikes/s2-render`、`reports/be-2.md`、CR-003-math-raster-fallback），BE-2 结论为 No-Go。[实测] 本地门禁通过；CI 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41305541333> |
+
+需要 CEO 注意：`docs/cr` 有两份 CR-003（content-line-mapping、math-raster-fallback），文件名不同所以没有冲突，序号需要 CEO 定。
