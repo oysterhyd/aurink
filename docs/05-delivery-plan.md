@@ -1,6 +1,6 @@
 # 05 · 交付计划
 
-> 2026-11-01 起只有一位负责人（Claude Code）和一个 `main` 分支，不再有多 Agent 并行、worktree 和合并流程。后端任务由负责人交给 Codex 实现（§1）。任务卡 ID 的前缀（BE、FE、INT、QA）只表示工作领域，历史报告仍用这些 ID。
+> 2026-11-01 起只有一位负责人（Claude Code）和一个 `main` 分支，不再有多 Agent 协作和 PR 流程。后端任务由负责人交给 Codex 实现，互不依赖的任务可以各用一个 worktree 并行（§1）。任务卡 ID 的前缀（BE、FE、INT、QA）只表示工作领域，历史报告仍用这些 ID。
 
 ## 1. 工作方式
 
@@ -10,9 +10,9 @@
 
 后端任务的流程：
 1. 负责人写任务说明：范围、相关文档、完成标准。
-2. Codex 在工作目录里改代码，不提交。它运行期间负责人不改同一批文件。
+2. 每个任务在自己的 worktree 和 `codex/<卡ID>` 分支上运行，Codex 改代码但不提交。只有互不依赖、不改同一批文件的任务才并行。
 3. 负责人读 diff，跑门禁（§5.1）和测试。Codex 的报告不算证据。
-4. 通过后由负责人提交；不通过就退回 Codex 或自己修。
+4. 通过后由负责人在该分支提交并合并到 `main`，再删除 worktree 和分支；不通过就退回 Codex 或自己修。
 
 **用户** 决定产品方向和取舍，比如功能范围变化、Spike 的 No-Go 是否接受后备方案；也负责真机检查（输入法、观感）。用户不需要在负责人和 Codex 之间传话。
 
@@ -20,8 +20,8 @@
 
 ## 2. 仓库
 
-- 工作目录 `D:\mygo\project\Aurink_claude`，唯一分支 `main`，远端 `github.com/oysterhyd/aurink`（私有）。
-- 直接提交到 `main`。提交前跑本地门禁（§5.1），小步提交，提交信息说明做了什么。
+- 工作目录 `D:\mygo\project\Aurink_claude`，主分支 `main`，远端 `github.com/oysterhyd/aurink`（私有）。Codex 的 worktree 放在 `D:\mygo\project\Aurink_claude-wt\<卡ID>`，分支只在本地，验收合并后删除。
+- 负责人直接提交到 `main`，不走 PR。提交前跑本地门禁（§5.1），小步提交，提交信息说明做了什么。
 
 ## 3. 代码规则
 
@@ -103,7 +103,7 @@ MyGo 要求键匹配 `^[A-Za-z][A-Za-z0-9_]*$`，点号只留给 MyGo 自带的 
 - QA-0.2 已完成：`tests/arch` 和 `testdata/corpus`。
 - S4 已完成并 Go：性能、空闲和字体预算（6.3 MB）本机通过，用户已确认观感，见 `spikes/s4-look/REPORT.md`。
 - QA-0.1 已按 §4 缩减完成：`contracttest` 有 Text、FileStore 两套，`mock` 有 Text、FileStore、Dispatcher。其余接口的套件由负责人在实现前写（06 §4.1），mock 按需写。
-- M0 已通过（用户确认 2026-11-01，见 `docs/adr/README.md`）。用户要求暂不进入 Phase 1，等用户通知；计划已写入 `docs/06-phase1.md`。
+- M0 已通过（用户确认 2026-11-01，见 `docs/adr/README.md`）。Phase 1 已开工（用户通知 2026-11-01），计划和进度见 `docs/06-phase1.md`。
 - CR-001 到 CR-005 已全部采纳并写入 `internal/contract`。
 - CR-001 的覆盖规则已在全部语料上跑过：无缝、无重叠。少量文本落在隐藏的 `Lead`/`Trailer`（3 个语料样本、约 0.25% 的随机编辑），字节不丢，见 `spikes/s3-ast/REPORT.md`。
 
