@@ -74,6 +74,14 @@ if ! $test_only; then
 		fi
 	done
 
+	step "No Go file is ignored by git"
+	ignored=$(git ls-files -o -i --exclude-standard -- '*.go')
+	if [ -n "$ignored" ]; then
+		echo "Go files ignored by git:" >&2
+		echo "$ignored" >&2
+		exit 1
+	fi
+
 	step "Contract depends on the standard library only"
 	check_std . ./internal/contract/... '^aurink/internal/contract(/|$)'
 fi

@@ -12,7 +12,7 @@ mygo_windows_*.syso
 *.test
 *.prof
 *.out
-coverage.*
+coverage.html
 
 # OS and editors
 .DS_Store

@@ -293,7 +293,7 @@ func walkCaret(t *testing.T, pr contract.Projector, src string, ast contract.AST
 		if s.Kind != contract.SegText || s.Src.Start < first || s.Src.Start >= last {
 			continue
 		}
-		if !visited[s.Src.Start] && !visited[s.Src.Start+0] && !nearVisited(visited, s.Src.Start) {
+		if !visited[s.Src.Start] && !nearVisited(visited, s.Src.Start) {
 			t.Fatalf("source %q, leaf %d: the walk skipped the text at %d", src, leaf, s.Src.Start)
 		}
 	}

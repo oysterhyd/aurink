@@ -315,7 +315,12 @@ func TestConcurrentWrites(t *testing.T) {
 func TestWriteFailures(t *testing.T) {
 	for _, stage := range []string{"write", "sync", "replace"} {
 		t.Run(stage, func(t *testing.T) {
-			path := filepath.Join(t.TempDir(), "doc.md")
+			// Write resolves symlinks, and the temp dir can be behind one.
+			dir, err := filepath.EvalSymlinks(t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			path := filepath.Join(dir, "doc.md")
 			original := []byte("original\r\n")
 			put(t, path, original)
 			before, err := New().Stat(path)
