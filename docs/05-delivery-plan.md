@@ -28,7 +28,7 @@ D:\mygo\project\
    └─ qa\         分支 qa/tests
 ```
 
-创建（INT-0.1 的脚手架提交合入 `main` 后执行，Git Bash 或 PowerShell 均可）：
+创建（Phase 0 第一天由用户执行，步骤见 `06-phase0-kickoff.md` §1；INT-0.1 合入 `main` 后各分支 `git rebase main`）：
 
 ```sh
 cd /d/mygo/project/Aurink_claude
@@ -55,7 +55,7 @@ Spike 在各自 worktree 的 `spikes/<id>/`（独立 `go.mod`）中进行，不�
 | `internal/views/{liveedit,source}/**` | FE-1 | |
 | `internal/views/{theme,motion,effects,kit,shell,palette,panels}/**`、`resources/{icons,fonts}/**` | FE-2 | |
 | `internal/mock/**`、`internal/contracttest/**`、`testdata/**`、`tests/**` | QA | 各包自己的 `_test.go` 归包所有者 |
-| `main.go`、`internal/app/**`、`internal/adapters/{watch,clipboard}/**`、`mygo.json`、`scripts/**`、`tools/**`、`.github/**`、`.gitignore`、`.gitattributes`、`locales/**`（生成物） | INT | |
+| `main.go`、`internal/app/**`、`internal/adapters/{watch,clipboard}/**`、`mygo.json`、`scripts/**`、`tools/**`、`.github/**`、`.agents/**`、`.gitignore`、`.gitattributes`、`locales/**`（生成物） | INT | |
 | `i18n/fragments/<owner>.{en,zh-Hans}.json` | 各所有者各一对 | 文案键前缀 = 所有者模块名，如 `shell.tabs.close` |
 | `spikes/<id>/**` | Spike 负责人 | |
 | `reports/<agent>.md` | 各 Agent | 每日进度 |
@@ -139,8 +139,8 @@ Spike 在各自 worktree 的 `spikes/<id>/`（独立 `go.mod`）中进行，不�
 
 | 卡 | 负责 | 依赖 | 交付物 | 验收标准 | 估时 |
 |---|---|---|---|---|---|
-| INT-0.1 仓库脚手架 | INT | — | （已完成：`git init -b main`、`.gitignore`、`.gitattributes`、私有仓库 `oysterhyd/aurink`、基线 CI）`go.mod`（模块 `aurink`）；`mygo.json`（name Aurink、identifier `app.aurink.editor`、i18n、fileAssociations md/markdown）；`main.go`；§11 架构目录骨架（每包 `doc.go`）；`scripts/gate.*`；把 `ci.yml` 的内联步骤改为调用 `scripts/gate.sh`、`setup-go` 改用 `go-version-file: go.mod`；`reports/` 模板；按 §2 创建 worktree | 门禁在 Windows 通过；三平台交叉编译通过；`go tool mygo dev` 能启动空窗口 | 1.5 |
-| INT-0.2 契约落地 | INT | 0.1 | `internal/contract/*`、`internal/views/editorapi/*`（复制 rc，改 import 路径）；`tests/arch` 中"contract 只依赖标准库"规则 | 编译通过；与 rc 逐字一致（除 import）；标签 `contract-v1.0-rc` | 0.5 |
+| INT-0.1 仓库脚手架 | INT | — | （已完成：`git init -b main`、`.gitignore`、`.gitattributes`、私有仓库 `oysterhyd/aurink`、基线 CI；MyGo 技能与 worktree 由用户按 06 §1 创建）`go.mod`（模块 `aurink`）；`mygo.json`（name Aurink、identifier `app.aurink.editor`、i18n、fileAssociations md/markdown）；`main.go`；§11 架构目录骨架（每包 `doc.go`）；`scripts/gate.*`；把 `ci.yml` 的内联步骤改为调用 `scripts/gate.sh`、`setup-go` 改用 `go-version-file: go.mod`；`reports/` 模板 | 门禁在 Windows 通过；三平台交叉编译通过；`go tool mygo dev` 能启动空窗口 | 1.5 |
+| INT-0.2 契约落地 | INT | 0.1 | `internal/contract/*`、`internal/views/editorapi/*`（复制 rc，改 import 路径）；"contract 只依赖标准库"由门禁/CI 检查（`ci.yml` 已含），QA-0.2 再写入 `tests/arch` | 编译通过；与 rc 逐字一致（除 import）；标签 `contract-v1.0-rc` | 0.5 |
 | QA-0.1 Mock 与一致性套件 | QA | INT-0.2 | `internal/mock/*`（§7 of 04 全部）、`internal/contracttest/*` 骨架（每接口至少覆盖 04 文档列出的不变式） | 全部 mock 通过 contracttest；FE 可用 mock 组装一个可运行窗口（由 INT 演示） | 3 |
 | QA-0.2 架构规则与语料 | QA | INT-0.1 | `tests/arch`：03 文档 §1.1 依赖规则表全部条目；`testdata/corpus`：CommonMark/GFM 规范示例（可从 MyGo `ui/markdown/parser/testdata` 获取）、CJK、CRLF、BOM、混合换行、无尾换行、Front Matter、真实 README 样本 ≥ 50、生成器（1 MB / 5 MB） | 规则测试能检出故意违规；语料清单 `testdata/corpus/INDEX.md` | 2 |
 | S1 编辑引擎原型 | FE-1 | rc | `spikes/s1-liveedit/` + `REPORT.md` | 见 01 文档 §6 Go 标准 | 3 |

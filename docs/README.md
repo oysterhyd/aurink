@@ -17,6 +17,7 @@
 | [03-architecture.md](03-architecture.md) | 分层与依赖规则、线程模型、单向数据流、各模块设计、状态管理、扩展机制、错误处理、性能预算、目录结构 | 全员 |
 | [04-contracts.md](04-contracts.md) | 统一接口契约 v1.0-rc：线程规则、不变式、事件、错误码、Mock 与一致性测试、版本冻结 | 全员（必读） |
 | [05-delivery-plan.md](05-delivery-plan.md) | 角色、Worktree 布局、文件归属、CR 流程、门禁与合并、Phase 0–4 任务卡、阶段门、最终验收清单、各 Agent 任务包 | 用户（分配任务）、全员 |
+| [06-phase0-kickoff.md](06-phase0-kickoff.md) | Phase 0 启动手册：仓库准备命令、6 个 Agent 的启动提示词、期间的日常操作、M0 评审前置条件 | 用户 |
 | `../spikes/00-probe/` | 可行性探针（独立模块，`go test -v ./...` 复现 P1–P14） | 证据 |
 | `../spikes/01-contract-rc/` | 契约 Go 代码 RC（独立模块，仅依赖标准库，`go vet`/`go build` 通过） | INT 落地用 |
 
@@ -68,7 +69,7 @@
 
 ## 6. 下一步（用户操作）
 
-1. 把 `05-delivery-plan.md §9` 中对应的任务包分配给各 Agent，先启动 Phase 0：**INT-0.1 → INT-0.2**，同时启动 **S1–S4** 与 **QA-0.2**。
+1. 按 [06-phase0-kickoff.md](06-phase0-kickoff.md) 准备仓库并启动各 Agent（任务包即 05 §9 的展开版），先启动 Phase 0：**INT-0.1 → INT-0.2**，同时启动 **S1–S4** 与 **QA-0.2**。
 2. 各 Spike 完成并提交 `REPORT.md` 后，通知 CEO 进行 **M0 阶段门评审**（Go/No-Go + 契约冻结 `contract-v1.0`）。
 
 CEO 不会自行创建或调度 Agent，也不会自行编写产品代码或执行开发测试；每个阶段门和最终验收都基于实际运行证据给出 PASS / FAIL。
