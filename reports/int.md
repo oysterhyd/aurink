@@ -35,3 +35,12 @@
   `import "aurink.local/spikes/contract-rc/contract"` → `import "aurink/internal/contract"`。
 - [实测] `go list -deps` 显示 `internal/contract` 的非标准库依赖只有它自身。
 - [实测] `scripts/gate.ps1`：`Gate passed`（第 6 项跳过，原因同上）。
+- [实测-CI] 三平台全绿：<https://github.com/oysterhyd/aurink/actions/runs/41302344666>（`53dd09a`）。
+- 已合入 main 并打标签 `contract-v1.0-rc`（指向 `53dd09a`，已推送）。
+
+## 合并记录
+
+| main 提交 | 内容 |
+|---|---|
+| `5cf3305` | int/app：INT-0.1 |
+| `53dd09a` | int/app：INT-0.2，标签 `contract-v1.0-rc` |
