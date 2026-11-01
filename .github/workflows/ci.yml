@@ -1,9 +1,8 @@
 name: CI
 
-# Baseline CI. It runs every Go module in the repository (the root module once
-# INT-0.1 creates it, and each spike under spikes/). INT-0.1 replaces the
-# inline steps with scripts/gate.sh, which runs the same checks locally
-# (docs/05-delivery-plan.md §5.1).
+# Runs the merge gate, scripts/gate.sh (docs/05-delivery-plan.md §5.1), on every
+# Go module in the repository. Linux runs every check for all five targets; the
+# other platforms run the tests.
 
 on:
   push:
@@ -24,11 +23,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  CGO_ENABLED: "0"
-  # Keep in sync with the go directive of the modules.
-  GO_VERSION: "1.27.3"
-
 jobs:
   test:
     name: ${{ matrix.name }}
@@ -38,9 +32,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: Windows, os: windows-latest }
-          - { name: Linux, os: ubuntu-latest }
-          - { name: macOS, os: macos-latest }
+          - { name: Windows, os: windows-latest, gate: --test-only }
+          - { name: Linux, os: ubuntu-latest, gate: --all-targets }
+          - { name: macOS, os: macos-latest, gate: --test-only }
     defaults:
       run:
         shell: bash
@@ -48,74 +42,8 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v6
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: go.mod
           cache-dependency-path: "**/go.sum"
 
-      - name: List the Go modules
-        id: modules
-        run: |
-          dirs=$(git ls-files -- ':(glob)**/go.mod' | xargs -n1 dirname | sort | tr '\n' ' ')
-          echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
-          echo "Modules: $dirs"
-
-      - name: gofmt
-        if: runner.os == 'Linux'
-        run: |
-          out=$(git ls-files -z -- '*.go' | xargs -0 gofmt -l)
-          if [ -n "$out" ]; then
-            echo "::error::Files not formatted with gofmt:"
-            echo "$out"
-            exit 1
-          fi
-
-      - name: Build and vet every platform
-        if: runner.os == 'Linux'
-        run: |
-          for d in ${{ steps.modules.outputs.dirs }}; do
-            echo "::group::$d"
-            for target in windows/amd64 windows/arm64 linux/amd64 darwin/arm64 darwin/amd64; do
-              export GOOS=${target%/*} GOARCH=${target#*/}
-              echo "$d $GOOS/$GOARCH"
-              go -C "$d" build ./...
-              go -C "$d" vet ./...
-              # Production builds leave the inspector of native UI out.
-              go -C "$d" vet -tags mygo_noinspector ./...
-            done
-            echo "::endgroup::"
-          done
-
-      - name: Check native UI build lifetimes (mygo vet)
-        if: runner.os == 'Linux'
-        run: |
-          for d in ${{ steps.modules.outputs.dirs }}; do
-            # Only modules that declare the mygo tool have native UI code.
-            if (cd "$d" && go tool -n mygo >/dev/null 2>&1); then
-              echo "::group::$d"
-              (cd "$d" && go tool mygo vet .)
-              echo "::endgroup::"
-            fi
-          done
-
-      - name: Contract depends on the standard library only
-        if: runner.os == 'Linux'
-        run: |
-          check() {
-            local dir=$1 pkgs=$2 self
-            self=$(go -C "$dir" list -m)
-            bad=$(go -C "$dir" list -deps -f '{{if not .Standard}}{{.ImportPath}}{{end}}' $pkgs | grep -v "^$self/" || true)
-            if [ -n "$bad" ]; then
-              echo "::error::$dir $pkgs imports non-standard packages:"
-              echo "$bad"
-              exit 1
-            fi
-          }
-          if [ -d spikes/01-contract-rc ]; then check spikes/01-contract-rc ./...; fi
-          if [ -d internal/contract ]; then check . ./internal/contract/...; fi
-
-      - name: Test
-        run: |
-          for d in ${{ steps.modules.outputs.dirs }}; do
-            echo "::group::$d"
-            go -C "$d" test -count=1 ./...
-            echo "::endgroup::"
-          done
+      - name: Gate
+        run: bash scripts/gate.sh ${{ matrix.gate }}
