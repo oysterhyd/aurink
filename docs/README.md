@@ -71,4 +71,4 @@
 
 ## 6. 下一步
 
-当前在 Phase 0，现状和待办见 [05 §6](05-delivery-plan.md)。负责人完成 S4、落地已批准的契约修改、处理 S2 和 S3 的 No-Go，再进入 M0 评估。需要取舍的事项交给用户决定。
+当前在 Phase 0，现状见 [05 §6](05-delivery-plan.md)。M0 评估见 [adr/README.md](adr/README.md)，等用户确认 3 项后进入 Phase 1。
