@@ -1,6 +1,6 @@
 # Aurink 规划文档包（v1.2 · 2026-11-01）
 
-> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；开发方式已改为单人负责；Phase 0 进行中**。产品功能尚未开始开发。
+> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；开发方式已改为一位负责人 + Codex 实现后端；M0 已通过，Phase 1 等用户通知**。产品功能尚未开始开发。
 >
 > 仓库：<https://github.com/oysterhyd/aurink>（私有）· 集成分支 `main` · CI：`.github/workflows/ci.yml`
 
@@ -64,7 +64,7 @@
 |---|---|---|
 | Q1 | 平台优先级 | **Windows 先行**；macOS/Linux 构建与无窗口测试在 CI 上跑，Phase 4 前在真机人工验收 |
 | Q2 | 数学/Mermaid/PDF 依赖系统 WebView | **接受**（WebView2 / WKWebView / WebKitGTK，懒启动，不可用时降级为源码） |
-| Q3 | 开发方式 | 原定 6 个并行 Agent；**2026-11-01 改为单人负责、只用 `main`**，并行没有节约时间，每次合并等 CI 的时间比改代码还长 |
+| Q3 | 开发方式 | 原定 6 个并行 Agent；**2026-11-01 改为一位负责人、只用 `main`**，并行没有节约时间，每次合并等 CI 的时间比改代码还长；同日决定后端交给 Codex 实现，负责人验收，前端由负责人实现 |
 | Q4 | Go 模块路径与应用标识 | 模块 `aurink`；identifier `app.aurink.editor` |
 | Q5 | `git init` | **已执行 `git init -b main`**；worktree 已于 2026-11-01 全部移除 |
 | Q6 | GitHub 与 Actions | **已创建私有仓库 `oysterhyd/aurink` 并启用 CI**（三平台矩阵，见 05 §5.2） |
