@@ -2,7 +2,7 @@
 
 结论标记：[实测] 本机运行得到；[待验证] 还没跑或要用户判断。
 
-**当前结论：暂不下 Go/No-Go。** 性能项通过，低功耗路径的令牌颜色通过；字体方案没有测（还没下载字体文件），观感要用户在真机确认。
+**当前结论：暂不下 Go/No-Go。** 性能、低功耗路径的令牌颜色和字体预算都通过；观感要用户在真机确认。
 
 ## 环境
 
@@ -19,7 +19,7 @@
 cd spikes/s4-look && go run .
 ```
 
-可加 `-dark`、`-low`、`-welcome`、`-palette`、`-find`。标题栏的"查找 / 欢迎 / 低功耗 / 主题"可点。
+默认注册 `fonts/`。可加 `-dark`、`-low`、`-welcome`、`-palette`、`-find`。标题栏的"查找 / 欢迎 / 低功耗 / 主题"可点。
 
 ## 帧耗时 [实测]
 
@@ -63,25 +63,38 @@ cd spikes/s4-look && go run .
 截图在 `evidence/`：`gpu-*.png` 是真实窗口（150% 缩放），`low-*.png` 是 Tester 渲染。
 
 - 图标用文字代替，树的展开箭头、脏点、大纲刻度、徽标都没做。
-- 标题和引用用的是系统回退衬线（Georgia + SimSun），不是 Newsreader + Noto Serif SC。这是目前最明显的差异。
-- 代码字体用的是 Cascadia Code，不是 JetBrains Mono。
+- 打包字体已生效（`evidence/fonts-*.png`）。较早的 `gpu-*.png` 还是回退字体，只用来看玻璃和颜色。
 - 欢迎页只有标题和副标题，极光浓度已按 `Welcome.png` 调淡，但没有逐像素对比。
 - 玻璃层的模糊和高光参数按 02 §4.3 设定，真实观感要由用户判断。
 
-## 字体 [待验证]
+## 字体 [实测]
 
-本机没有 Newsreader、Noto Serif SC、JetBrains Mono，体积、注册耗时、中西混排都没有测。
+文件在 `fonts/`，均为 OFL，许可证里没有保留字体名，子集可以沿用原名。重新生成用 `fontsubset.py`。
 
-Google Fonts 仓库中的可变字体大小（HTTP HEAD，未下载）：
+| 文件 | 字节 | 说明 |
+|---|---|---|
+| `Noto_Serif_SC-gb2312-500-700.ttf` | 5,201,300 | GB2312 全部 6,763 字 + ASCII、Latin-1、CJK 标点，字重轴限制为 500–700 |
+| `Newsreader-opsz-wght.ttf` | 451,664 | 未改动 |
+| `Newsreader-Italic-opsz-wght.ttf` | 495,684 | 未改动 |
+| `JetBrains_Mono-wght.ttf` | 187,208 | 未改动 |
+| **合计** | **6,335,856** | 预算 15 MB |
 
-| 文件 | 字节 |
-|---|---|
-| `Newsreader[opsz,wght].ttf` | 451,664 |
-| `Newsreader-Italic[opsz,wght].ttf` | 495,684 |
-| `NotoSerifSC[wght].ttf` | 25,125,512 |
-| `JetBrainsMono[wght].ttf` | 187,208 |
+Noto Serif SC 的其他子集方案：
 
-Noto Serif SC 不子集化就超过 15 MB 的预算。测试步骤：下载到 `testdata` 之外的目录，用 `pyftsubset` 做常用字子集，再用 `go run . -fonts <目录>` 记录注册耗时。
+| 字符集 | 500 单字重 | 700 单字重 | 500–700 可变 |
+|---|---|---|---|
+| 一级 3,755 字 | 1,689,484 | 1,689,428 | 2,830,908 |
+| 一二级 6,763 字 | 3,100,116 | 3,100,068 | 5,201,300 |
+
+**方案：一二级 + 500–700 可变字重**，预算足够，也用不着为常用字之外的字回退。
+
+- 注册耗时：每个文件 1–4 ms，3 次运行合计约 6–8 ms，不会阻塞首帧。
+- 首帧：2 次不注册 101–103 ms，3 次注册后 104–114 ms；layout 从 6–7 ms 变为 8–11 ms。
+- 带字体滚动 300 步：p95 1.7 ms。
+- `TestBundledFonts` 确认：各字体确实被找到（与不存在的字体绘制结果不同）、Noto 500 和 700 不同（可变字重生效）、Newsreader 斜体和正体不同、`Newsreader, Noto Serif SC` 混排用到了两种字体。
+- 子集内部的家族名是 "Noto Serif SC ExtraLight"，**必须用 `RegisterFont(data, "Noto Serif SC")` 显式命名**，否则 `Font("Noto Serif SC")` 匹配不上。
+- 中文斜体是合成的：Noto Serif SC 没有斜体字形。
+- 未测：Newsreader 的光学尺寸轴（`opsz`）是否随字号自动变化；字体占用的内存；嵌入后的实际发布体积。
 
 ## Go/No-Go 对照
 
@@ -90,5 +103,5 @@ Noto Serif SC 不子集化就超过 15 MB 的预算。测试步骤：下载到 `
 | GPU 路径滚动与动画 60 fps | 本机通过（压力下的主题溶解最低 56 帧/秒）；弱 GPU [待验证] |
 | 空闲 0 帧 | 通过 |
 | 低功耗路径与 `LowPower.png` 一致 | 令牌颜色通过；整体观感待用户确认 |
-| 字体方案满足 03 §10 预算 | [待验证] |
+| 字体方案满足 03 §10 预算 | 通过：6.3 MB，注册不阻塞首帧 |
 | 用户真机确认观感差异可接受 | [待验证] |

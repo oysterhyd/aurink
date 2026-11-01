@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/egoist/mygo"
@@ -24,7 +25,7 @@ func main() {
 	flag.BoolVar(&a.find, "find", false, "start with the find panel open")
 	stress := flag.String("stress", "", "drive the window: scroll, pill, panel, theme or idle")
 	count := flag.Int("n", 300, "steps of -stress")
-	fonts := flag.String("fonts", "", "register the .ttf files of this directory")
+	fonts := flag.String("fonts", "fonts", "register the .ttf files of this directory")
 	flag.Parse()
 
 	if *fonts != "" {
@@ -35,7 +36,10 @@ func main() {
 				log.Fatal(err)
 			}
 			t0 := time.Now()
-			if err := ui.RegisterFont(data, ""); err != nil {
+			// The file's name up to "-" or "[" is its family: the subset of Noto
+			// Serif SC calls itself "Noto Serif SC ExtraLight" inside.
+			name := strings.ReplaceAll(filepath.Base(f)[:strings.IndexAny(filepath.Base(f), "-[")], "_", " ")
+			if err := ui.RegisterFont(data, name); err != nil {
 				log.Fatal(err)
 			}
 			fmt.Printf("font %s: %d bytes, registered in %v\n", filepath.Base(f), len(data), time.Since(t0))
