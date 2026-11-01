@@ -26,8 +26,12 @@ type RenderRequest struct {
 
 // RenderResult 是渲染结果；尺寸为 DIP。
 type RenderResult struct {
-	SVG    []byte // 数学：只含 path 的 SVG
-	PNG    []byte // 图表：PNG，像素 = DIP × Scale
+	// SVG 和 PNG 成功时恰有一个非空。SVG 必须完整落在 Native 支持的静态子集内
+	// （path、基本形状、分组等），不得残留 text。
+	SVG []byte
+	// PNG 用于图表，以及 SVG 子集不能完整表示的数学公式。像素 = DIP × Scale；
+	// 数学的 Ascent 仍须有效。
+	PNG []byte
 	Width  float32
 	Height float32
 	Ascent float32 // 行内公式基线以上的高度

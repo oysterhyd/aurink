@@ -2,7 +2,12 @@ package contract
 
 import "iter"
 
-// BlockID 是块的稳定标识：块在编辑中存活时保持不变，用作排版缓存键与视图 Key。
+// BlockID 是块的稳定标识；语法重解析后仍存活的块继承 ID，用作视图 Key。
+// 源码未与 Change 相交且种类、映射后的完整区间相同的块，必须继承 ID。
+// 对其余候选，种类和映射后的起点相同、旧起点未被删除，且旧 ID 尚未占用时，按文档
+// 顺序继承 ID；必须先为完整区间相同的存活块保留身份。
+// 合并、拆分或被容器吞并而消失的块不保留独立身份；新 ID 永不复用。
+// ID 不表示内容修订；内联依赖改变时须另行失效投影与排版缓存。
 type BlockID uint64
 
 // BlockKind 是块的种类。
@@ -26,6 +31,10 @@ const (
 	// Aurink 扩展
 	BlockFrontMatter
 	BlockTOC
+	// BlockBlank 是没有内容的叶子，让光标能停在空行上（产生位置见 04 §4.2.9）。
+	BlockBlank
+	// BlockLinkDef 是链接引用定义所在的连续行。解析器不为它们产生块；按源码淡色显示。
+	BlockLinkDef
 )
 
 // TaskState 是任务列表项的状态。
@@ -64,6 +73,14 @@ const (
 	ExtDefault = ExtFrontMatter | ExtHighlight | ExtSupSub | ExtEmoji | ExtTOC | ExtDollarMath
 )
 
+// BlockLine 描述解析器的一条内容行，不包含行终止符。
+type BlockLine struct {
+	// Source 是去掉该行前缀与块标记后的原始字节区间。
+	Source Range
+	// Padding 是部分消耗 Tab 剩下的空格数，范围 0..3；不改写源码。
+	Padding uint8
+}
+
 // Block 是一个块。块按文档顺序存放，子块紧随父块，直到 Next。只读，不得修改。
 type Block struct {
 	ID     BlockID
@@ -72,12 +89,17 @@ type Block struct {
 	Next   int // 本块及其子孙之后的索引
 	// Range 是块的完整源码（含标记）。
 	Range Range
-	// Content 是去掉标记后的内容（标题文字、代码正文、数学 TeX、Front Matter YAML）。
+	// Content 是内容源码的包围区间（标题文字、代码正文、数学 TeX、Front Matter YAML）；
+	// 多行时可含续行前缀和原始换行。精确的逐行内容通过 Lines 取得。
 	Content Range
 	// Markers 是块自身的语法标记，按源码顺序：如 "## "、闭合 "##"、围栏行、"$$" 行、"---" 行。
 	Markers []Range
-	// Prefixes 是叶子块内每一续行的容器前缀（"> "、列表缩进），WYSIWYG 中隐藏。
+	// Prefixes 是 Range 内各内容行被解析器剥离的行首字节（容器前缀、结构缩进、内容前空白），
+	// WYSIWYG 中隐藏。首行的容器语法归 Lead。
 	Prefixes []Range
+	// Lines 按源码顺序列出内容行；无内容行的块为 nil。第 k 行的解析器内容 =
+	// Padding 个空格 + 源码[Source]。转义和实体由内联阶段解码。
+	Lines []BlockLine
 
 	Level   int  // 标题级别 1–6
 	Ordered bool // 列表
@@ -95,6 +117,13 @@ type Block struct {
 	Label      string  // 脚注标签
 	// Open 表示块在文档末尾未闭合（如缺少闭合围栏）。
 	Open bool
+	// Lead 只用于叶子块：上一个叶子的 Trailer 之后、本叶子 Range 之前的源码，即首行上的
+	// 容器语法与缩进（"> "、"- [ ] "、表格的 "| "、表格分隔行）。Lead.End == Range.Start。
+	Lead Range
+	// Trailer 只用于叶子块：本叶子是所在行最后一个叶子时，为该行 Range.End 之后的剩余字节
+	// （如表格行尾的 " |"）、行终止符，以及至多一个紧随的分隔行（去掉容器前缀后只剩空白的行）；
+	// 否则为空区间（如表格中非末列的单元格）。Trailer.Start == Range.End。
+	Trailer Range
 }
 
 // InlineKind 是内联节点种类。
@@ -164,8 +193,8 @@ type AST interface {
 	Children(i int) iter.Seq[int]
 	// Inlines 返回叶子块的内联节点（惰性解析）；非叶子块返回 nil。
 	Inlines(i int) []Inline
-	// LeafAt 返回包含 offset 的叶子块；offset 落在块间空白时返回其前一个叶子块，
-	// 之前没有叶子块时返回之后第一个，文档无叶子块时返回 -1。
+	// LeafAt 返回 [Lead.Start, Trailer.End) 包含 offset 的叶子块；offset 等于源码长度时
+	// 返回最后一个叶子。
 	LeafAt(offset int) int
 	// Path 返回从根到包含 offset 的叶子块的索引路径。
 	Path(offset int) []int

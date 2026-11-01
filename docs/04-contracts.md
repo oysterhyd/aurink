@@ -64,9 +64,9 @@
 1. `AST.Version() == Text.Version()`（同一快照）。
 2. 块按文档顺序；`Block(0)` 为根；子块位于 `(i, Block(i).Next)`。
 3. 叶子块（`Paragraph Heading ThematicBreak Code HTML Math TableCell FrontMatter TOC Blank LinkDef`）构成 `Leaves()` 序列，即编辑器虚拟化的行；表格单元格作为叶子，表格行/表格本身为容器。
-4. 前缀不变式：对段落/标题叶子，`源码[Range] 去掉 Prefixes 与 Markers 后` 与 parser 的内容行一致（S3 验证）。
+4. 内容行不变式：对每个内容行，`Padding` 个空格 + `源码[Lines[k].Source]` 等于 `parser.Line(i,k)`（部分消耗的 Tab 靠 `Padding` 表示，不改写源码）。对段落/标题叶子，`源码[Range]` 去掉 `Prefixes` 与 `Markers` 后也与内容行一致。`Content` 只是包围区间，不能当纯文本用。
 5. 内联：`Open`/`Close` 为空区间表示无定界符；子节点范围位于 `[Open.End, Close.Start)` 内。
-6. `BlockID` 稳定性：未与任何 `Change` 相交的块保持 ID；与 `Change` 相交但"种类相同且映射后起点相同"的块保持 ID；其余为新 ID。ID 永不复用。
+6. `BlockID` 稳定性：种类和映射后完整区间都不变的块必须保持 ID；其余候选在种类和映射后起点相同、旧起点未被删除、旧 ID 尚未占用时按文档顺序继承（完整区间相同的块优先）；其余为新 ID，ID 永不复用。被语法吞并或合并而消失的块（如插入开放围栏）不保留身份，即使未与 `Change` 相交。ID 不表示内容未变：引用定义变化时使用该引用的块 ID 不变，但必须出现在 `DocEvent.Dirty` 中。
 7. Front Matter 仅在 `ExtFrontMatter` 开启且位于文档首行时识别。
 8. 覆盖不变式（CR-001）：按 `Leaves()` 顺序，第一个叶子的 `Lead.Start == 0`；每个叶子 `Lead.End == Range.Start`、`Range.End == Trailer.Start`；下一个叶子的 `Lead.Start` 等于本叶子的 `Trailer.End`；最后一个叶子的 `Trailer.End` 等于源码长度。即所有叶子的 `[Lead.Start, Trailer.End)` 无缝无叠地覆盖整个文档，`LeafAt` 对任何偏移都返回拥有它的叶子（偏移等于源码长度时返回最后一个叶子）。
 9. `BlockBlank` 只在以下位置产生（CR-001）：
@@ -172,4 +172,12 @@
 | `projection.go` | `Segment.Display` 不得引用整份源码；`Sig` 只作排版缓存键；`Affinity` 的精确定义 | CR-002 批复；§4.3.1、§4.3.2、§4.3.4、§4.3.6、§4.3.7 |
 | `document.go` | 注释示例 `"undo.typing"` 改为 `"editing_undo_typing"` | 05 §3.4（只改注释） |
 
-`document.go` 的注释已改；`ast.go`、`projection.go` 尚未落地（05 §6）。`spikes/01-contract-rc` 保持原样，作为历史记录。
+已在 `internal/contract` 落地。`spikes/01-contract-rc` 保持原样，作为历史记录。
+
+## 附：CR-003、CR-004、CR-005（2026-11-01）
+
+| 文件 | 变更 | 依据 |
+|---|---|---|
+| `ast.go` | 新增 `BlockLine`、`Block.Lines`；`Content`、`Prefixes` 注释澄清 | CR-003；§4.2.4 |
+| `ast.go` | `BlockID` 的存活规则 | CR-004；§4.2.6 |
+| `render.go` | 数学公式可回退 PNG；SVG 和 PNG 恰有一个非空 | CR-005 |

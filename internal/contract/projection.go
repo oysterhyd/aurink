@@ -90,11 +90,12 @@ type ObjectRef struct {
 }
 
 // Segment 是投影的一个显示片段，覆盖源码 Src。一个块的片段按源码顺序覆盖
-// 块的完整 Range（含前缀与标记），首尾相接、无缝无叠。
+// [Lead.Start, Trailer.End)（含前缀与标记），首尾相接、无缝无叠。
 type Segment struct {
 	Src  Range
 	Kind SegKind
-	// Display：SegText/SegMarker 为源码子串（零拷贝）；SegReplaced 为替代文本；
+	// Display：SegText/SegMarker 与对应源码字节相等，但不得引用整份源码的子串，
+	// 因为投影会被长期缓存（实现可对一个块克隆一次）；SegReplaced 为替代文本；
 	// SegObject 为 "￼"；SegHidden 为空串。
 	Display string
 	Style   Style
@@ -127,15 +128,21 @@ type BlockProjection struct {
 	Segments   []Segment
 	Containers []ContainerDecor
 	Revealed   bool
-	// Sig 是投影签名：内容或显隐变化时改变，作为排版缓存键的一部分。
+	// Sig 是排版缓存键：Kind、Level、Lang、Revealed、Containers（不含 Block、TaskSrc）与各片段的
+	// Kind、Display、Style、Object 的摘要，不含 Block、Index 与绝对偏移，块整体平移时不变。
+	// Sig 相同不代表 Src 映射相同；投影能否平移复用见 04 §4.3.6。
 	Sig uint64
 }
 
-// Affinity 决定映射落在边界时偏向哪一侧。
+// Affinity 决定零宽边界上的取向。显示索引 d 处夹着连续的零宽片段（SegHidden，含 Lead
+// 与 Trailer）时，d 对应源码区间 [h0, h1]；ToSource 与 Snap 的结果都限制在
+// [Range.Start, Range.End] 内。
 type Affinity int8
 
 const (
-	Upstream   Affinity = -1
+	// Upstream 取 h0：停在零宽片段之前。
+	Upstream Affinity = -1
+	// Downstream 取 h1：越过零宽片段，落到下一个可见片段的起点；不越过 Trailer。
 	Downstream Affinity = 1
 )
 
