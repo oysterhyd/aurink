@@ -45,6 +45,12 @@ const (
 
 	CmdBlockParagraph   CommandID = "block.paragraph"
 	CmdBlockHeading     CommandID = "block.heading" // EditCommand.Level
+	CmdBlockHeading1    CommandID = "block.heading1"
+	CmdBlockHeading2    CommandID = "block.heading2"
+	CmdBlockHeading3    CommandID = "block.heading3"
+	CmdBlockHeading4    CommandID = "block.heading4"
+	CmdBlockHeading5    CommandID = "block.heading5"
+	CmdBlockHeading6    CommandID = "block.heading6"
 	CmdBlockQuote       CommandID = "block.quote"
 	CmdBlockBulletList  CommandID = "block.bulletList"
 	CmdBlockOrderedList CommandID = "block.orderedList"
@@ -99,6 +105,15 @@ const (
 	CmdNavNextTab         CommandID = "nav.nextTab"
 	CmdNavPrevTab         CommandID = "nav.prevTab"
 	CmdNavSearchWorkspace CommandID = "nav.searchWorkspace"
+	CmdNavGoToTab1        CommandID = "nav.goToTab1"
+	CmdNavGoToTab2        CommandID = "nav.goToTab2"
+	CmdNavGoToTab3        CommandID = "nav.goToTab3"
+	CmdNavGoToTab4        CommandID = "nav.goToTab4"
+	CmdNavGoToTab5        CommandID = "nav.goToTab5"
+	CmdNavGoToTab6        CommandID = "nav.goToTab6"
+	CmdNavGoToTab7        CommandID = "nav.goToTab7"
+	CmdNavGoToTab8        CommandID = "nav.goToTab8"
+	CmdNavGoToTab9        CommandID = "nav.goToTab9"
 
 	CmdAppSettings CommandID = "app.settings"
 	CmdAppAbout    CommandID = "app.about"
