@@ -89,6 +89,44 @@ func TestCorpusWindowWork(t *testing.T) {
 	}
 }
 
+func TestCorpusHoldEnterWork(t *testing.T) {
+	sizes := []int{200 << 10, 1 << 20}
+	for _, size := range sizes[:longSteps(1, 2)] {
+		for _, c := range EnterWorkloads(t, size) {
+			t.Run(fmt.Sprintf("%dKB/%s", size>>10, c.Name), func(t *testing.T) {
+				p := mustNew(t, c.Source, 1, contract.ExtFrontMatter)
+				at := c.At
+				var total Stats
+				steps := longSteps(80, 300)
+				for step := 0; step < steps; step++ {
+					u, err := p.Apply([]contract.TextEdit{{Range: contract.Range{Start: at, End: at}, Text: c.Text}})
+					if err != nil {
+						t.Fatal(err)
+					}
+					at += len(c.Text)
+					addStats(&total, u.Stats)
+					if u.Stats.FullRebuilds != 0 {
+						t.Fatalf("step %d: %+v", step, u.Stats)
+					}
+					if u.Stats.AdaptedBlocks > 2*(step+1)+550 {
+						t.Fatalf("step %d: unbounded work %+v", step, u.Stats)
+					}
+					if step == 0 || step == 31 || step == steps-1 {
+						full := mustNew(t, u.Snapshot.text.String(), u.Snapshot.Version(), contract.ExtFrontMatter)
+						if err := equivalent(u.Snapshot, full.Snapshot()); err != nil {
+							t.Fatalf("step %d: %v", step, err)
+						}
+					}
+				}
+				if p.Snapshot().text.Len() != len(c.Source)+steps*len(c.Text) {
+					t.Fatal("edits did not accumulate")
+				}
+				t.Logf("%d accumulating edits: %+v", steps, total)
+			})
+		}
+	}
+}
+
 func TestConservativePaths(t *testing.T) {
 	body := corpus.Generate(200<<10, 1331)
 	cases := []struct {

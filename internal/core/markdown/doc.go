@@ -14,10 +14,12 @@
 //
 // Structural updates parse complete top-level subtrees with a verified left
 // context and two unchanged suffix anchors. The window includes all block
-// kinds and original line endings. Growth stops at 24 KiB or 64 top-level
-// subtrees. A missing anchor, an oversized window, a Front Matter change, or
-// an ambiguous caret label causes a counted full parse. parser.Document.Edit
-// is not used, avoiding its indented-code, table and reference-cache defects.
+// kinds and original line endings. Growth stops at 24 KiB or 64 nonblank
+// top-level subtrees. Coverage-only blank rows count toward the byte limit,
+// and cannot certify a boundary. Missing anchors, oversized windows, Front
+// Matter changes and ambiguous caret labels cause counted full parses.
+// parser.Document.Edit is not used, avoiding its indented-code, table and
+// reference-cache defects.
 //
 // In the pinned parser, block definition recognition consumes syntax regardless
 // of existing definitions; reference lookup only affects inlines. Window block

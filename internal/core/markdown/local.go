@@ -45,7 +45,12 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 	var anchorOld, anchorNew, cutOld, cutNew int
 	stats := Stats{}
 	for look := 4; ; look *= 2 {
-		stop := min(len(tops), hi+look)
+		stop := hi
+		for remaining := look; stop < len(tops) && remaining > 0; stop++ {
+			if old.entries[tops[stop]].data.block.Kind != contract.BlockBlank {
+				remaining--
+			}
+		}
 		for stop < len(tops) && windowStart(old, tops[stop]) < old.Block(tops[stop-1]).Range.End {
 			stop++
 		}
@@ -54,7 +59,14 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 			end = windowStart(old, tops[stop])
 		}
 		newEnd := end + delta
-		if end-start > maxWindowBytes || newEnd-start > maxWindowBytes || stop-lo > maxWindowTops {
+		// Coverage adds one row per blank line, without adding parser subtrees.
+		windowTops := 0
+		for _, i := range tops[lo:stop] {
+			if old.entries[i].data.block.Kind != contract.BlockBlank {
+				windowTops++
+			}
+		}
+		if end-start > maxWindowBytes || newEnd-start > maxWindowBytes || windowTops > maxWindowTops {
 			stats.WindowLimitFallbacks++
 			return Update{Stats: stats}, false
 		}
