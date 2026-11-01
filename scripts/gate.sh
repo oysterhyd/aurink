@@ -1,31 +1,34 @@
 #!/usr/bin/env bash
-# The merge gate (docs/05-delivery-plan.md §5.1). scripts/gate.ps1 is the same
-# gate for PowerShell; change both together.
+# The gate (docs/05-delivery-plan.md §5.1). scripts/gate.ps1 is the same gate
+# for PowerShell; change both together.
 #
-#   scripts/gate.sh                every check, for the three targets of §5.1
-#   scripts/gate.sh --all-targets  also windows/arm64 and darwin/amd64
+#   scripts/gate.sh                every check of the root module, for three targets
 #   scripts/gate.sh --test-only    only the tests, on the host platform
+#   scripts/gate.sh --all-targets  also windows/arm64 and darwin/amd64
+#   scripts/gate.sh --spikes       also the modules under spikes/
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 targets="windows/amd64 linux/amd64 darwin/arm64"
 test_only=false
-case "${1:-}" in
-"") ;;
---all-targets) targets="windows/amd64 windows/arm64 linux/amd64 darwin/arm64 darwin/amd64" ;;
---test-only) test_only=true ;;
-*)
-	echo "usage: $0 [--all-targets | --test-only]" >&2
-	exit 2
-	;;
-esac
+modules=.
+for arg in "$@"; do
+	case "$arg" in
+	--all-targets) targets="windows/amd64 windows/arm64 linux/amd64 darwin/arm64 darwin/amd64" ;;
+	--test-only) test_only=true ;;
+	--spikes)
+		for m in spikes/*/go.mod; do
+			[ -e "$m" ] && modules="$modules $(dirname "$m")"
+		done
+		;;
+	*)
+		echo "usage: $0 [--test-only] [--all-targets] [--spikes]" >&2
+		exit 2
+		;;
+	esac
+done
 
 export CGO_ENABLED=0
-
-modules=.
-for m in spikes/*/go.mod; do
-	[ -e "$m" ] && modules="$modules $(dirname "$m")"
-done
 echo "Modules: $modules"
 
 step() { echo "=== $*"; }
@@ -56,9 +59,10 @@ if ! $test_only; then
 		for target in $targets; do
 			echo "$d $target"
 			GOOS=${target%/*} GOARCH=${target#*/} go -C "$d" vet ./...
-			GOOS=${target%/*} GOARCH=${target#*/} go -C "$d" vet -tags mygo_noinspector ./...
 			GOOS=${target%/*} GOARCH=${target#*/} go -C "$d" build -o /dev/null ./...
 		done
+		# Production builds leave the inspector of native UI out.
+		go -C "$d" vet -tags mygo_noinspector ./...
 	done
 
 	step "4. mygo vet"
@@ -71,12 +75,7 @@ if ! $test_only; then
 	done
 
 	step "Contract depends on the standard library only"
-	if [ -d spikes/01-contract-rc ]; then
-		check_std spikes/01-contract-rc ./... '^aurink\.local/spikes/contract-rc/'
-	fi
-	if [ -d internal/contract ]; then
-		check_std . ./internal/contract/... '^aurink/internal/contract(/|$)'
-	fi
+	check_std . ./internal/contract/... '^aurink/internal/contract(/|$)'
 fi
 
 step "5. go test"
@@ -86,12 +85,8 @@ for d in $modules; do
 done
 
 if ! $test_only; then
-	step "6. i18nmerge"
-	if [ -f tools/i18nmerge/main.go ]; then
-		go run ./tools/i18nmerge -check
-	else
-		echo "SKIPPED: tools/i18nmerge does not exist yet"
-	fi
+	step "6. i18ncheck"
+	go run ./tools/i18ncheck
 fi
 
 echo "Gate passed"

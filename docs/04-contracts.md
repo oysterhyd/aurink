@@ -1,7 +1,7 @@
 # 04 · 统一接口契约（Contract v1.0-rc）
 
 > **权威源码**：`spikes/01-contract-rc/contract/*.go` 与 `spikes/01-contract-rc/editorapi/editorapi.go`（独立模块，已通过 `gofmt`、`go vet`、`go build`，依赖仅 `context errors io iter time`）。
-> Phase 0 由 INT 原样复制到 `internal/contract/` 与 `internal/views/editorapi/`（仅改 import 路径），CEO 审核后打标签 `contract-v1.0` 冻结。本文档解释语义与规则；**代码与本文冲突时以代码为准，并提 CR 修正本文**。
+> 当前代码在 `internal/contract/` 与 `internal/views/editorapi/`，`spikes/01-contract-rc` 是历史记录。本文档解释语义与规则；**代码与本文冲突时以代码为准，并修正本文**。
 
 ## 1. 全局约定（所有模块必须遵守）
 
@@ -19,20 +19,20 @@
 
 ## 2. 契约总览
 
-| 文件 | 内容 | 实现方 | 主要使用方 |
-|---|---|---|---|
-| `text.go` | `Range` `Version` `TextEdit` `Change` `Text` `EOLStyle` `DocMeta` | BE-1 `core/text` | 全部 |
-| `document.go` | `DocID` `Selection` `Origin` `Transaction` `DocEvent` **`DocumentModel`** `DocumentFactory` | BE-1 `core/document` | FE-1、BE-2、INT |
-| `ast.go` | `BlockID` `BlockKind` `Block` `Inline` `Extensions` `Heading` `LinkDef` **`AST`** | BE-1 `core/markdown` | FE-1、FE-2（大纲）、BE-2（导出/搜索） |
-| `projection.go` | `Reveal` `Segment` `ContainerDecor` `BlockProjection` **`Projector`** | BE-1 `core/projection` | FE-1 |
-| `editing.go` | `Intent` `EditContext` `EditCommand` `FormatState` **`Editing`** `PasteConverter` | BE-1 `core/editing`、`adapters/richpaste` | FE-1、INT |
-| `commands.go` | 命令 ID 常量、`Chord` `KeyBinding` `Command` **`CommandRegistry`** | BE-2 `core/commands` | 全部（注册）、FE-2（面板/菜单）、INT |
-| `services.go` | `FileStore` `Session` `Sessions` `Workspace` `Assets` `Recent` `Finder` `WorkspaceSearch` `Fuzzy` | BE-2 | FE-2、FE-1、INT |
-| `render.go` | `Renderer` `Exporter` `Printer` | BE-2；`Printer` 由 INT 用 WebView 实现 | FE-1、FE-2、INT |
-| `settings.go` | `Settings` 及子结构、`SettingsStore` | BE-2 `core/settings` | 全部 |
-| `runtime.go` | `Dispatcher` `Notifier` `Notice` `NoticeHandle` | INT（Dispatcher）、FE-2（Notifier） | BE-2、全部 |
-| `errors.go` | `Code` `Error` `E` `CodeOf` | — | 全部 |
-| `editorapi` | `Controller` `Registry` `Mode` | FE-1 | FE-2、INT |
+| 文件 | 内容 | 实现位置 |
+|---|---|---|
+| `text.go` | `Range` `Version` `TextEdit` `Change` `Text` `EOLStyle` `DocMeta` | `core/text` |
+| `document.go` | `DocID` `Selection` `Origin` `Transaction` `DocEvent` **`DocumentModel`** `DocumentFactory` | `core/document` |
+| `ast.go` | `BlockID` `BlockKind` `Block` `Inline` `Extensions` `Heading` `LinkDef` **`AST`** | `core/markdown` |
+| `projection.go` | `Reveal` `Segment` `ContainerDecor` `BlockProjection` **`Projector`** | `core/projection` |
+| `editing.go` | `Intent` `EditContext` `EditCommand` `FormatState` **`Editing`** `PasteConverter` | `core/editing`、`adapters/richpaste` |
+| `commands.go` | 命令 ID 常量、`Chord` `KeyBinding` `Command` **`CommandRegistry`** | `core/commands` |
+| `services.go` | `FileStore` `Session` `Sessions` `Workspace` `Assets` `Recent` `Finder` `WorkspaceSearch` `Fuzzy` | `core/fsstore` `core/docsession` `core/workspace` `core/search` |
+| `render.go` | `Renderer` `Exporter` `Printer` | `core/render`、`core/export`；`Printer` 在 `internal/app` 用 WebView 实现 |
+| `settings.go` | `Settings` 及子结构、`SettingsStore` | `core/settings` |
+| `runtime.go` | `Dispatcher` `Notifier` `Notice` `NoticeHandle` | `internal/app`（Dispatcher）、`views/shell`（Notifier） |
+| `errors.go` | `Code` `Error` `E` `CodeOf` | — |
+| `editorapi` | `Controller` `Registry` `Mode` | `views/liveedit` |
 
 ## 3. 线程与调用规则（逐接口）
 
@@ -47,7 +47,7 @@
 | `Dispatcher.Post` | 任意 | 否 | fn 在主线程 |
 | `Notifier` `editorapi.*` | 主线程 | 否 | — |
 
-违反规则的代码不予合并。QA 在 `contracttest` 中用"主线程守卫"（mock Dispatcher 记录调用 goroutine）验证异步服务的回调线程。
+违反规则的代码视为缺陷。`contracttest` 中用"主线程守卫"（mock Dispatcher 记录调用 goroutine）验证异步服务的回调线程。
 
 ## 4. 核心语义与不变式
 
@@ -138,22 +138,19 @@
 
 ## 7. Mock 与一致性测试（Contract-First 的执行机制）
 
-1. **`internal/mock`（QA 在 Phase 0 交付）**——每个契约接口一个内存实现，行为满足本文不变式的"简化版"：
+1. **`internal/mock`（按需编写）**——契约接口的内存实现，行为满足本文不变式的"简化版"：
    - `mock.Text`（string 实现）、`mock.Document`（全量重解析 + 线性历史，无合并）、`mock.AST`（直接包装 parser，无扩展、Prefixes 粗略计算）、`mock.Projector`（全部 `SegText`，即"显示源码"）、`mock.Editing`（只处理插入/删除/换行）；
    - `mock.FileStore`（内存文件系统，可注入错误与外部修改）、`mock.Sessions`、`mock.Workspace`（内存树 + 手动触发事件）、`mock.Search`、`mock.Renderer`（返回固定尺寸灰色 SVG）、`mock.Exporter`、`mock.Settings`、`mock.Commands`；
    - `mock.Dispatcher`：两种模式——`Immediate`（同步执行）与 `Queued`（`Flush()` 执行，用于测试回调线程）。
-2. **`internal/contracttest`（QA）**——一致性测试套件，签名形如 `func TestFileStore(t *testing.T, newStore func(t *testing.T) contract.FileStore)`。**mock 与真实实现必须通过同一套件**；真实实现所在包的测试文件调用它。
-3. 前端在 Phase 1 前半段完全基于 mock 开发；后端实现落地后由 INT 在 `internal/app` 替换注入，前端代码不改。
-4. 任何契约变更（CR）必须在同一合并中同时更新：契约代码、mock、contracttest、本文档。
+2. **`internal/contracttest`**——一致性测试套件，签名形如 `func TestFileStore(t *testing.T, newStore func(t *testing.T) contract.FileStore)`。**mock 与真实实现必须通过同一套件**；真实实现所在包的测试文件调用它。
+3. 后端未实现时前端可以先用 mock；实现落地后在 `internal/app` 替换注入，前端代码不改。
+4. 任何契约变更都在同一次提交里同时更新：契约代码、mock、contracttest、本文档。
 
-## 8. 版本与冻结
+## 8. 版本
 
-- `ContractVersion = "1.0.0"`。冻结后：
-  - **次版本（1.x）**：只允许新增（新类型、新常量、新接口、在结构体末尾新增字段、新命令 ID）。不得修改既有签名或语义。
-  - **主版本（2.0）**：破坏性变更，只在阶段边界进行，需 CEO 批准并给出迁移说明。
-- CR 流程见 `05-delivery-plan.md §4`。
+契约不冻结，随实现演进，变更规则见 05 §4。`ContractVersion` 暂保持 `1.0.0`，首次发布前再定版本策略。
 
-## 附：为界面基线所做的 RC 修订（2026-11-01，冻结前）
+## 附：为界面基线所做的 RC 修订（2026-11-01）
 
 依据 `docs/design`，已直接修改 `spikes/01-contract-rc`：
 
@@ -167,7 +164,7 @@
 
 页边标签、结构导轨、灯箱属于 `liveedit` 内部，不进入契约。
 
-## 附：CR-001、CR-002 修订（2026-11-01，冻结前，`contract-v1.0-rc2`）
+## 附：CR-001、CR-002 修订（2026-11-01）
 
 | 文件 | 变更 | 依据 |
 |---|---|---|
@@ -175,4 +172,4 @@
 | `projection.go` | `Segment.Display` 不得引用整份源码；`Sig` 只作排版缓存键；`Affinity` 的精确定义 | CR-002 批复；§4.3.1、§4.3.2、§4.3.4、§4.3.6、§4.3.7 |
 | `document.go` | 注释示例 `"undo.typing"` 改为 `"editing_undo_typing"` | 05 §3.4（只改注释） |
 
-由 INT 在 `internal/contract` 落地；`spikes/01-contract-rc` 保持原样，作为历史记录。
+`document.go` 的注释已改；`ast.go`、`projection.go` 尚未落地（05 §6）。`spikes/01-contract-rc` 保持原样，作为历史记录。

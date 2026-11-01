@@ -1,6 +1,6 @@
-# Aurink 规划文档包（v1.1 · 2026-11-01）
+# Aurink 规划文档包（v1.2 · 2026-11-01）
 
-> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；仓库与基线 CI 已建立；可以进入 Phase 0**。本包只包含规划与可行性证据，尚未进行任何产品开发。
+> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；开发方式已改为单人负责；Phase 0 进行中**。产品功能尚未开始开发。
 >
 > 仓库：<https://github.com/oysterhyd/aurink>（私有）· 集成分支 `main` · CI：`.github/workflows/ci.yml`
 
@@ -10,17 +10,16 @@
 
 ## 2. 文档索引
 
-| 文档 | 内容 | 读者 |
-|---|---|---|
-| [01-feasibility.md](01-feasibility.md) | 环境盘点、MyGo 能力矩阵、探针实测 P1–P14、难点与方案、风险 R1–R10、Spike S1–S4（含 Go/No-Go 标准） | 全员 |
-| [02-product-ux.md](02-product-ux.md) | 产品定位、P0–P3 功能清单、布局、设计令牌、动效令牌、交互规范、材质/Shader 规范、快捷键、无障碍与 i18n | FE-1、FE-2、QA |
-| [design/README.md](design/README.md) | Ink & Aurora 界面基线：可运行原型、18 张基线截图、基线与任务卡和阶段门的对照表、验收方法 | FE-1、FE-2、QA、用户 |
-| [03-architecture.md](03-architecture.md) | 分层与依赖规则、线程模型、单向数据流、各模块设计、状态管理、扩展机制、错误处理、性能预算、目录结构 | 全员 |
-| [04-contracts.md](04-contracts.md) | 统一接口契约 v1.0-rc：线程规则、不变式、事件、错误码、Mock 与一致性测试、版本冻结 | 全员（必读） |
-| [05-delivery-plan.md](05-delivery-plan.md) | 角色、Worktree 布局、文件归属、CR 流程、门禁与合并、Phase 0–4 任务卡、阶段门、最终验收清单、各 Agent 任务包 | 用户（分配任务）、全员 |
-| [06-phase0-kickoff.md](06-phase0-kickoff.md) | Phase 0 启动手册：仓库准备命令、6 个 Agent 的启动提示词、期间的日常操作、M0 评审前置条件 | 用户 |
-| `../spikes/00-probe/` | 可行性探针（独立模块，`go test -v ./...` 复现 P1–P14） | 证据 |
-| `../spikes/01-contract-rc/` | 契约 Go 代码 RC（独立模块，仅依赖标准库，`go vet`/`go build` 通过） | INT 落地用 |
+| 文档 | 内容 |
+|---|---|
+| [01-feasibility.md](01-feasibility.md) | 环境盘点、MyGo 能力矩阵、探针实测 P1–P14、难点与方案、风险 R1–R10、Spike S1–S4（含 Go/No-Go 标准） |
+| [02-product-ux.md](02-product-ux.md) | 产品定位、P0–P3 功能清单、布局、设计令牌、动效令牌、交互规范、材质/Shader 规范、快捷键、无障碍与 i18n |
+| [design/README.md](design/README.md) | Ink & Aurora 界面基线：可运行原型、18 张基线截图、基线与任务卡和阶段门的对照表、验收方法 |
+| [03-architecture.md](03-architecture.md) | 分层与依赖规则、线程模型、单向数据流、各模块设计、状态管理、扩展机制、错误处理、性能预算、目录结构 |
+| [04-contracts.md](04-contracts.md) | 统一接口契约：线程规则、不变式、事件、错误码、Mock 与一致性测试 |
+| [05-delivery-plan.md](05-delivery-plan.md) | 工作方式、代码规则、门禁与 CI、Phase 0–4 任务卡、阶段门、最终验收清单 |
+| `../spikes/00-probe/` | 可行性探针（独立模块，`go test -v ./...` 复现 P1–P14） |
+| `../spikes/01-contract-rc/` | 契约 Go 代码 RC（独立模块，仅依赖标准库，`go vet`/`go build` 通过） |
 
 依据标记：**[实测]** 本机运行验证 · **[源码]** 阅读 MyGo 源码/文档确认 · **[待验证]** 需 Spike 验证，未验证前不作为既定事实。
 
@@ -36,8 +35,8 @@
 | D6 | 自建 `docsession`/`fsstore`，不用 `mygo.NewDocuments` | 需要工作区 + 多标签；NewDocuments 是每文档一窗口且原子写未导出 | [源码] |
 | D7 | 数学/Mermaid/PDF 使用**懒启动离屏 WebView 渲染服务**，不可用时降级为源码 | 框架无原生能力；MathJax SVG 全为 path，适配 MyGo SVG 子集 | [源码]；可行性 [待验证] S2 |
 | D8 | 进程内 Go 接口通信（无 HTTP）；`Dispatcher` 回主线程；跨模块错误统一为 `*contract.Error` | 原生单进程应用，最低延迟、类型安全、易 Mock | 设计决策 |
-| D9 | 分层 contract → core → adapters → views → app，导入规则由 `tests/arch` 强制 | 支撑多 Agent 并行、防契约漂移 | 设计决策 |
-| D10 | Contract-First：先冻结 `contract-v1.0` + Mock + 一致性测试，再并行开发；变更只经 CR | 并行开发的前提 | 设计决策 |
+| D9 | 分层 contract → core → adapters → views → app，导入规则由 `tests/arch` 强制 | 保持依赖清晰、core 可纯单元测试 | 设计决策 |
+| D10 | 面向 contract 接口编程；不冻结，变更与实现、测试同一次提交 | 2026-11-01 取消多 Agent 并行后，冻结和 CR 流程没有必要 | 用户决定 |
 | D11 | 界面基线为 **Ink & Aurora**（`docs/design`）；M1–M4 按基线对照验收 | 用户审查原型后确认 | 用户确认 2026-11-01；Native 观感 [待验证] S4 |
 | D12 | **打包衬线字体**：Newsreader + Noto Serif SC 子集（OFL），另含 JetBrains Mono | 编辑式排版是基线的核心 | 用户决定 2026-11-01；体积 [待验证] S4 |
 
@@ -65,14 +64,11 @@
 |---|---|---|
 | Q1 | 平台优先级 | **Windows 先行**；macOS/Linux 构建与无窗口测试在 CI 上跑，Phase 4 前在真机人工验收 |
 | Q2 | 数学/Mermaid/PDF 依赖系统 WebView | **接受**（WebView2 / WKWebView / WebKitGTK，懒启动，不可用时降级为源码） |
-| Q3 | 并行 Agent 数量 | **6 个**：INT、BE-1、BE-2、FE-1、FE-2、QA |
+| Q3 | 开发方式 | 原定 6 个并行 Agent；**2026-11-01 改为单人负责、只用 `main`**，并行没有节约时间，每次合并等 CI 的时间比改代码还长 |
 | Q4 | Go 模块路径与应用标识 | 模块 `aurink`；identifier `app.aurink.editor` |
-| Q5 | `git init` 与 worktree | **已执行 `git init -b main`**（由 CEO 按用户要求完成）；6 个 worktree 已创建（06 §1） |
-| Q6 | GitHub 与 Actions | **已创建私有仓库 `oysterhyd/aurink` 并启用基线 CI**（三平台矩阵，见 05 §5.1）；INT-0.1 将其切换为调用 `scripts/gate.sh` |
+| Q5 | `git init` | **已执行 `git init -b main`**；worktree 已于 2026-11-01 全部移除 |
+| Q6 | GitHub 与 Actions | **已创建私有仓库 `oysterhyd/aurink` 并启用 CI**（三平台矩阵，见 05 §5.2） |
 
-## 6. 下一步（用户操作）
+## 6. 下一步
 
-1. 按 [06-phase0-kickoff.md](06-phase0-kickoff.md) 准备仓库并启动各 Agent（任务包即 05 §9 的展开版），先启动 Phase 0：**INT-0.1 → INT-0.2**，同时启动 **S1–S4** 与 **QA-0.2**。
-2. 各 Spike 完成并提交 `REPORT.md` 后，通知 CEO 进行 **M0 阶段门评审**（Go/No-Go + 契约冻结 `contract-v1.0`）。
-
-CEO 不会自行创建或调度 Agent，也不会自行编写产品代码或执行开发测试；每个阶段门和最终验收都基于实际运行证据给出 PASS / FAIL。
+当前在 Phase 0，现状和待办见 [05 §6](05-delivery-plan.md)。负责人完成 S4、落地已批准的契约修改、处理 S2 和 S3 的 No-Go，再进入 M0 评估。需要取舍的事项交给用户决定。

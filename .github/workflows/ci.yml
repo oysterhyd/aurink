@@ -1,8 +1,8 @@
 name: CI
 
-# Runs the merge gate, scripts/gate.sh (docs/05-delivery-plan.md §5.1), on every
-# Go module in the repository. Linux runs every check for all five targets; the
-# other platforms run the tests.
+# Runs scripts/gate.sh (docs/05-delivery-plan.md §5.1). A push checks the root
+# module: every check on Linux, the tests on the other platforms. The weekly and
+# manual runs also cover all five targets and the modules under spikes/.
 
 on:
   push:
@@ -10,10 +10,8 @@ on:
     paths-ignore:
       - "**/*.md"
       - LICENSE
-  pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - LICENSE
+  schedule:
+    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -32,9 +30,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { name: Windows, os: windows-latest, gate: --test-only }
-          - { name: Linux, os: ubuntu-latest, gate: --all-targets }
-          - { name: macOS, os: macos-latest, gate: --test-only }
+          - { name: Windows, os: windows-latest, gate: --test-only, full: --test-only --spikes }
+          - { name: Linux, os: ubuntu-latest, gate: "", full: --all-targets --spikes }
+          - { name: macOS, os: macos-latest, gate: --test-only, full: --test-only --spikes }
     defaults:
       run:
         shell: bash
@@ -46,4 +44,4 @@ jobs:
           cache-dependency-path: "**/go.sum"
 
       - name: Gate
-        run: bash scripts/gate.sh ${{ matrix.gate }}
+        run: bash scripts/gate.sh ${{ github.event_name != 'push' && matrix.full || matrix.gate }}

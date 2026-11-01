@@ -1,5 +1,5 @@
 // Package editorapi 是视图层内部契约：shell、命令面板、查找栏等前端模块通过它
-// 操作编辑器（views/liveedit 实现）。与 contract 同步冻结。
+// 操作编辑器（views/liveedit 实现）。与 contract 同步修改。
 //
 // 全部方法只能在主线程（视图构建或输入回调中）调用。
 package editorapi

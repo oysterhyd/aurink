@@ -1,13 +1,15 @@
-# The merge gate (docs/05-delivery-plan.md §5.1). scripts/gate.sh is the same
-# gate for bash; change both together.
+# The gate (docs/05-delivery-plan.md §5.1). scripts/gate.sh is the same gate for
+# bash; change both together.
 #
-#   scripts/gate.ps1               every check, for the three targets of §5.1
-#   scripts/gate.ps1 -AllTargets   also windows/arm64 and darwin/amd64
+#   scripts/gate.ps1               every check of the root module, for three targets
 #   scripts/gate.ps1 -TestOnly     only the tests, on the host platform
+#   scripts/gate.ps1 -AllTargets   also windows/arm64 and darwin/amd64
+#   scripts/gate.ps1 -Spikes       also the modules under spikes/
 [CmdletBinding()]
 param(
     [switch]$AllTargets,
-    [switch]$TestOnly
+    [switch]$TestOnly,
+    [switch]$Spikes
 )
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
@@ -21,8 +23,10 @@ if ($AllTargets) {
 $env:CGO_ENABLED = '0'
 
 $modules = @('.')
-foreach ($m in Get-ChildItem -Path spikes -Filter go.mod -Recurse -Depth 1 -ErrorAction SilentlyContinue) {
-    $modules += "spikes/$($m.Directory.Name)"
+if ($Spikes) {
+    foreach ($m in Get-ChildItem -Path spikes -Filter go.mod -Recurse -Depth 1 -ErrorAction SilentlyContinue) {
+        $modules += "spikes/$($m.Directory.Name)"
+    }
 }
 Write-Host "Modules: $modules"
 
@@ -57,11 +61,12 @@ try {
                 Write-Host "$d $target"
                 $env:GOOS, $env:GOARCH = $target -split '/'
                 Run go -C $d vet ./...
-                Run go -C $d vet -tags mygo_noinspector ./...
                 Run go -C $d build -o NUL ./...
             }
+            $env:GOOS, $env:GOARCH = $savedGOOS, $savedGOARCH
+            # Production builds leave the inspector of native UI out.
+            Run go -C $d vet -tags mygo_noinspector ./...
         }
-        $env:GOOS, $env:GOARCH = $savedGOOS, $savedGOARCH
 
         Step '4. mygo vet'
         foreach ($d in $modules) {
@@ -78,12 +83,7 @@ try {
         }
 
         Step 'Contract depends on the standard library only'
-        if (Test-Path spikes/01-contract-rc) {
-            CheckStd spikes/01-contract-rc ./... '^aurink\.local/spikes/contract-rc/'
-        }
-        if (Test-Path internal/contract) {
-            CheckStd . ./internal/contract/... '^aurink/internal/contract(/|$)'
-        }
+        CheckStd . ./internal/contract/... '^aurink/internal/contract(/|$)'
     }
 
     Step '5. go test'
@@ -93,13 +93,8 @@ try {
     }
 
     if (-not $TestOnly) {
-        Step '6. i18nmerge'
-        if (Test-Path tools/i18nmerge/main.go) {
-            Run go run ./tools/i18nmerge -check
-        }
-        else {
-            Write-Host 'SKIPPED: tools/i18nmerge does not exist yet'
-        }
+        Step '6. i18ncheck'
+        Run go run ./tools/i18ncheck
     }
 }
 finally {

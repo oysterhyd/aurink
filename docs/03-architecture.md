@@ -25,9 +25,9 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 │                               │  settings   设置存储                         │
 │                               │  commands   命令注册表/快捷键                  │
 ├───────────────────────────────┴───────────────────────────────────────────┤
-│ internal/contract   ★冻结契约：类型 + 接口（只依赖标准库）                     │
+│ internal/contract   ★契约：类型 + 接口（只依赖标准库）                         │
 │ internal/adapters   平台适配：mygo 文件监听、WebView 宿主、richtext 粘贴转换     │
-│ internal/mock       契约的内存实现（并行开发 / 测试用）                         │
+│ internal/mock       契约的内存实现（测试 / 演示用）                             │
 ├───────────────────────────────────────────────────────────────────────────┤
 │ MyGo v0.7.3（ui、ui/editor、ui/markdown/parser、ui/richtext、plugins/glass…）  │
 └───────────────────────────────────────────────────────────────────────────┘
@@ -82,7 +82,7 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 
 外部来源（源码模式编辑、外部文件重载、撤销）同样走 `Apply/Replace`，只是 `Origin` 不同。**不存在第二条写路径。**
 
-## 4. 文档核心（BE-1）
+## 4. 文档核心
 
 ### 4.1 文本存储 `core/text`
 - `Text` = 不可变 `string` + 惰性构建的行起点索引 + `Version`。编辑生成新 `string`（复制约 0.1 ms/MB），旧版本自然成为快照。
@@ -131,7 +131,7 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 - `Run(ctx, cmd)`：格式切换（选区全部已具备则移除，否则添加；光标无选区时选中词或插入成对标记）、块类型切换、表格操作、插入组件。
 - HTML/RTF 粘贴转换在 `adapters/richpaste`（依赖 `ui/richtext.ParseHTML/ParseRTF(...).Markdown()`），由 app 注入为 `contract.PasteConverter`。
 
-## 5. 平台服务（BE-2）
+## 5. 平台服务
 
 ### 5.1 `fsstore`
 - Read：大小上限（默认 64 MB）、二进制检测（NUL 字节/无效 UTF-8 比例）、BOM（UTF-8/UTF-16LE/BE）、换行风格统计（LF/CRLF/混合）。
@@ -167,7 +167,7 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 - 设置 JSON 存于 `PathUserData/settings.json`，带 `Version` 迁移；写入原子化；`Subscribe` 主线程通知。
 - 命令注册表：所有模块启动时注册命令（ID 命名空间见 04 文档）；快捷键默认表按平台生成（macOS ⌘ / 其他 Ctrl），用户覆盖；注册时检测冲突；菜单、命令面板、快捷键三者共用同一注册表。
 
-## 6. 编辑引擎（FE-1）`views/liveedit`
+## 6. 编辑引擎 `views/liveedit`
 
 ### 6.1 组件结构
 ```
@@ -213,7 +213,7 @@ EditorView(c, ctrl)                       // 外层：滚动容器 + 编辑表�
 `BlockWidget` 注册表（键：块种类 / 代码语言），每个组件提供：测量高度、绘制、交互子元素、激活/未激活两种形态。内置：代码块、表格、图片段落、数学块、Mermaid、Front Matter 编辑式页眉、TOC、分隔线、脚注定义、HTML 块。新增语法 = 解析扩展 + 投影规则 + 组件注册，三处均为注册表，不改引擎核心。
 
 ### 6.6 视图层内部契约 `views/editorapi`
-供 shell/palette 等其他前端模块调用编辑器（由 FE-1 实现、随契约冻结）：
+供 shell/palette 等其他前端模块调用编辑器（由 `views/liveedit` 实现）：
 
 ```go
 type EditorController interface {
@@ -235,9 +235,9 @@ type EditorController interface {
 以上为示意，权威定义见 `editorapi.go`。
 
 ### 6.7 视觉职责划分
-FE-1 负责编辑区内的一切（块样式、页边标签、结构导轨、斜杠菜单、格式条、弹层、灯箱、模式下的正文变化）；FE-2 负责编辑区外的一切（窗口材质、标题栏、侧栏、胶囊、横幅、通知、命令面板、查找栏、设置）。FE-1 的浮层一律使用 `views/kit` 与 `views/effects`，不自行实现玻璃、选中药丸或动效曲线。
+`liveedit` 负责编辑区内的一切（块样式、页边标签、结构导轨、斜杠菜单、格式条、弹层、灯箱、模式下的正文变化）；`shell`、`palette`、`panels` 负责编辑区外的一切（窗口材质、标题栏、侧栏、胶囊、横幅、通知、命令面板、查找栏、设置）。编辑器的浮层一律使用 `views/kit` 与 `views/effects`，不自行实现玻璃、选中药丸或动效曲线。
 
-## 7. 应用外壳与状态管理（FE-2 + INT）
+## 7. 应用外壳与状态管理
 
 即时模式 UI 中不引入全局 Store 框架，采用"**领域状态结构 + 控制器方法**"：
 
@@ -309,28 +309,27 @@ type AppState struct {
 
 ```
 Aurink_claude/
-├─ main.go                         # 仅调用 app.Run()                         [INT]
-├─ go.mod / go.sum                 # 模块 aurink                                [INT 解决冲突]
-├─ mygo.json                       # 应用配置、文件关联、i18n                   [INT]
+├─ main.go                         # 仅调用 app.Run()
+├─ go.mod / go.sum                 # 模块 aurink
+├─ mygo.json                       # 应用配置、文件关联、i18n
 ├─ internal/
-│  ├─ contract/                    # ★冻结契约                                [INT 实现 / CEO 审批]
-│  ├─ core/{text,markdown,projection,document,editing}/                     [BE-1]
-│  ├─ core/{fsstore,docsession,workspace,search,export,render,settings,commands}/ [BE-2]
-│  ├─ adapters/{watch,webviewhost,richpaste,clipboard}/                     [INT；richpaste BE-1；webviewhost BE-2]
-│  ├─ views/{liveedit,source,editorapi}/                                    [FE-1]
-│  ├─ views/{theme,motion,effects,kit,shell,palette,panels}/                [FE-2]
-│  ├─ mock/                                                                 [QA]
-│  ├─ contracttest/                # 契约一致性测试套件                         [QA]
-│  └─ app/                         # 组合根、菜单、窗口                          [INT]
-├─ i18n/fragments/<代号小写>.{en,zh-Hans}.json # 按所有者分片，键名见 05 §3.4             [各自]
-├─ locales/                        # 由 tools/i18nmerge 生成                   [INT]
-├─ resources/{icons,fonts}/        # fonts 含子集字体与 OFL 许可证             [FE-2]
-├─ resources/render/               # MathJax/Mermaid 离线包                   [BE-2]
-├─ testdata/corpus/                # 保真语料                                  [QA]
-├─ tests/{arch,e2e,perf}/          #                                          [QA]
-├─ tools/{i18nmerge,gate}/         #                                          [INT]
-├─ scripts/gate.ps1, gate.sh       # 合并门禁                                  [INT]
-├─ spikes/                         # Spike 原型与报告（独立模块）                 [各 Spike 负责人]
-├─ reports/parity/                # Native 与基线的对照截图                    [FE-1、FE-2]
-└─ docs/                           # 规划、决策、design/ 界面基线                [CEO]
+│  ├─ contract/                    # ★契约
+│  ├─ core/{text,markdown,projection,document,editing}/
+│  ├─ core/{fsstore,docsession,workspace,search,export,render,settings,commands}/
+│  ├─ adapters/{watch,webviewhost,richpaste,clipboard}/
+│  ├─ views/{liveedit,source,editorapi}/
+│  ├─ views/{theme,motion,effects,kit,shell,palette,panels}/
+│  ├─ mock/
+│  ├─ contracttest/                # 契约一致性测试套件
+│  └─ app/                         # 组合根、菜单、窗口
+├─ locales/                        # 文案目录与生成的 catalog_gen.go，键名见 05 §3.4
+├─ resources/{icons,fonts}/        # fonts 含子集字体与 OFL 许可证
+├─ resources/render/               # MathJax/Mermaid 离线包
+├─ testdata/corpus/                # 保真语料
+├─ tests/{arch,e2e,perf}/
+├─ tools/i18ncheck/                # 文案键检查
+├─ scripts/gate.ps1, gate.sh       # 门禁
+├─ spikes/                         # Spike 原型与报告（独立模块）
+├─ reports/parity/                # Native 与基线的对照截图
+└─ docs/                           # 规划、决策、design/ 界面基线
 ```

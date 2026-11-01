@@ -57,7 +57,7 @@ type Transaction struct {
 	Origin    Origin
 	// Coalesce 非空时，与上一步相同键、时间相近且位置相邻的修改合并为一步撤销。
 	Coalesce string
-	// Label 是撤销菜单显示的文案键，如 "undo.typing"。
+	// Label 是撤销菜单显示的文案键，如 "editing_undo_typing"。
 	Label string
 }
 
