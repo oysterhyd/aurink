@@ -1,0 +1,14 @@
+{
+  "name": "Aurink",
+  "identifier": "app.aurink.editor",
+  "version": "0.1.0",
+  "out": "build",
+  "i18n": { "dir": "locales", "source": "en" },
+  "fileAssociations": [
+    {
+      "ext": ["md", "markdown"],
+      "name": "Markdown Document",
+      "mimeType": "text/markdown"
+    }
+  ]
+}
