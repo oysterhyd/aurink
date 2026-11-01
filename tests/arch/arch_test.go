@@ -59,8 +59,16 @@ func isStd(path string) bool {
 	return !strings.Contains(first, ".") && first != "aurink"
 }
 
-// violations returns the imports of pkg that its rule does not allow. Test
-// files of views may also use the mocks (docs/05-delivery-plan.md §4).
+// testOnly reports whether a test file of pkg may import imp even though pkg's
+// rule does not allow it: real implementations run the contract suites and the
+// corpus (docs/04-contracts.md §7), and views may use the mocks
+// (docs/05-delivery-plan.md §4).
+func testOnly(pkg, imp string) bool {
+	return under(imp, mod+"internal/contracttest") || under(imp, mod+"tests/corpus") ||
+		(under(pkg, mod+"internal/views") && under(imp, mod+"internal/mock"))
+}
+
+// violations returns the imports of pkg that its rule does not allow.
 func violations(pkg string, imports []string, inTest bool) []string {
 	r := ruleFor(pkg)
 	if r == nil {
@@ -71,7 +79,7 @@ func violations(pkg string, imports []string, inTest bool) []string {
 		if isStd(imp) || under(imp, pkg) {
 			continue
 		}
-		ok := inTest && under(pkg, mod+"internal/views") && under(imp, mod+"internal/mock")
+		ok := inTest && testOnly(pkg, imp)
 		for _, a := range r.allow {
 			ok = ok || under(imp, a) || (strings.HasSuffix(a, "/") && strings.HasPrefix(imp, a))
 		}
@@ -106,6 +114,17 @@ func TestImportRules(t *testing.T) {
 				t.Errorf("tests of %s must not import %s", pkg, imp)
 			}
 		}
+	}
+}
+
+// Only test files get the exception for the contract suites.
+func TestContractSuitesAreTestOnly(t *testing.T) {
+	core, suite := mod+"internal/core/text", mod+"internal/contracttest"
+	if bad := violations(core, []string{suite}, true); len(bad) != 0 {
+		t.Errorf("a core test cannot use the suites: %v", bad)
+	}
+	if bad := violations(core, []string{suite}, false); len(bad) != 1 {
+		t.Errorf("core code can use the suites: %v", bad)
 	}
 }
 
