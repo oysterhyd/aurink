@@ -14,7 +14,7 @@
 | 线程 | 见 §3。阻塞接口禁止主线程调用；异步接口的回调与事件保证在主线程 |
 | 错误 | 导出方法返回的非 nil 错误必须是 `*contract.Error`；按 `Code` 判断，不比较字符串；不得跨模块 panic |
 | 身份 | 文档用 `DocID`（会话级，与路径无关）；块用 `BlockID`（编辑中存活的块保持不变）；命令用 `CommandID` |
-| 文案 | 契约中 `Title`/`Category`/`Label` 字段是 **i18n 文案键**，由视图本地化；`Notice.Message`/`Detail` 例外，为已本地化文本 |
+| 文案 | 契约中 `Title`/`Category`/`Label` 字段是 **i18n 文案键**（格式见 05 §3.4），由视图本地化；`Notice.Message`/`Detail` 例外，为已本地化文本 |
 | 依赖 | `contract` 只依赖标准库；`editorapi` 只依赖 `contract` |
 
 ## 2. 契约总览

@@ -56,7 +56,7 @@ Spike 在各自 worktree 的 `spikes/<id>/`（独立 `go.mod`）中进行，不�
 | `internal/views/{theme,motion,effects,kit,shell,palette,panels}/**`、`resources/{icons,fonts}/**` | FE-2 | |
 | `internal/mock/**`、`internal/contracttest/**`、`testdata/**`、`tests/**` | QA | 各包自己的 `_test.go` 归包所有者 |
 | `main.go`、`internal/app/**`、`internal/adapters/{watch,clipboard}/**`、`mygo.json`、`scripts/**`、`tools/**`、`.github/**`、`.agents/**`、`.gitignore`、`.gitattributes`、`locales/**`（生成物） | INT | |
-| `i18n/fragments/<owner>.{en,zh-Hans}.json` | 各所有者各一对 | 文案键前缀 = 所有者模块名，如 `shell.tabs.close` |
+| `i18n/fragments/<代号小写>.{en,zh-Hans}.json` | 各所有者各一对 | 键名规则见 §3.4，如 `shell_tabs_close` |
 | `spikes/<id>/**` | Spike 负责人 | |
 | `reports/<agent>.md` | 各 Agent | 每日进度 |
 | `reports/parity/<基线名>.png` | 该基线的负责人（`docs/design/README.md`） | Native 对照截图；同名基线由两人共担时，各加后缀 `-fe1`、`-fe2` |
@@ -83,6 +83,32 @@ Spike 在各自 worktree 的 `spikes/<id>/`（独立 `go.mod`）中进行，不�
 | gemoji 数据（MIT） | emoji 短码表（生成 Go 表） | BE-1 |
 
 白名单外的依赖须提 CR。MyGo 版本升级只由 INT 在独立分支执行（`go tool mygo migrate-ui`），CEO 批准后合并。
+
+### 3.4 i18n 文案键规则（2026-11-01 CEO 决定，回应 INT-0.1 报告）
+
+MyGo 对键名的约束 [源码 `internal/i18ngen/load.go:180`、MyGo `docs/i18n.md`]：
+- 键必须匹配 `^[A-Za-z][A-Za-z0-9_]*$`；点号只留给 MyGo 自带的 `mygo.<key>`。
+- 生成的 Go 函数名 = 键按 `_` 切分后各段首字母大写再拼接（`goName`）。两个键生成同名函数时，`mygo generate`、`mygo build`、`mygo i18n check` 都会报错。
+
+本项目在此基础上收紧为：
+
+| # | 规则 | 例 |
+|---|---|---|
+| K1 | 键全小写蛇形：`^[a-z][a-z0-9]*(_[a-z][a-z0-9]*)+$`。至少两段，每段以字母开头，不出现连续、开头或结尾的 `_`。这样生成的函数名里大写字母正好标出段边界，任意两个合法键都不会生成同名函数 | `shell_tabs_close` → `locales.ShellTabsClose()`；写 `liveedit_heading1`，不写 `liveedit_heading_1`（两者都会生成 `LiveeditHeading1`） |
+| K2 | 第一段 = 所有者的 Go 包名（§3.1）：INT 用 `app` `watch` `clipboard`；BE-1 用 `text` `markdown` `projection` `document` `editing` `richpaste`；BE-2 用 `fsstore` `docsession` `workspace` `search` `export` `render` `settings` `commands` `webviewhost`；FE-1 用 `liveedit` `source`；FE-2 用 `theme` `motion` `effects` `kit` `shell` `palette` `panels` | `palette_empty_results`、`docsession_conflict_title` |
+| K3 | 第二段起依次是区域、条目，从大到小。命令标题建议写成 `<包名>_cmd_<CommandID 转写>`（`.` 和驼峰边界都换成 `_`），分类写成 `<包名>_category_<名>` | 注册 `file.openFolder` 的包是 shell 时，标题键为 `shell_cmd_file_open_folder` |
+| K4 | 只有 INT 的分片可以含 `mygo.<key>`，而且只能用来覆盖 MyGo 已有的文案 | `mygo.appName`、`mygo.appDescription`（打包时写入系统应用列表） |
+| K5 | 占位符名用小驼峰 `^[a-z][A-Za-z0-9]*$`，避开 Go 关键字 | `{fileName}`、`{count}` |
+| K6 | 每个所有者一对分片：`i18n/fragments/<代号小写>.en.json` 与 `.zh-Hans.json`（`int`、`be-1`、`be-2`、`fe-1`、`fe-2`）。同一所有者的两种语言键集合相同、占位符相同；英文分片的每个键都要有 `@<键>.description`，写明文案出现在哪 | `i18n/fragments/fe-2.en.json` |
+
+落地与使用：
+- **检查**：`tools/i18nmerge -check`（INT）检查 K1–K6，并检查同一个键不出现在两个分片里。
+- **合并生成**：i18nmerge 生成 `locales/en.json`、`locales/zh-Hans.json`（按键排序），重新生成 `locales/catalog_gen.go`，要求已提交的生成物与重新生成的结果一致，最后运行 `go tool mygo i18n check`。
+- **在代码里取文案**：
+  - 静态文案直接调用生成的函数，如 `locales.ShellTabsClose()`；
+  - 契约字段里传的是键（`Command.Title`、`Command.Category`、`Transaction.Label`），视图用 `locales.Catalog.Format(i18n.Locale(), key, args)` 取文本 [源码 `locales/catalog_gen.go`、MyGo `i18n/catalog.go`]。
+- **现有键 `appName`**：改名为 `app_name`，生成函数仍是 `AppName()`，调用方不用改；i18nmerge 出现后移入 `i18n/fragments/int.*.json`。
+- **契约注释**：`internal/contract/document.go` 中的示例 `"undo.typing"` 改为 `"editing_undo_typing"`。这只改注释、不改语义，由 INT 在冻结 `contract-v1.0` 时一并落地；`spikes/01-contract-rc` 作为历史记录保持原样。
 
 ## 4. 契约冻结、Mock 与变更流程
 

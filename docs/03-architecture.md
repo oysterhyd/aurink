@@ -322,7 +322,7 @@ Aurink_claude/
 │  ├─ mock/                                                                 [QA]
 │  ├─ contracttest/                # 契约一致性测试套件                         [QA]
 │  └─ app/                         # 组合根、菜单、窗口                          [INT]
-├─ i18n/fragments/<owner>.{en,zh-Hans}.json   # 按模块分片的文案               [各自]
+├─ i18n/fragments/<代号小写>.{en,zh-Hans}.json # 按所有者分片，键名见 05 §3.4             [各自]
 ├─ locales/                        # 由 tools/i18nmerge 生成                   [INT]
 ├─ resources/{icons,fonts}/        # fonts 含子集字体与 OFL 许可证             [FE-2]
 ├─ resources/render/               # MathJax/Mermaid 离线包                   [BE-2]
