@@ -92,11 +92,11 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 ### 4.2 解析适配 `core/markdown`
 包装 `ui/markdown/parser`，输出 contract.AST：
 1. **Front Matter 预处理**：文档以 `---\n` 开头且存在闭合 `---`/`...` 行 → 生成 `BlockFrontMatter`，其后正文交给 parser，偏移整体平移。编辑触及首块时重新检测。
-2. **块信息补全**：`Content`（去标记后的内容区间）、`Markers`（`## `、围栏行、`$$` 行）、`Prefixes`（叶子块内每行的容器前缀 `> `、列表缩进——parser 私有字段不可得，需按容器链重新扫描行首）。不变式：`源码去掉 Prefixes 与首行标记 == parser.Lines(i)`（S3 验证）。
+2. **块信息补全**：`Content`（去标记后的内容区间）、`Markers`（`## `、围栏行、`$$` 行）、`Prefixes`（叶子块内每行的容器前缀 `> `、列表缩进——parser 私有字段不可得，需按容器链重新扫描行首）。逐行映射见 `Block.Lines`（ADR-003、CR-003）。
 3. **内联补全**：`Open/Close` 定界符区间（由父子 Range 差推导）；在 Text 节点内二次扫描生成 `InlineEscape`、`InlineEntity`；扩展语法（`==`、`^`、`~`、`:emoji:`、`[[ ]]`）在 Text 节点上做后处理，按设置开关。`[TOC]` 独占段落 → `BlockTOC`。
 4. **BlockID 稳定性**：增量解析后，未与任何 Change 相交的块通过偏移映射继承旧 ID；与 Change 相交但"种类相同且映射后起点相同"的块也继承（打字时段落 ID 不变）；其余分配新 ID。ID 用于排版缓存键和视图 `Key`。
 5. **派生数据**：大纲（标题文本、级别、slug——与 GitHub 规则一致，重名加 `-1`）、脚注表、链接定义表。
-6. 增量策略：`parser.Edit` 逐个应用 Change（从后往前）；`Inlines` 惰性解析，只在投影/导出需要时触发。
+6. 增量策略：`parser.Edit` 逐个应用 Change（从后往前），已知反例走保守全量回退（ADR-003）。`parser.Edit` 原地修改解析器，AST 快照不能持有它的可变状态（06 §5 批次 2）。
 
 ### 4.3 投影 `core/projection`（纯函数，编辑器正确性的核心）
 输入：`(AST, Text, 叶子块索引, Reveal)`；输出：`BlockProjection{Segments, Containers}`。

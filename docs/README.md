@@ -1,6 +1,6 @@
 # Aurink 规划文档包（v1.2 · 2026-11-01）
 
-> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；开发方式已改为一位负责人 + Codex 实现后端；M0 已通过，Phase 1 等用户通知**。产品功能尚未开始开发。
+> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；开发方式已改为一位负责人 + Codex 实现后端；M0 已通过，Phase 1 计划已写好，等用户通知开工**。产品功能尚未开始开发。
 >
 > 仓库：<https://github.com/oysterhyd/aurink>（私有）· 集成分支 `main` · CI：`.github/workflows/ci.yml`
 
@@ -18,6 +18,7 @@
 | [03-architecture.md](03-architecture.md) | 分层与依赖规则、线程模型、单向数据流、各模块设计、状态管理、扩展机制、错误处理、性能预算、目录结构 |
 | [04-contracts.md](04-contracts.md) | 统一接口契约：线程规则、不变式、事件、错误码、Mock 与一致性测试 |
 | [05-delivery-plan.md](05-delivery-plan.md) | 工作方式、代码规则、门禁与 CI、Phase 0–4 任务卡、阶段门、最终验收清单 |
+| [06-phase1.md](06-phase1.md) | Phase 1 实施计划：M1 范围、批次顺序、Codex 流程、任务要点、风险、验收 |
 | `../spikes/00-probe/` | 可行性探针（独立模块，`go test -v ./...` 复现 P1–P14） |
 | `../spikes/01-contract-rc/` | 契约 Go 代码 RC（独立模块，仅依赖标准库，`go vet`/`go build` 通过） |
 
@@ -71,4 +72,4 @@
 
 ## 6. 下一步
 
-当前在 Phase 0，现状见 [05 §6](05-delivery-plan.md)。M0 已通过，见 [adr/README.md](adr/README.md)。用户要求暂不进入 Phase 1，等用户通知。
+当前在 Phase 0，现状见 [05 §6](05-delivery-plan.md)。M0 已通过，见 [adr/README.md](adr/README.md)。Phase 1 计划见 [06-phase1.md](06-phase1.md)，用户要求等通知再开工。

@@ -102,8 +102,8 @@ MyGo 要求键匹配 `^[A-Za-z][A-Za-z0-9_]*$`，点号只留给 MyGo 自带的 
 - 按原标准 No-Go、后备方案已由用户确认：S2（视觉完整 47/50、WebView2 内存高）、S3（严格前缀 1,925/1,934）。
 - QA-0.2 已完成：`tests/arch` 和 `testdata/corpus`。
 - S4 已完成并 Go：性能、空闲和字体预算（6.3 MB）本机通过，用户已确认观感，见 `spikes/s4-look/REPORT.md`。
-- QA-0.1 已按 §4 缩减完成：`contracttest` 有 Text、FileStore 两套，`mock` 有 Text、FileStore、Dispatcher。其余接口的套件和 mock 随实现一起写。
-- M0 已通过（用户确认 2026-11-01，见 `docs/adr/README.md`）。用户要求暂不进入 Phase 1，等用户通知。
+- QA-0.1 已按 §4 缩减完成：`contracttest` 有 Text、FileStore 两套，`mock` 有 Text、FileStore、Dispatcher。其余接口的套件由负责人在实现前写（06 §4.1），mock 按需写。
+- M0 已通过（用户确认 2026-11-01，见 `docs/adr/README.md`）。用户要求暂不进入 Phase 1，等用户通知；计划已写入 `docs/06-phase1.md`。
 - CR-001 到 CR-005 已全部采纳并写入 `internal/contract`。
 - CR-001 的覆盖规则已在全部语料上跑过：无缝、无重叠。少量文本落在隐藏的 `Lead`/`Trailer`（3 个语料样本、约 0.25% 的随机编辑），字节不丢，见 `spikes/s3-ast/REPORT.md`。
 
@@ -121,13 +121,15 @@ MyGo 要求键匹配 `^[A-Za-z][A-Za-z0-9_]*$`，点号只留给 MyGo 自带的 
 | S4 外观性能原型 | — | `spikes/s4-look/` + `REPORT.md`（含与基线的对照截图、字体方案） | 同上 | 4 |
 | **M0 阶段门** | 以上全部 | `docs/adr/ADR-001..` 记录 Spike 结论 | 见 §7 | — |
 
-### Phase 1 · 核心编辑闭环（约 3 周）
+### Phase 1 · 核心编辑闭环
+
+> 顺序、M1 范围和修正后的验收要求见 [06-phase1.md](06-phase1.md)，与下表冲突时以 06 为准。下面的估时按串行合计 74.5 个工作日。
 
 **BE-1**
 | 卡 | 依赖 | 交付物 | 验收标准 | 估时 |
 |---|---|---|---|---|
 | BE-1.1 Text | M0 | `core/text` | 通过 `contracttest.TestText`；行索引惰性构建；1 MB 文档 `LineOf` O(log n) | 1 |
-| BE-1.2 Markdown 适配 | 1.1 | `core/markdown`：AST 实现、Front Matter 预处理、`Content/Markers/Prefixes`、Escape/Entity 内联、`Open/Close`、BlockID 稳定、大纲/slug、脚注表、链接定义、增量更新 | 语料上前缀不变式 100%；随机编辑后增量结果与全量解析等价（块结构、范围、内联）；未触及块 ID 不变；slug 与 GitHub 规则一致（测试表） | 5 |
+| BE-1.2 Markdown 适配 | 1.1 | `core/markdown`：AST 实现、Front Matter 预处理、`Content/Markers/Prefixes`、Escape/Entity 内联、`Open/Close`、BlockID 稳定、大纲/slug、脚注表、链接定义、增量更新 | 语料上 `Block.Lines` 逐行映射 100%（ADR-003）；随机编辑后增量结果与全量解析等价（块结构、范围、内联）；未触及块 ID 不变；slug 与 GitHub 规则一致（测试表） | 5 |
 | BE-1.3 Projection | 1.2 | `core/projection`：`RevealInline/Block/Always/None`、软换行模式、容器装饰、对象片段（图片/复选框/脚注）、`PosMapper` | 04 文档 §4.3 不变式属性测试；黄金测试 ≥ 150 例（源码 + 光标 → 显示串 + 片段表） | 5 |
 | BE-1.4 Document | 1.1、1.2 | `core/document`：Apply/历史/合并/选区映射/事件/只读/Replace、`DocumentFactory` | contracttest 通过；1 万步随机事务属性测试；撤销 1000 步内存上限测试 | 4 |
 | BE-1.5 Editing v1 | 1.2 | `core/editing`：基础意图、列表/引用/标题/代码块内的 Enter/Backspace/Tab 规则、自动配对、内联闭合快捷、块快捷（`# `、`- `、`1. `、`[ ] `、`> `、```` ``` ````+Enter、`---`+Enter）、格式命令（strong/emphasis/strike/code/underline/link/clear）、块命令（heading/paragraph/quote/三种列表/task 切换/indent/outdent/code/hr/moveUp/moveDown）、`Formatting` | 每条规则 ≥ 3 例黄金测试（含 CRLF 文档、嵌套列表、CJK）；最小改动断言（未涉及字节不变） | 6 |
@@ -214,14 +216,14 @@ S1/S2/S3/S4 ────────────────┴→ M0 → BE-1.1
                                         │          └→ BE-1.4 ────────┤
                                         └→ FE-1.1（先用 mock）───────┴→ FE-1.2 → M1
 ```
-关键路径为 **BE-1.2 → BE-1.3 → FE-1.1 集成**。FE-1.1 前半段使用 `mock.Projector`（显示源码）与 `mock.Document` 开发，BE-1.3/1.4 完成后切换。
+关键路径为 **BE-1.2 → BE-1.3 → FE-1.1 集成**。上图是原计划的并行路径，Phase 1 实际按 06 §3 串行，FE-1.1 直接接真实核心。
 
 ## 7. 阶段门验收标准
 
 | 门 | 必须满足（任何一项不满足即 FAIL，退回整改） |
 |---|---|
 | **M0** | 门禁 Windows 通过、三平台交叉编译通过；CR-001 的覆盖规则已在语料上验证；S1–S4 报告齐全并有 Go/No-Go 结论，No-Go 项的后备方案由用户确认；S4 含用户确认的基线观感差异与字体预算；ADR 记录 |
-| **M1** | 用菜单/命令行/双击打开 .md → P0 语法集正确渲染 → 光标处显隐编辑 → 保存；源码模式往返；语料打开/保存字节一致 100%；随机编辑属性测试通过；Windows 微软拼音手工验收通过（候选框位置、提交、撤销为一步）；撤销恢复选区；kill 进程后恢复未保存内容；≤200 KB 击键 p95 < 8 ms；1 万块滚动无整屏重排；对照表中阶段门为 M1 的基线全部通过 |
+| **M1** | 范围按 06 §2 解释。用菜单/命令行/双击打开 .md → P0 语法集正确渲染 → 光标处显隐编辑 → 保存；源码模式往返；语料打开/保存字节一致 100%；随机编辑属性测试通过；Windows 微软拼音手工验收通过（候选框位置、提交、撤销为一步）；撤销恢复选区；kill 进程后恢复未保存内容；≤200 KB 击键 p95 < 8 ms；1 万块滚动无整屏重排；对照表中阶段门为 M1 的基线全部通过 |
 | **M2** | 文件夹工作区全流程（树操作、监听、冲突、回收站）；标签与会话恢复；快速打开/命令面板/查找替换/大纲/全文搜索；表格编辑、图片粘贴拖入、脚注；导出 HTML；E2E 冒烟通过；阶段门为 M2 的基线全部通过 |
 | **M3** | P1 全部功能；渲染服务可用与降级两态；PDF 导出；02 §4.4 运动规则逐条走查通过且 `ReduceMotion`/`ReduceTransparency` 合规；空闲 0 帧；中英文完整；全部 18 张基线通过，用户在真机确认观感 |
 | **M4** | 见 §8 |
