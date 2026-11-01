@@ -170,6 +170,12 @@ func (e *Editor) key(ev ui.InputEvent) bool {
 			case ui.KeyRight:
 				e.moveEdge(1, extend)
 				return true
+			case ui.KeyUp:
+				e.moveTo(0, extend)
+				return true
+			case ui.KeyDown:
+				e.moveTo(e.text.Len(), extend)
+				return true
 			case ui.KeyBackspace:
 				e.intent(contract.Intent{Kind: contract.IntentDeleteBackward, Gran: contract.GranLine})
 				return true

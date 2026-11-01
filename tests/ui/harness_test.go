@@ -95,3 +95,11 @@ func (h *harness) typed(s string) {
 	h.tt.Type(s)
 	h.tt.Frame()
 }
+
+// wordKey is what moves by word: Option on macOS, Ctrl elsewhere.
+func wordKey() ui.Modifiers {
+	if ui.Cmd == ui.Ctrl {
+		return ui.Ctrl
+	}
+	return ui.Alt
+}

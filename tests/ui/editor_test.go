@@ -141,7 +141,7 @@ func TestDeleteSelectionAcrossRows(t *testing.T) {
 func TestWordDelete(t *testing.T) {
 	h := open(t, "one two")
 	h.caret(7)
-	h.mod(ui.Ctrl, ui.KeyBackspace)
+	h.mod(wordKey(), ui.KeyBackspace)
 	h.wantSrc("one ")
 }
 
@@ -151,7 +151,7 @@ func TestArrowsWalkEverySourcePosition(t *testing.T) {
 	for _, src := range []string{"# 标题", "**ab** c", "a *b* `c`", "[x](y) z", "- 项"} {
 		t.Run(src, func(t *testing.T) {
 			h := open(t, src)
-			h.mod(ui.Ctrl, ui.KeyEnd)
+			h.mod(ui.Cmd, ui.KeyEnd)
 			last := h.m.Selection().Primary().Head
 			seen := []int{last}
 			for range len(src) + 2 {
@@ -242,33 +242,33 @@ func TestShiftArrowExtends(t *testing.T) {
 func TestWordMovement(t *testing.T) {
 	h := open(t, "one two  three")
 	h.caret(0)
-	h.mod(ui.Ctrl, ui.KeyRight)
+	h.mod(wordKey(), ui.KeyRight)
 	h.wantCaret(3)
-	h.mod(ui.Ctrl, ui.KeyRight)
+	h.mod(wordKey(), ui.KeyRight)
 	h.wantCaret(7)
-	h.mod(ui.Ctrl, ui.KeyRight)
+	h.mod(wordKey(), ui.KeyRight)
 	h.wantCaret(14)
-	h.mod(ui.Ctrl, ui.KeyLeft)
+	h.mod(wordKey(), ui.KeyLeft)
 	h.wantCaret(9)
-	h.mod(ui.Ctrl, ui.KeyLeft)
+	h.mod(wordKey(), ui.KeyLeft)
 	h.wantCaret(4)
 }
 
 func TestWordMovementCrossesRows(t *testing.T) {
 	h := open(t, "ab\n\ncd")
 	h.caret(2)
-	h.mod(ui.Ctrl, ui.KeyRight)
+	h.mod(wordKey(), ui.KeyRight)
 	h.wantCaret(4)
-	h.mod(ui.Ctrl, ui.KeyLeft)
+	h.mod(wordKey(), ui.KeyLeft)
 	h.wantCaret(2)
 }
 
 func TestWordMovementHanAndLatin(t *testing.T) {
 	h := open(t, "abc汉字def")
 	h.caret(0)
-	h.mod(ui.Ctrl, ui.KeyRight)
+	h.mod(wordKey(), ui.KeyRight)
 	h.wantCaret(3)
-	h.mod(ui.Ctrl, ui.KeyRight)
+	h.mod(wordKey(), ui.KeyRight)
 	h.wantCaret(9)
 }
 
@@ -301,9 +301,9 @@ func TestHomeEnd(t *testing.T) {
 	h.wantCaret(5)
 	h.key(ui.KeyEnd)
 	h.wantCaret(8)
-	h.mod(ui.Ctrl, ui.KeyHome)
+	h.mod(ui.Cmd, ui.KeyHome)
 	h.wantCaret(0)
-	h.mod(ui.Ctrl, ui.KeyEnd)
+	h.mod(ui.Cmd, ui.KeyEnd)
 	h.wantCaret(8)
 }
 
@@ -787,7 +787,7 @@ func TestPageDownMovesCaretAndView(t *testing.T) {
 
 func TestCtrlEndRevealsFarCaret(t *testing.T) {
 	h := open(t, longDoc(5000))
-	h.mod(ui.Ctrl, ui.KeyEnd)
+	h.mod(ui.Cmd, ui.KeyEnd)
 	h.tt.Frame()
 	r, ok := h.e.SelectionRect()
 	if !ok || r.Y < 0 || r.Y+r.H > 700 {
