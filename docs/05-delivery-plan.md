@@ -91,11 +91,11 @@ MyGo 要求键匹配 `^[A-Za-z][A-Za-z0-9_]*$`，点号只留给 MyGo 自带的 
 
 **现状（2026-11-01）**
 - 已完成：INT-0.1、INT-0.2、S1（建议 Go）。
-- 已交付但结论是 No-Go，要在 M0 处理：S2（视觉完整 47/50、WebView2 内存高）、S3（严格前缀 1,925/1,934）。
+- 按原标准 No-Go、后备方案已由用户确认：S2（视觉完整 47/50、WebView2 内存高）、S3（严格前缀 1,925/1,934）。
 - QA-0.2 已完成：`tests/arch` 和 `testdata/corpus`。
-- S4 进行中：性能、空闲和字体预算（6.3 MB）本机通过，用户观感确认未完成，见 `spikes/s4-look/REPORT.md`。
+- S4 已完成并 Go：性能、空闲和字体预算（6.3 MB）本机通过，用户已确认观感，见 `spikes/s4-look/REPORT.md`。
 - QA-0.1 已按 §4 缩减完成：`contracttest` 有 Text、FileStore 两套，`mock` 有 Text、FileStore、Dispatcher。其余接口的套件和 mock 随实现一起写。
-- M0 评估见 `docs/adr/README.md`：工程项已满足，等用户确认 3 项，未通过前不开始 Phase 1。
+- M0 已通过（用户确认 2026-11-01，见 `docs/adr/README.md`）。用户要求暂不进入 Phase 1，等用户通知。
 - CR-001 到 CR-005 已全部采纳并写入 `internal/contract`。
 - CR-001 的覆盖规则已在全部语料上跑过：无缝、无重叠。少量文本落在隐藏的 `Lead`/`Trailer`（3 个语料样本、约 0.25% 的随机编辑），字节不丢，见 `spikes/s3-ast/REPORT.md`。
 

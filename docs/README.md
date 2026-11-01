@@ -37,8 +37,8 @@
 | D8 | 进程内 Go 接口通信（无 HTTP）；`Dispatcher` 回主线程；跨模块错误统一为 `*contract.Error` | 原生单进程应用，最低延迟、类型安全、易 Mock | 设计决策 |
 | D9 | 分层 contract → core → adapters → views → app，导入规则由 `tests/arch` 强制 | 保持依赖清晰、core 可纯单元测试 | 设计决策 |
 | D10 | 面向 contract 接口编程；不冻结，变更与实现、测试同一次提交 | 2026-11-01 取消多 Agent 并行后，冻结和 CR 流程没有必要 | 用户决定 |
-| D11 | 界面基线为 **Ink & Aurora**（`docs/design`）；M1–M4 按基线对照验收 | 用户审查原型后确认 | 用户确认 2026-11-01；Native 观感 [待验证] S4 |
-| D12 | **打包衬线字体**：Newsreader + Noto Serif SC 子集（OFL），另含 JetBrains Mono | 编辑式排版是基线的核心 | 用户决定 2026-11-01；体积 [待验证] S4 |
+| D11 | 界面基线为 **Ink & Aurora**（`docs/design`）；M1–M4 按基线对照验收 | 用户审查原型后确认 | 用户确认 2026-11-01；Native 观感已由用户在 S4 确认 |
+| D12 | **打包衬线字体**：Newsreader + Noto Serif SC 子集（OFL），另含 JetBrains Mono | 编辑式排版是基线的核心 | 用户决定 2026-11-01；S4 实测 6.3 MB |
 
 ## 4. 已验证 vs 待验证
 
@@ -71,4 +71,4 @@
 
 ## 6. 下一步
 
-当前在 Phase 0，现状见 [05 §6](05-delivery-plan.md)。M0 评估见 [adr/README.md](adr/README.md)，等用户确认 3 项后进入 Phase 1。
+当前在 Phase 0，现状见 [05 §6](05-delivery-plan.md)。M0 已通过，见 [adr/README.md](adr/README.md)。用户要求暂不进入 Phase 1，等用户通知。
