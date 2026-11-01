@@ -171,3 +171,7 @@ The temporary zz_accept_test.go and stray coverage / coverage.out files are abse
 Root cause: `maxWindowTops` counted coverage-only blank rows, so a run of about 30 blank lines forced a full parse on every edit. The lookahead and the limit now count nonblank subtrees; the 24 KiB limit and the anchor checks are unchanged.
 
 Owner's rerun, 300 consecutive edits without undo, including events, no full rebuilds [实测]: worst p95 1.71 ms at 200 KB and 3.50 ms at 1 MB. Before: p50 about 15 ms and 76 ms. Single samples reach 28 ms at 200 KB, on a machine also running other builds; the cause of these is not established. Long differential run passed (236 s). Three mutations of the change all fail the tests.
+
+## QA-1.1 fidelity
+
+Owner's run, `tests/fidelity` [实测]: 83 corpus files open and save byte-identical through the real file store and sessions. Three seeds of 10,000 steps each (edits, undo, redo, save) match a plain string model, on mixed, CRLF and BOM documents; total 24 s. A failure prints a minimized script.
