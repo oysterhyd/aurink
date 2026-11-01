@@ -162,6 +162,8 @@ var (
 	snappy = ui.Animation{Spring: ui.SpringOptions{Duration: 260 * time.Millisecond, Bounce: .15}}
 	smooth = ui.Animation{Spring: ui.SpringOptions{Duration: 360 * time.Millisecond}}
 	gentle = ui.Animation{Spring: ui.SpringOptions{Duration: 520 * time.Millisecond, Bounce: .1}}
+	// contentIn fades a panel's content in after its frame has mostly opened.
+	contentIn = ui.Animation{Duration: 120 * time.Millisecond, Delay: 160 * time.Millisecond}
 )
 
 // matched is a transition with a shared identity, but for the old theme's copy:
@@ -188,6 +190,7 @@ type look struct {
 	testAurora  bool // the Tester has no GPU; tests run the aurora anyway
 	cpu         bool // the last frame was drawn without a GPU
 	onFrame     func()
+	panelFade   float32
 }
 
 func (a *look) mat(level int, t palette) material {
@@ -214,6 +217,12 @@ func (a *look) view(c *ui.Context) {
 	root := ui.Box(c).Fill().Clip()
 	v := root.Animate("theme", float32(a.themeGen), 400*time.Millisecond)
 	progress := v - float32(a.themeGen-1)
+	// The root outlives the panel, so this runs from 0 each time it opens.
+	var open float32
+	if a.palette {
+		open = 1
+	}
+	a.panelFade = root.AnimateTo("panelFade", open, contentIn)
 	root.Children(func() {
 		if progress >= 1 || a.themeGen == 0 {
 			a.shell(c.Key("shell"), a.dark)
@@ -272,7 +281,7 @@ func (a *look) titleBar(c *ui.Context, t palette) {
 			if a.palette {
 				return
 			}
-			om := ui.Row(c).Fill().Padding(0, 10).Gap(8).AlignItems(ui.Center).Radius(8).Background(t.surface).Border(1, t.border).
+			om := ui.Row(c).Fill().Padding(0, 10).Gap(8).AlignItems(ui.Center).Radius(8).Clip().Background(t.surface).Border(1, t.border).
 				Transition(a.matched(&gentle, panelMatch{})).Children(func() {
 				ui.Text(c, "搜索文件或输入命令").FontSize(13).TextColor(t.muted).Grow(1)
 				ui.Text(c, "Ctrl P").FontSize(11).TextColor(t.muted)
@@ -425,19 +434,23 @@ func (a *look) commandPanel(c *ui.Context, t palette) {
 			a.palette = false
 		}
 		w, _ := c.Size()
-		ui.Column(c).Absolute().Top(70).Left((w-560)/2).Width(560).Height(340).Padding(10).Gap(2).Radius(16).Border(1, t.border).
+		// The frame flies from the omnibox. Its content keeps the panel's final
+		// size, clipped by the frame, and fades in once the frame has opened.
+		ui.Box(c).Absolute().Top(70).Left((w-560)/2).Width(560).Height(340).Radius(16).Clip().Border(1, t.border).
 			Shadow(0, 32, 80, 0, ui.RGBA(0, 0, 0, .22)).Material(a.mat(3, t)).
 			Transition(a.matched(&gentle, panelMatch{})).Children(func() {
-			ui.Text(c, "输入命令").FontSize(16).TextColor(t.muted).Padding(8, 10, 12)
-			for i, cmd := range []string{"打开文件夹", "切换主题", "切换阅读模式", "导出为 HTML", "设置", "查找"} {
-				row := ui.Row(c.Key(i)).Padding(8, 10).Radius(9).
-					Transition(ui.ElementTransition{Animation: &snappy, Enter: &ui.Motion{Y: 6}}).Children(func() { ui.Text(c, cmd).FontSize(14) })
-				if i == 0 {
-					row.Background(t.accent.Alpha(.11))
-				} else if row.Hovered() {
-					row.Background(t.hover)
+			ui.Column(c).Absolute().Top(0).Left(0).Width(560).Padding(10).Gap(2).
+				Opacity(a.panelFade).Children(func() {
+				ui.Text(c, "输入命令").FontSize(16).TextColor(t.muted).Padding(8, 10, 12)
+				for i, cmd := range []string{"打开文件夹", "切换主题", "切换阅读模式", "导出为 HTML", "设置", "查找"} {
+					row := ui.Row(c.Key(i)).Padding(8, 10).Radius(9).Children(func() { ui.Text(c, cmd).FontSize(14) })
+					if i == 0 {
+						row.Background(t.accent.Alpha(.11))
+					} else if row.Hovered() {
+						row.Background(t.hover)
+					}
 				}
-			}
+			})
 		})
 	})
 }

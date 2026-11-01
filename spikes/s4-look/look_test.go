@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -124,5 +125,62 @@ func TestLowPowerColors(t *testing.T) {
 			}
 			f.Close()
 		}
+	}
+}
+
+// The panel's text does not arrive before its frame: while the frame flies from
+// the omnibox, the place of a row far from it holds no ink.
+func TestPanelTextFollowsItsFrame(t *testing.T) {
+	a := &look{low: true}
+	tt := ui.NewTester(a.view, 1280, 800)
+	settle(tt)
+	if err := tt.Click("搜索文件或输入命令"); err != nil {
+		t.Fatal(err)
+	}
+	tt.Advance(16 * time.Millisecond)
+	if dir := os.Getenv("S4_SHOTS"); dir != "" {
+		writePNG(t, filepath.Join(dir, "panel-016ms.png"), tt)
+	}
+	for ms := 32; ms <= 144; ms += 16 {
+		tt.Advance(16 * time.Millisecond)
+		if dir := os.Getenv("S4_SHOTS"); dir != "" && ms%48 == 0 {
+			writePNG(t, filepath.Join(dir, fmt.Sprintf("panel-%03dms.png", ms)), tt)
+		}
+		if inkAt(tt, "切换阅读模式") {
+			t.Fatalf("row text shows at %d ms, before the frame has opened", ms)
+		}
+	}
+	settle(tt)
+	if !inkAt(tt, "切换阅读模式") {
+		t.Fatal("row text never shows")
+	}
+}
+
+// inkAt reports whether dark text is drawn at the place of a text.
+func inkAt(tt *ui.Tester, s string) bool {
+	r, ok := tt.Find(s)
+	if !ok {
+		return false
+	}
+	img := tt.Image()
+	for y := int(r.Y); y < int(r.Y+r.H); y++ {
+		for x := int(r.X); x < int(r.X+r.W); x++ {
+			if c := img.RGBAAt(x, y); c.R < 120 && c.G < 120 && c.B < 120 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func writePNG(t *testing.T, path string, tt *ui.Tester) {
+	t.Helper()
+	f, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	if err := png.Encode(f, tt.Image()); err != nil {
+		t.Fatal(err)
 	}
 }
