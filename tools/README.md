@@ -1,7 +1,9 @@
 # tools
 
-Owner: INT. No tool exists yet, so this directory holds no Go package.
+Owner: INT.
 
-- `i18nmerge` merges `i18n/fragments` into `locales`. `scripts/gate.*` skip its
-  check, with a notice, until `tools/i18nmerge/main.go` exists.
+- `i18nmerge` checks `i18n/fragments` against the key rules of
+  `docs/05-delivery-plan.md` §3.4 and generates `locales`. Run it from the
+  repository root after changing a fragment: `go run ./tools/i18nmerge`. The
+  gate runs it with `-check`.
 - `gate` is reserved. The gate is `scripts/gate.ps1` and `scripts/gate.sh`.
