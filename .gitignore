@@ -1,0 +1,24 @@
+# MyGo build output and caches
+/build/
+/dist/
+/.mygo/
+mygo_windows_*.syso
+/spikes/*/build/
+/spikes/*/.mygo/
+/spikes/*/mygo_windows_*.syso
+
+# Go
+*.exe
+*.test
+*.prof
+*.out
+coverage.*
+
+# OS and editors
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+.claude/settings.local.json

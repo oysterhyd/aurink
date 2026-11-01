@@ -1,0 +1,6 @@
+{
+  "name": "probe",
+  "identifier": "com.example.probe",
+  "version": "0.1.0",
+  "out": "build"
+}
