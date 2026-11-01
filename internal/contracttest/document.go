@@ -212,9 +212,14 @@ func TestDocument(t *testing.T, newFixture func(t *testing.T) DocumentFixture) {
 			t.Errorf("Dirty %v, edited %d, moved %d", e.Dirty, edited, other)
 		}
 		got = nil
-		d.SetSelection(contract.Caret(1))
+		d.SetSelection(contract.Caret(0))
 		if len(got) != 1 || got[0].Kind != contract.DocSelectionChanged {
 			t.Errorf("selection events %+v", got)
+		}
+		got = nil
+		d.SetSelection(contract.Caret(0))
+		if len(got) != 0 {
+			t.Errorf("events for the same selection: %+v", got)
 		}
 		off()
 		got = nil
