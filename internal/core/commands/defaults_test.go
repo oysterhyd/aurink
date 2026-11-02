@@ -26,9 +26,9 @@ func TestDefaultBindings(t *testing.T) {
 			if got := r.SetUserBindings(nil); len(got) != 0 {
 				t.Fatalf("default conflicts through contract API: %+v", got)
 			}
-			replace := "Primary+H"
+			replace, next, prev := "Primary+H", "F3", "Shift+F3"
 			if goos == "darwin" {
-				replace = "Primary+Alt+F"
+				replace, next, prev = "Primary+Alt+F", "Primary+G", "Primary+Shift+G"
 			}
 			want := []struct {
 				key string
@@ -69,6 +69,10 @@ func TestDefaultBindings(t *testing.T) {
 				{"Primary+W", contract.CmdFileClose},
 				{"Primary+Shift+T", contract.CmdFileReopenClosed},
 				{"Primary+Tab", contract.CmdNavNextTab},
+				{"F2", contract.CmdFileRename},
+				{"Primary+Shift+V", contract.CmdEditPastePlain},
+				{next, contract.CmdEditFindNext},
+				{prev, contract.CmdEditFindPrev},
 			}
 			tabMod := "Alt"
 			if goos == "darwin" {

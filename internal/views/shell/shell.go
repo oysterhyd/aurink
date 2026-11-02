@@ -37,6 +37,8 @@ const (
 type Platform interface {
 	OpenFile(done func(path string))
 	SavePath(name string, done func(path string))
+	// ExportPath asks where to export an HTML page; "" when canceled.
+	ExportPath(name string, done func(path string))
 	ConfirmClose(name string, done func(Choice))
 	// OpenFolder asks for a folder; "" when canceled.
 	OpenFolder(done func(path string))
@@ -79,6 +81,15 @@ type Options struct {
 	Converter contract.PasteConverter
 	Clipboard contract.Clipboard
 	Assets    contract.Assets
+	// SessionStore keeps the tabs and folder for the next start; nil keeps
+	// nothing (D9).
+	SessionStore contract.SessionStore
+	// Recent records opened files and folders for the welcome page and quick
+	// open; nil records nothing.
+	Recent contract.Recent
+	// ExportHTML writes markdown as an HTML page at path off the main thread
+	// and calls done on it; nil leaves file.exportHTML out.
+	ExportHTML func(markdown, path string, opts contract.ExportOptions, done func(error))
 }
 
 const maxNotices = 4
@@ -134,6 +145,7 @@ type Shell struct {
 	files   files
 	outline outline
 	search  wsearch
+	sess    session
 }
 
 const (
@@ -204,6 +216,7 @@ func (s *Shell) sessionsChanged(ev contract.SessionsEvent) {
 				s.activate(s.docs[min(i, len(s.docs)-1)])
 			}
 		}
+		s.sessionChanged()
 	}
 	s.invalidate()
 }
@@ -253,6 +266,7 @@ func (s *Shell) activate(d *doc) {
 	s.focusNext = true
 	s.reveal = true
 	s.invalidate()
+	s.sessionChanged()
 }
 
 // activateAt activates the tab at index i, if there is one.
@@ -294,9 +308,11 @@ func (s *Shell) dragTab(d *doc, dx float32) {
 		case dx > 0 && i+1 < len(s.docs) && s.widths[s.docs[i+1]] > 0 && s.drag.x > s.widths[s.docs[i+1]]/2:
 			s.drag.x -= s.widths[s.docs[i+1]] + tabGap
 			s.docs[i], s.docs[i+1] = s.docs[i+1], s.docs[i]
+			s.sessionChanged()
 		case dx < 0 && i > 0 && s.widths[s.docs[i-1]] > 0 && -s.drag.x > s.widths[s.docs[i-1]]/2:
 			s.drag.x += s.widths[s.docs[i-1]] + tabGap
 			s.docs[i], s.docs[i-1] = s.docs[i-1], s.docs[i]
+			s.sessionChanged()
 		default:
 			return
 		}
@@ -794,6 +810,60 @@ func (s *Shell) welcome(c *ui.Context, t *theme.Tokens) {
 				s.run(contract.CmdFileOpen)
 			}
 		})
+		s.recentList(c, t)
+	})
+}
+
+// Up to this many recent folders and files show on the welcome page.
+const (
+	recentFolders = 3
+	recentFiles   = 5
+)
+
+// recentList lists the recent folders and files under the welcome page's
+// buttons; a click opens one again.
+func (s *Shell) recentList(c *ui.Context, t *theme.Tokens) {
+	r := s.o.Recent
+	if r == nil {
+		return
+	}
+	folders, files := r.Folders(), r.Files()
+	folders, files = folders[:min(len(folders), recentFolders)], files[:min(len(files), recentFiles)]
+	if len(folders)+len(files) == 0 {
+		return
+	}
+	ui.Column(c).Width(420).Padding(28, 0, 0).Gap(2).Children(func() {
+		ui.Text(c, locales.ShellRecent()).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(0, 10, 6)
+		row := func(path string, dir bool) {
+			icon := kit.IconFile
+			if dir {
+				icon = kit.IconFolder
+			}
+			e := ui.Row(c.Key(path)).Height(30).Padding(0, 10).Gap(10).AlignItems(ui.Center).Radius(8).
+				Role(ui.RoleButton).Label(filepath.Base(path)).Focusable()
+			if e.Hovered() {
+				e.Background(t.Hover)
+			}
+			e.Children(func() {
+				ui.Icon(c, icon).Size(14, 14).TextColor(t.Muted)
+				// The name whole; the folder gives way.
+				ui.Text(c, filepath.Base(path)).FontSize(theme.UIText).SingleLine().Shrink(0)
+				ui.Text(c, filepath.Dir(path)).FontSize(theme.UIStatus).TextColor(t.Faint).SingleLine().Shrink(1).Grow(1).MinWidth(0)
+			})
+			if e.Clicked() {
+				if dir {
+					s.OpenFolder(path)
+				} else {
+					s.Open(path)
+				}
+			}
+		}
+		for _, p := range folders {
+			row(p, true)
+		}
+		for _, p := range files {
+			row(p, false)
+		}
 	})
 }
 
@@ -839,6 +909,9 @@ func (s *Shell) Open(path string) {
 			return
 		}
 		s.activate(s.attach(x))
+		if s.o.Recent != nil {
+			s.o.Recent.Add(path, false)
+		}
 	})
 }
 

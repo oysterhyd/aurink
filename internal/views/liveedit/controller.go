@@ -193,3 +193,24 @@ func (e *Editor) RunEdit(cmd contract.EditCommand) error {
 func (e *Editor) Formatting() contract.FormatState {
 	return e.opts.Editing.Formatting(e.editContext())
 }
+
+// ViewAnchor returns the row at the top of the view and how far into it the
+// view starts, in DIP: the scroll by block, which survives a change of font
+// size or width (D10).
+func (e *Editor) ViewAnchor() (row int, off float32) {
+	if len(e.rows) == 0 {
+		return 0, 0
+	}
+	return e.anchorIdx, float32(e.anchorOff)
+}
+
+// SetViewAnchor scrolls so that row is at the top, off into it, leaving the
+// caret where it is; a row past the end goes to the last.
+func (e *Editor) SetViewAnchor(row int, off float32) {
+	if len(e.rows) == 0 {
+		return
+	}
+	e.anchorIdx, e.anchorOff = max(0, min(row, len(e.rows)-1)), float64(off)
+	e.revealPending = false
+	e.invalidate()
+}

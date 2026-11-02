@@ -314,6 +314,8 @@ P0 = MVP 必须（Phase 1–2）；P1 = Beta（Phase 3）；P2 = 1.0 打磨（Ph
 | 查找/替换 | Ctrl+F / Ctrl+H（macOS ⌥⌘F） | 保存/另存为 | Ctrl+S / Ctrl+Shift+S |
 | 新建/打开 | Ctrl+N / Ctrl+O | 关闭标签/重开 | Ctrl+W / Ctrl+Shift+T |
 | 切换标签 | Ctrl+Tab | 跳到第 N 个标签 | Alt+1…9（macOS ⌘+Option+1…9） |
+| 重命名文件 | F2 | 粘贴为纯文本 | Ctrl+Shift+V |
+| 下一个/上一个匹配 | F3 / Shift+F3（macOS ⌘G / ⇧⌘G） | | |
 
 > `Ctrl+K` 固定为链接，命令面板不占用它。`Ctrl+1…6` 为标题（Typora 习惯）。快捷键表由 `core/commands` 维护并做冲突检测。
 

@@ -152,5 +152,12 @@
   "shell_banner_read_only_detail": "可以查看，另存为一份副本即可修改。",
   "shell_banner_large": "大文件模式。",
   "shell_banner_large_detail": "为了流畅，部分实时渲染已关闭。",
-  "shell_deleted_status": "已删除，未写入"
+  "shell_deleted_status": "已删除，未写入",
+  "shell_recent": "最近打开",
+  "shell_session_missing": "上次打开的 {n} 个文件已不存在",
+  "shell_session_unreadable": "无法读取上次的会话",
+  "shell_export_html": "导出为 HTML…",
+  "shell_exported": "已导出",
+  "shell_exporting": "正在导出…",
+  "shell_html_files": "HTML 文件"
 }

@@ -59,7 +59,11 @@ func (s *Shell) OpenFolder(path string) {
 			return
 		}
 		s.sidebar, s.panel = true, panelFiles
+		if s.o.Recent != nil {
+			s.o.Recent.Add(path, true)
+		}
 		s.invalidate()
+		s.sessionChanged()
 	})
 }
 
@@ -110,6 +114,10 @@ func (s *Shell) filesPanel(c *ui.Context, t *theme.Tokens) {
 	tree := ui.Outline(c.Key("tree"), &s.files.tree, s.children(root), s.children, func(path string) {
 		s.fileRow(c.Key(path), t, path)
 	}).Grow(1).MinHeight(0).Padding(0, 8, 8)
+	if n := s.files.tree.Open.Len(); n != s.sess.expanded {
+		s.sess.expanded = n
+		s.sessionChanged()
+	}
 	// Below the rows is the folder itself.
 	if p, ok := ui.Drop[dragPath](tree); ok && s.canMove(string(p), root) {
 		s.move(string(p), root)

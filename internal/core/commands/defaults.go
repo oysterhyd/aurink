@@ -46,6 +46,14 @@ func DefaultBindings() []contract.KeyBinding {
 		{Command: contract.CmdFileClose, Chord: contract.Chord{Mods: primary, Key: "W"}},
 		{Command: contract.CmdFileReopenClosed, Chord: contract.Chord{Mods: shifted, Key: "T"}},
 		{Command: contract.CmdNavNextTab, Chord: contract.Chord{Mods: primary, Key: "Tab"}},
+		{Command: contract.CmdFileRename, Chord: contract.Chord{Key: "F2"}},
+		{Command: contract.CmdEditPastePlain, Chord: contract.Chord{Mods: shifted, Key: "V"}},
+		{Command: contract.CmdEditFindNext, Chord: contract.Chord{Key: "F3"}, Platform: "windows"},
+		{Command: contract.CmdEditFindNext, Chord: contract.Chord{Key: "F3"}, Platform: "linux"},
+		{Command: contract.CmdEditFindNext, Chord: contract.Chord{Mods: primary, Key: "G"}, Platform: "darwin"},
+		{Command: contract.CmdEditFindPrev, Chord: contract.Chord{Mods: contract.ModShift, Key: "F3"}, Platform: "windows"},
+		{Command: contract.CmdEditFindPrev, Chord: contract.Chord{Mods: contract.ModShift, Key: "F3"}, Platform: "linux"},
+		{Command: contract.CmdEditFindPrev, Chord: contract.Chord{Mods: shifted, Key: "G"}, Platform: "darwin"},
 	}
 	for i, id := range []contract.CommandID{
 		contract.CmdBlockHeading1, contract.CmdBlockHeading2, contract.CmdBlockHeading3,

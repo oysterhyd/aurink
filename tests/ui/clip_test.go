@@ -153,6 +153,15 @@ func TestPastePrefersMarkdownThenConvertsHTMLAndRTF(t *testing.T) {
 	}
 }
 
+// TestPrimaryShiftVPastesPlain: the key of edit.pastePlain reaches the editor
+// itself, which would otherwise take it as a paste (02 §7).
+func TestPrimaryShiftVPastesPlain(t *testing.T) {
+	h := openClip(t, "", "/docs/a.md")
+	setClip(h, transfer.Bytes(transfer.Text, []byte("x")), transfer.Bytes(transfer.HTML, []byte("<b>x</b>")))
+	h.mod(ui.Cmd|ui.Shift, ui.KeyV)
+	h.wantSrc("x")
+}
+
 // TestPasteImageImportsIt: a picture on the clipboard is written through Assets
 // and inserted; an unsaved document is saved first (07 FE-1.5).
 func TestPasteImageImportsIt(t *testing.T) {

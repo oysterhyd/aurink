@@ -15,7 +15,8 @@ import (
 // paletteSource lists what the palette offers, from the shell's state.
 type paletteSource struct{ s *Shell }
 
-// Files are the open tabs, the closed ones and the workspace's files, each once.
+// Files are the open tabs, the closed ones, the workspace's files and the
+// recent files, each once.
 func (p paletteSource) Files() []palette.Item {
 	s := p.s
 	seen := map[string]bool{}
@@ -35,6 +36,11 @@ func (p paletteSource) Files() []palette.Item {
 	}
 	if s.o.Files != nil {
 		for _, path := range s.o.Files() {
+			add(path)
+		}
+	}
+	if s.o.Recent != nil {
+		for _, path := range s.o.Recent.Files() {
 			add(path)
 		}
 	}

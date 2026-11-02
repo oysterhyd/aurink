@@ -667,5 +667,38 @@
   "shell_deleted_status": "Deleted, not written",
   "@shell_deleted_status": {
     "description": "The status capsule of a document whose file was deleted."
+  },
+  "shell_recent": "Recent",
+  "@shell_recent": {
+    "description": "Heading of the welcome page's list of recently opened files and folders."
+  },
+  "shell_session_missing": "{n} files from last time no longer exist",
+  "@shell_session_missing": {
+    "description": "Notice after restoring the last session: some of its files are gone.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "shell_session_unreadable": "Last session could not be read",
+  "@shell_session_unreadable": {
+    "description": "Notice: the saved session was damaged; it was backed up and the app started empty."
+  },
+  "shell_export_html": "Export as HTML…",
+  "@shell_export_html": {
+    "description": "Command: writes the document as an HTML page."
+  },
+  "shell_exported": "Exported",
+  "@shell_exported": {
+    "description": "Notice after an export finished; the file's name is shown under it."
+  },
+  "shell_exporting": "Exporting…",
+  "@shell_exporting": {
+    "description": "Notice while an export runs."
+  },
+  "shell_html_files": "HTML Files",
+  "@shell_html_files": {
+    "description": "Name of the file type in the export dialog."
   }
 }

@@ -110,6 +110,9 @@ func newApplication() (*application, error) {
 		Workspace: workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}), Search: search.NewWorkspaceSearch(), Finder: search.NewFinder(),
 		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages),
 		WindowButtons: runtime.GOOS != "darwin",
+		SessionStore:  docsession.NewSessionStore(filepath.Join(data, "session.json"), files),
+		Recent:        systemRecent{workspace.NewRecent(filepath.Join(data, "recent.json"), dispatcher)},
+		ExportHTML:    ExportHTML(files, dispatcher, m1Exts),
 	})
 	if err := registry.Register(a.shell.Commands()...); err != nil {
 		return nil, err
@@ -126,32 +129,60 @@ func newApplication() (*application, error) {
 			return
 		}
 		e.PreventDefault()
-		a.shell.CloseAll(func(ok bool) {
-			if !ok {
-				return
+		// The session is saved before the tabs close one by one (D9).
+		a.shell.SaveSession(true, func(err error) {
+			if err != nil {
+				slog.Error("session save failed", "error", err)
 			}
-			// Close removes recovery copies in the session queue. Restore runs after
-			// them in it, so the next start does not bring closed documents back.
-			sessions.Restore(func([]contract.Session, error) {
-				a.closing = true
-				a.window.Close()
-			})
+			a.closeAll(sessions)
 		})
 	})
 	if runtime.GOOS == "darwin" {
 		mygo.App.SetMenu(buildMenu(registry))
 	}
+	// Recovered copies first, then the last session's folder and tabs.
 	sessions.Restore(func(_ []contract.Session, err error) {
 		if err != nil {
 			a.shell.Notify(contract.Notice{Level: contract.NoticeError, Message: err.Error()})
 		}
-		a.restored = true
-		for _, p := range a.pending {
-			a.shell.Open(p)
-		}
-		a.pending = nil
+		a.shell.RestoreSession(func() {
+			a.restored = true
+			for _, p := range a.pending {
+				a.shell.Open(p)
+			}
+			a.pending = nil
+		})
 	})
 	return a, nil
+}
+
+// closeAll closes the tabs, asking about unsaved ones, and then the window.
+func (a *application) closeAll(sessions contract.Sessions) {
+	a.shell.CloseAll(func(ok bool) {
+		if !ok {
+			a.shell.ThawSession()
+			return
+		}
+		// Close removes recovery copies in the session queue. Restore runs after
+		// them in it, so the next start does not bring closed documents back.
+		sessions.Restore(func([]contract.Session, error) {
+			a.closing = true
+			a.window.Close()
+		})
+	})
+}
+
+// systemRecent also gives opened files to the system's recent documents
+// (the jump list on Windows, Open Recent on macOS).
+type systemRecent struct{ contract.Recent }
+
+func (r systemRecent) Add(path string, isDir bool) {
+	r.Recent.Add(path, isDir)
+	if !isDir {
+		if err := mygo.App.AddRecentDocument(path); err != nil {
+			slog.Warn("system recent documents", "error", err)
+		}
+	}
 }
 
 func (a *application) open(path string) {
@@ -171,7 +202,7 @@ func buildMenu(r contract.CommandRegistry) *mygo.Menu {
 		label string
 		ids   []contract.CommandID
 	}{
-		{locales.ShellOpen(), []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileClose}},
+		{locales.ShellOpen(), []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileOpenFolder, contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileExportHTML, contract.CmdFileClose}},
 		{locales.ShellViewLive(), []contract.CommandID{contract.CmdViewLive, contract.CmdViewSource, contract.CmdViewToggleSidebar, contract.CmdViewThemeLight, contract.CmdViewThemeDark}},
 	}
 	items = append(items, &mygo.MenuItem{Role: mygo.RoleEditMenu})
@@ -273,6 +304,20 @@ func (a *application) Minimize()         { a.window.Minimize() }
 func (a *application) ToggleMaximize()   { a.window.ToggleMaximize() }
 func (a *application) IsMaximized() bool { return a.window.IsMaximized() }
 func (a *application) Close()            { a.window.Close() }
+
+func (a *application) ExportPath(name string, done func(string)) {
+	go func() {
+		path, err := mygo.Dialog.Save(mygo.SaveDialogOptions{Parent: a.window, DefaultPath: name + ".html",
+			Filters: []mygo.FileFilter{{Name: locales.ShellHtmlFiles(), Extensions: []string{"html", "htm"}}}})
+		a.window.Update(func() {
+			if err != nil {
+				a.shell.Notify(contract.Notice{Level: contract.NoticeError, Message: err.Error()})
+				path = ""
+			}
+			done(path)
+		})
+	}()
+}
 
 func filters() []mygo.FileFilter {
 	return []mygo.FileFilter{{Name: locales.ShellMarkdownFiles(), Extensions: []string{"md", "markdown"}}}

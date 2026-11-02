@@ -276,6 +276,10 @@ func (e *Editor) key(ev ui.InputEvent) bool {
 		case ui.KeyX:
 			return e.command("cut")
 		case ui.KeyV:
+			if extend { // Primary+Shift+V pastes plain text (edit.pastePlain).
+				e.paste(true)
+				return true
+			}
 			return e.command("paste")
 		case ui.KeyHome:
 			e.moveTo(0, extend)

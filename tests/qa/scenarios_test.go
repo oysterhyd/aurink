@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	aurinkapp "aurink/internal/app"
 	"aurink/internal/contract"
 	"aurink/internal/contracttest"
 	"aurink/internal/core/commands"
@@ -50,6 +51,7 @@ func (t *timer) Stop() bool {
 
 type platform struct {
 	open, save string
+	export     string
 	folder     string
 	trashOK    bool
 	choice     shell.Choice
@@ -65,6 +67,7 @@ func (p *platform) ConfirmTrash(name string, done func(bool)) {
 	p.asked = append(p.asked, name)
 	done(p.trashOK)
 }
+func (p *platform) ExportPath(_ string, done func(string)) { done(p.export) }
 func (p *platform) SavePath(_ string, done func(string)) {
 	p.saves++
 	done(p.save)
@@ -104,12 +107,49 @@ func newApp(t *testing.T) *app {
 		t.Fatal(err)
 	}
 	a.boot()
+	// Before the temporary folder goes: a session save may still be writing.
+	t.Cleanup(a.idle)
 	return a
+}
+
+// idle waits until no session save runs.
+func (a *app) idle() {
+	a.t.Helper()
+	if a.s == nil {
+		return
+	}
+	done := false
+	a.s.SaveSession(false, func(error) { done = true })
+	a.pumpUntil("the session saved", &done)
+}
+
+// pumpUntil runs what is posted until *done.
+func (a *app) pumpUntil(what string, done *bool) {
+	a.t.Helper()
+	for !*done {
+		select {
+		case f := <-a.q:
+			f()
+		case <-time.After(30 * time.Second):
+			a.t.Fatalf("never: %s", what)
+		}
+	}
+}
+
+// restore brings back the last session, as the app does after starting.
+func (a *app) restore() {
+	a.t.Helper()
+	a.settle()
+	done := false
+	a.s.RestoreSession(func() { done = true })
+	a.pumpUntil("the session restored", &done)
+	a.settle()
 }
 
 // boot starts the app over the data folder, as a new process does.
 func (a *app) boot() {
 	t := a.t
+	a.idle() // The last process's saves are done before the next one reads.
 	files := fsstore.New()
 	store, err := settings.New(filepath.Join(a.data, "settings.json"), files, a.q, nil)
 	if err != nil {
@@ -132,12 +172,16 @@ func (a *app) boot() {
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
-		Files: func() []string { return a.files }, Workspace: a.ws, Search: search.NewWorkspaceSearch()})
+		Files: func() []string { return a.files }, Workspace: a.ws, Search: search.NewWorkspaceSearch(),
+		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
+		Recent:       workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q),
+		ExportHTML:   aurinkapp.ExportHTML(files, a.q, contract.ExtFrontMatter)})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}
 	a.tt = ui.NewTester(a.s.View, 1280, 800)
 	a.tt.Frame()
+	a.restore() // As the app does once its recovered copies are back.
 }
 
 // settle runs what is posted until the sessions are idle: Restore is queued behind

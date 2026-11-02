@@ -2177,3 +2177,103 @@ func ShellDeletedStatus() string { return In(i18n.Locale()).ShellDeletedStatus()
 func (msgs Messages) ShellDeletedStatus() string {
 	return Catalog.Format(msgs.locale, "shell_deleted_status", nil)
 }
+
+// ShellRecent says "Recent"
+// in the language the app shows.
+//
+// Heading of the welcome page's list of recently opened files and folders.
+func ShellRecent() string { return In(i18n.Locale()).ShellRecent() }
+
+// ShellRecent says "Recent"
+// in the language of msgs.
+//
+// Heading of the welcome page's list of recently opened files and folders.
+func (msgs Messages) ShellRecent() string {
+	return Catalog.Format(msgs.locale, "shell_recent", nil)
+}
+
+// ShellSessionMissing says "{n} files from last time no longer exist"
+// in the language the app shows.
+//
+// Notice after restoring the last session: some of its files are gone.
+func ShellSessionMissing(n int) string { return In(i18n.Locale()).ShellSessionMissing(n) }
+
+// ShellSessionMissing says "{n} files from last time no longer exist"
+// in the language of msgs.
+//
+// Notice after restoring the last session: some of its files are gone.
+func (msgs Messages) ShellSessionMissing(n int) string {
+	return Catalog.Format(msgs.locale, "shell_session_missing", map[string]any{"n": n})
+}
+
+// ShellSessionUnreadable says "Last session could not be read"
+// in the language the app shows.
+//
+// Notice: the saved session was damaged; it was backed up and the app
+// started empty.
+func ShellSessionUnreadable() string { return In(i18n.Locale()).ShellSessionUnreadable() }
+
+// ShellSessionUnreadable says "Last session could not be read"
+// in the language of msgs.
+//
+// Notice: the saved session was damaged; it was backed up and the app
+// started empty.
+func (msgs Messages) ShellSessionUnreadable() string {
+	return Catalog.Format(msgs.locale, "shell_session_unreadable", nil)
+}
+
+// ShellExportHtml says "Export as HTML…"
+// in the language the app shows.
+//
+// Command: writes the document as an HTML page.
+func ShellExportHtml() string { return In(i18n.Locale()).ShellExportHtml() }
+
+// ShellExportHtml says "Export as HTML…"
+// in the language of msgs.
+//
+// Command: writes the document as an HTML page.
+func (msgs Messages) ShellExportHtml() string {
+	return Catalog.Format(msgs.locale, "shell_export_html", nil)
+}
+
+// ShellExported says "Exported"
+// in the language the app shows.
+//
+// Notice after an export finished; the file's name is shown under it.
+func ShellExported() string { return In(i18n.Locale()).ShellExported() }
+
+// ShellExported says "Exported"
+// in the language of msgs.
+//
+// Notice after an export finished; the file's name is shown under it.
+func (msgs Messages) ShellExported() string {
+	return Catalog.Format(msgs.locale, "shell_exported", nil)
+}
+
+// ShellExporting says "Exporting…"
+// in the language the app shows.
+//
+// Notice while an export runs.
+func ShellExporting() string { return In(i18n.Locale()).ShellExporting() }
+
+// ShellExporting says "Exporting…"
+// in the language of msgs.
+//
+// Notice while an export runs.
+func (msgs Messages) ShellExporting() string {
+	return Catalog.Format(msgs.locale, "shell_exporting", nil)
+}
+
+// ShellHtmlFiles says "HTML Files"
+// in the language the app shows.
+//
+// Name of the file type in the export dialog.
+func ShellHtmlFiles() string { return In(i18n.Locale()).ShellHtmlFiles() }
+
+// ShellHtmlFiles says "HTML Files"
+// in the language of msgs.
+//
+// Name of the file type in the export dialog.
+func (msgs Messages) ShellHtmlFiles() string {
+	return Catalog.Format(msgs.locale, "shell_html_files", nil)
+}

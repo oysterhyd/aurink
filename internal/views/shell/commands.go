@@ -1,6 +1,7 @@
 package shell
 
 import (
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -89,7 +90,43 @@ func (s *Shell) Commands() []contract.Command {
 		cmds = append(cmds, contract.Command{ID: id, Title: "goToTab" + strconv.Itoa(i+1),
 			Enabled: func() bool { return i < len(s.docs) }, Run: func() error { s.activateAt(i); return nil }})
 	}
+	if s.o.ExportHTML != nil {
+		cmds = append(cmds, contract.Command{ID: contract.CmdFileExportHTML, Title: "exportHTML", Enabled: hasDoc,
+			Run: func() error { s.exportHTML(s.active); return nil }})
+	}
 	return append(cmds, s.editCommands()...)
+}
+
+// exportHTML asks where and writes the document there as an HTML page. Its
+// images are embedded when the page goes to another folder, where their
+// relative paths would not reach them.
+func (s *Shell) exportHTML(d *doc) {
+	if d.source != nil {
+		d.source.Sync()
+	}
+	st := d.s.State()
+	name := strings.TrimSuffix(st.Name, filepath.Ext(st.Name))
+	md := d.s.Model().Text().String()
+	s.o.Platform.ExportPath(name, func(path string) {
+		if path == "" {
+			return
+		}
+		if filepath.Ext(path) == "" {
+			path += ".html"
+		}
+		opts := contract.ExportOptions{Format: contract.ExportHTML, Title: name}
+		if st.Path != "" {
+			opts.BaseDir = filepath.Dir(st.Path)
+			opts.EmbedImages = filepath.Dir(path) != opts.BaseDir
+		}
+		s.o.ExportHTML(md, path, opts, func(err error) {
+			if err != nil {
+				s.fail(err)
+				return
+			}
+			s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: locales.ShellExported(), Detail: filepath.Base(path)})
+		})
+	})
 }
 
 // editCommands run in the live editor of the active tab; source mode has its own
@@ -218,6 +255,8 @@ func Title(key string) string {
 		return locales.ShellNextTab()
 	case "prevTab":
 		return locales.ShellPrevTab()
+	case "exportHTML":
+		return locales.ShellExportHtml()
 	}
 	if f, ok := editTitles[key]; ok {
 		return f()
