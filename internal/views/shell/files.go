@@ -24,6 +24,8 @@ type files struct {
 	off                   func()
 	// Built counts the rows built in the last frame, for tests.
 	Built int
+	// lit is the folder lit under a drag in the last frame, for tests.
+	lit string
 }
 
 func (s *Shell) watchWorkspace() {
@@ -99,13 +101,68 @@ func (s *Shell) filesPanel(c *ui.Context, t *theme.Tokens) {
 		return
 	}
 	s.files.dirs[root] = true
-	ui.Text(c, filepath.Base(root)).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(8, 16, 4).SingleLine()
+	s.files.lit = ""
+	head := ui.Text(c, filepath.Base(root)).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(8, 16, 4).SingleLine()
+	s.dropOn(head, t, root)
 	s.files.Built = 0
 	// The tree marks the open file itself (in the sheet color, as the baseline),
 	// not with the list's own choice in the system accent.
-	ui.Outline(c.Key("tree"), &s.files.tree, s.children(root), s.children, func(path string) {
+	tree := ui.Outline(c.Key("tree"), &s.files.tree, s.children(root), s.children, func(path string) {
 		s.fileRow(c.Key(path), t, path)
 	}).Grow(1).MinHeight(0).Padding(0, 8, 8)
+	// Below the rows is the folder itself.
+	if p, ok := ui.Drop[dragPath](tree); ok && s.canMove(string(p), root) {
+		s.move(string(p), root)
+	}
+}
+
+// dragPath is a file or folder dragged in the tree.
+type dragPath string
+
+// canMove reports whether path can go into dir: not into itself, its own
+// folders, or where it already is.
+func (s *Shell) canMove(path, dir string) bool {
+	sep := string(filepath.Separator)
+	return path != dir && filepath.Dir(path) != dir && !strings.HasPrefix(dir+sep, path+sep)
+}
+
+// dropOn makes e take a drag into dir, lit while one that can go there is over
+// it. It reports whether it is lit.
+func (s *Shell) dropOn(e ui.Element, t *theme.Tokens, dir string) bool {
+	if p, ok := ui.Drop[dragPath](e); ok && s.canMove(string(p), dir) {
+		s.move(string(p), dir)
+	}
+	p, ok := ui.DragOver[dragPath](e)
+	if !ok || !s.canMove(string(p), dir) {
+		return false
+	}
+	e.Background(t.AccentSoft).Border(1, t.AccentRing)
+	s.files.lit = dir
+	return true
+}
+
+// move moves a file or folder into dir; the notice undoes it by moving it back
+// (D7). Open tabs follow on the WsRenamed events.
+func (s *Shell) move(path, dir string) {
+	from, name := filepath.Dir(path), filepath.Base(path)
+	s.o.Workspace.Move([]string{path}, dir, func(err error) {
+		if err != nil {
+			s.fail(err)
+			return
+		}
+		s.files.dirs[dir] = true
+		s.files.tree.Open.Add(dir)
+		moved := filepath.Join(dir, name)
+		s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: locales.ShellMoved(name, filepath.Base(dir)),
+			Action: locales.ShellUndo(), Run: func() {
+				s.o.Workspace.Move([]string{moved}, from, func(err error) {
+					if err != nil {
+						s.fail(err)
+					}
+				})
+			}})
+		s.invalidate()
+	})
 }
 
 func (s *Shell) fileRow(c *ui.Context, t *theme.Tokens, path string) {
@@ -114,9 +171,17 @@ func (s *Shell) fileRow(c *ui.Context, t *theme.Tokens, path string) {
 	name := filepath.Base(path)
 	d := s.docAt(path)
 	row := ui.Row(c).Height(28).FillWidth().Padding(0, 8).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusRow).Label(name)
-	if d != nil && d == s.active {
+	if s.files.renaming != path {
+		row.Drag(dragPath(path))
+	}
+	lit := dir && s.dropOn(row, t, path)
+	switch {
+	case lit:
+	case row.Dragging():
+		row.Opacity(.5)
+	case d != nil && d == s.active:
 		row.Background(t.SurfaceHover)
-	} else if row.Hovered() {
+	case row.Hovered():
 		row.Background(t.Hover)
 	}
 	row.Children(func() {
@@ -129,7 +194,9 @@ func (s *Shell) fileRow(c *ui.Context, t *theme.Tokens, path string) {
 			ui.Box(c).Size(6, 6).Radius(3).Background(t.Accent)
 		}
 	})
-	if row.Clicked() {
+	if row.DoubleClicked() {
+		s.startRename(path)
+	} else if row.Clicked() {
 		if dir {
 			if s.files.tree.Open.Has(path) {
 				s.files.tree.Open.Remove(path)
@@ -183,6 +250,23 @@ func (s *Shell) renameField(c *ui.Context, t *theme.Tokens, path string) {
 			ui.Text(c, s.files.clash).FontSize(theme.UIBadge).TextColor(t.Danger)
 		}
 	})
+}
+
+// renameActive edits the active document's name in the file tree.
+func (s *Shell) renameActive() {
+	if s.active == nil || s.active.s.State().Path == "" {
+		return
+	}
+	path := s.active.s.State().Path
+	s.showPanel(panelFiles)
+	for dir := filepath.Dir(path); s.o.Workspace != nil && strings.HasPrefix(dir, s.o.Workspace.Root()); dir = filepath.Dir(dir) {
+		s.files.dirs[dir] = true
+		s.files.tree.Open.Add(dir)
+		if dir == filepath.Dir(dir) {
+			break
+		}
+	}
+	s.startRename(path)
 }
 
 // StartRename edits a file's name in its row.
@@ -305,3 +389,16 @@ func (s *Shell) ExpandFolder(path string) {
 	s.files.tree.Open.Add(path)
 	s.invalidate()
 }
+
+// canRenameActive reports whether the active document is in the open folder,
+// where the tree can edit its name.
+func (s *Shell) canRenameActive() bool {
+	if s.active == nil || s.o.Workspace == nil || s.o.Workspace.Root() == "" {
+		return false
+	}
+	rel, err := filepath.Rel(s.o.Workspace.Root(), s.active.s.State().Path)
+	return err == nil && rel != "." && !strings.HasPrefix(rel, "..")
+}
+
+// FileDropLit is the folder the tree lit under a drag in the last frame, "" for none.
+func (s *Shell) FileDropLit() string { return s.files.lit }

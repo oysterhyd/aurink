@@ -100,5 +100,7 @@
   "shell_search_bad_regex": "正则表达式无效",
   "shell_search_in_folder": "在文件夹中搜索",
   "shell_trash_unsaved": "{name} 有未保存的修改，仍要移到回收站吗？",
-  "shell_trashed": "已将 {name} 移到回收站"
+  "shell_trashed": "已将 {name} 移到回收站",
+  "shell_moved": "已将 {name} 移到 {dir}",
+  "shell_undo": "撤销"
 }

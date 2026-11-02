@@ -451,5 +451,21 @@
         "type": "String"
       }
     }
+  },
+  "shell_moved": "Moved {name} to {dir}",
+  "@shell_moved": {
+    "description": "After a drag moved a file or folder.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "dir": {
+        "type": "String"
+      }
+    }
+  },
+  "shell_undo": "Undo",
+  "@shell_undo": {
+    "description": "The button undoing a move."
   }
 }

@@ -1449,3 +1449,31 @@ func ShellTrashed(name string) string { return In(i18n.Locale()).ShellTrashed(na
 func (msgs Messages) ShellTrashed(name string) string {
 	return Catalog.Format(msgs.locale, "shell_trashed", map[string]any{"name": name})
 }
+
+// ShellMoved says "Moved {name} to {dir}"
+// in the language the app shows.
+//
+// After a drag moved a file or folder.
+func ShellMoved(name string, dir string) string { return In(i18n.Locale()).ShellMoved(name, dir) }
+
+// ShellMoved says "Moved {name} to {dir}"
+// in the language of msgs.
+//
+// After a drag moved a file or folder.
+func (msgs Messages) ShellMoved(name string, dir string) string {
+	return Catalog.Format(msgs.locale, "shell_moved", map[string]any{"name": name, "dir": dir})
+}
+
+// ShellUndo says "Undo"
+// in the language the app shows.
+//
+// The button undoing a move.
+func ShellUndo() string { return In(i18n.Locale()).ShellUndo() }
+
+// ShellUndo says "Undo"
+// in the language of msgs.
+//
+// The button undoing a move.
+func (msgs Messages) ShellUndo() string {
+	return Catalog.Format(msgs.locale, "shell_undo", nil)
+}

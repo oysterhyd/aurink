@@ -289,6 +289,28 @@ func (a *app) rightClickRow(i int) {
 	a.tt.Frame()
 }
 
+// row is the middle of the tree's row i, as rightClickRow finds it.
+func (a *app) row(i int) (x, y float32) {
+	a.t.Helper()
+	r, ok := a.tt.Find("proj")
+	if !ok {
+		a.t.Fatal("no tree")
+	}
+	return r.X + 60, r.Y + r.H + float32(i)*36 + 18
+}
+
+// drag drags the tree's row from onto row to, a few DIPs at a time.
+func (a *app) drag(from, to int) {
+	a.t.Helper()
+	x0, y0 := a.row(from)
+	x1, y1 := a.row(to)
+	a.tt.Press(x0, y0)
+	for k := 1; k <= 8; k++ {
+		a.tt.Move(x0+(x1-x0)*float32(k)/8, y0+(y1-y0)*float32(k)/8)
+		a.tt.Frame()
+	}
+}
+
 func (a *app) text() string { return a.s.ActiveSession().Model().Text().String() }
 
 func (a *app) want(got, want string) {
@@ -615,6 +637,67 @@ var scenarios = []scenario{
 		a.click(locales.ShellTrash())
 		a.until("b goes", func() bool { _, err := os.Stat(filepath.Join(root, "b.md")); return os.IsNotExist(err) })
 		a.want(fmt.Sprint(a.p.asked), "[a.md a.md]")
+	}},
+	{"dragging a file onto a folder moves it, its tab follows, and undo moves it back", func(a *app) {
+		root := a.folder("a.md", "sub/x.md")
+		a.s.Open(filepath.Join(root, "a.md"))
+		a.settle()
+		a.drag(1, 0)
+		// The folder lights while a file that can go there is over it.
+		lit := a.s.FileDropLit()
+		x, y := a.row(0)
+		a.tt.Release(x, y)
+		a.until("a.md is in sub", func() bool { _, err := os.Stat(filepath.Join(root, "sub", "a.md")); return err == nil })
+		if lit != filepath.Join(root, "sub") {
+			a.t.Fatalf("lit %q while dragging", lit)
+		}
+		a.until("its tab follows", func() bool { return a.s.ActiveSession().State().Path == filepath.Join(root, "sub", "a.md") })
+		a.click(locales.ShellUndo())
+		a.until("a.md is back", func() bool { _, err := os.Stat(filepath.Join(root, "a.md")); return err == nil })
+		a.until("its tab follows back", func() bool { return a.s.ActiveSession().State().Path == filepath.Join(root, "a.md") })
+	}},
+	{"a folder dropped into itself or a file onto its own folder stays", func(a *app) {
+		root := a.folder("sub/", "sub/x.md", "a.md")
+		a.s.ExpandFolder(filepath.Join(root, "sub"))
+		a.until("sub lists", func() bool { return a.tt.HasText("x.md") })
+		// Rows: sub, x.md (in sub), a.md. x.md onto sub is where it is.
+		a.drag(1, 0)
+		if lit := a.s.FileDropLit(); lit != "" {
+			a.t.Fatalf("lit %q for a file over its own folder", lit)
+		}
+		x, y := a.row(0)
+		a.tt.Release(x, y)
+		a.settle()
+		if _, err := os.Stat(filepath.Join(root, "sub", "x.md")); err != nil {
+			a.t.Fatal(err)
+		}
+		if a.tt.HasText(locales.ShellUndo()) {
+			a.t.Fatal("a move that did nothing offered undo")
+		}
+	}},
+	{"a double click on a file edits its name", func(a *app) {
+		root := a.folder("a.md")
+		x, y := a.row(0)
+		a.tt.ClickAt(x, y)
+		a.tt.ClickAt(x, y)
+		a.settle()
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.typed("b.md")
+		a.tt.Key(0, ui.KeyEnter)
+		a.until("renamed", func() bool { _, err := os.Stat(filepath.Join(root, "b.md")); return err == nil })
+	}},
+	{"the rename command edits the active file's name in the tree", func(a *app) {
+		root := a.folder("c.md", "sub/a.md")
+		a.s.Open(filepath.Join(root, "sub", "a.md"))
+		a.settle()
+		a.run(contract.CmdFileRename)
+		a.tt.Advance(time.Second)
+		a.tt.Frame()
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.typed("b.md")
+		a.tt.Key(0, ui.KeyEnter)
+		a.until("renamed", func() bool { _, err := os.Stat(filepath.Join(root, "sub", "b.md")); return err == nil })
+		a.until("the tab follows", func() bool { return a.s.ActiveSession().State().Name == "b.md" })
 	}},
 	{"the outline lists the headings and a click goes to one", func(a *app) {
 		src := "# One\n\ntext\n\n## Two\n\n### Three\n"
