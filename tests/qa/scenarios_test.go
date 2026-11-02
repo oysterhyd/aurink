@@ -271,6 +271,66 @@ var scenarios = []scenario{
 		a.settle()
 		a.tabs(1)
 	}},
+	{"primary+B bolds the selection", func(a *app) {
+		a.open("a.md", "hello\n")
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.tt.Key(ui.Cmd, ui.KeyB)
+		a.settle()
+		a.want(a.text(), "**hello**\n")
+	}},
+	{"primary+2 makes a heading and primary+0 undoes it", func(a *app) {
+		a.open("a.md", "hello\n")
+		a.tt.Key(ui.Cmd, ui.Key2)
+		a.settle()
+		a.want(a.text(), "## hello\n")
+		a.tt.Key(ui.Cmd, ui.Key0)
+		a.settle()
+		a.want(a.text(), "hello\n")
+	}},
+	{"list and quote shortcuts change the block", func(a *app) {
+		a.open("a.md", "hello\n")
+		a.tt.Key(ui.Cmd|ui.Shift, ui.Key8)
+		a.settle()
+		a.want(a.text(), "- hello\n")
+		a.tt.Key(ui.Cmd|ui.Shift, ui.Key8)
+		a.tt.Key(ui.Cmd|ui.Shift, ui.KeyQ)
+		a.settle()
+		a.want(a.text(), "> hello\n")
+	}},
+	{"format shortcuts do nothing in source mode", func(a *app) {
+		a.open("a.md", "hello\n")
+		a.run(contract.CmdViewSource)
+		a.tt.Key(ui.Cmd, ui.KeyB)
+		a.tt.Key(ui.Cmd, ui.Key2)
+		a.settle()
+		a.want(a.text(), "hello\n")
+		a.notices(0)
+	}},
+	{"F8 and F9 toggle focus and typewriter", func(a *app) {
+		a.open("a.md", "hello\n")
+		checked := func(id contract.CommandID) bool {
+			c, _ := a.reg.Lookup(id)
+			return c.Checked()
+		}
+		a.tt.Key(0, ui.KeyF8)
+		a.tt.Key(0, ui.KeyF9)
+		a.settle()
+		if !checked(contract.CmdViewFocus) || !checked(contract.CmdViewTypewriter) {
+			a.t.Fatal("F8/F9 did not turn the modes on")
+		}
+		a.tt.Key(0, ui.KeyF8)
+		a.settle()
+		if checked(contract.CmdViewFocus) {
+			a.t.Fatal("F8 did not turn focus mode off")
+		}
+	}},
+	{"every registered command has a title in both languages", func(a *app) {
+		for _, c := range a.reg.All() {
+			if shell.Title(c.Title) == c.Title {
+				a.t.Errorf("%s has no title for key %q", c.ID, c.Title)
+			}
+		}
+	}},
 	{"a canceled dialog opens nothing", func(a *app) { a.run(contract.CmdFileOpen); a.tabs(0); a.notices(0) }},
 	{"opening an open file shows its tab", func(a *app) {
 		a.open("a.md", "a\n")

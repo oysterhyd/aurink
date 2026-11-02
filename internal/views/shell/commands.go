@@ -76,7 +76,80 @@ func (s *Shell) Commands() []contract.Command {
 		cmds = append(cmds, contract.Command{ID: id, Title: "goToTab" + strconv.Itoa(i+1),
 			Enabled: func() bool { return i < len(s.docs) }, Run: func() error { s.activateAt(i); return nil }})
 	}
-	return cmds
+	return append(cmds, s.editCommands()...)
+}
+
+// editCommands run in the live editor of the active tab; source mode has its own
+// keys, so they are off there.
+func (s *Shell) editCommands() []contract.Command {
+	live := func() bool { return s.active != nil && s.active.mode == editorapi.ModeLive }
+	edits := []struct {
+		title string
+		cmd   contract.EditCommand
+	}{
+		{"strong", contract.EditCommand{ID: contract.CmdFormatStrong}},
+		{"emphasis", contract.EditCommand{ID: contract.CmdFormatEmphasis}},
+		{"underline", contract.EditCommand{ID: contract.CmdFormatUnderline}},
+		{"strike", contract.EditCommand{ID: contract.CmdFormatStrike}},
+		{"inlineCode", contract.EditCommand{ID: contract.CmdFormatCode}},
+		{"link", contract.EditCommand{ID: contract.CmdFormatLink}},
+		{"paragraph", contract.EditCommand{ID: contract.CmdBlockParagraph}},
+		{"heading1", contract.EditCommand{ID: contract.CmdBlockHeading1}},
+		{"heading2", contract.EditCommand{ID: contract.CmdBlockHeading2}},
+		{"heading3", contract.EditCommand{ID: contract.CmdBlockHeading3}},
+		{"heading4", contract.EditCommand{ID: contract.CmdBlockHeading4}},
+		{"heading5", contract.EditCommand{ID: contract.CmdBlockHeading5}},
+		{"heading6", contract.EditCommand{ID: contract.CmdBlockHeading6}},
+		{"quote", contract.EditCommand{ID: contract.CmdBlockQuote}},
+		{"bulletList", contract.EditCommand{ID: contract.CmdBlockBulletList}},
+		{"orderedList", contract.EditCommand{ID: contract.CmdBlockOrderedList}},
+		{"taskList", contract.EditCommand{ID: contract.CmdBlockTaskList}},
+		{"toggleTask", contract.EditCommand{ID: contract.CmdBlockToggleTask}},
+		{"codeBlock", contract.EditCommand{ID: contract.CmdBlockCode}},
+		{"hr", contract.EditCommand{ID: contract.CmdBlockHR}},
+		{"indent", contract.EditCommand{ID: contract.CmdBlockIndent}},
+		{"outdent", contract.EditCommand{ID: contract.CmdBlockOutdent}},
+		{"moveUp", contract.EditCommand{ID: contract.CmdBlockMoveUp}},
+		{"moveDown", contract.EditCommand{ID: contract.CmdBlockMoveDown}},
+		{"tableInsert", contract.EditCommand{ID: contract.CmdTableInsert, Rows: 3, Cols: 3}},
+		{"rowAbove", contract.EditCommand{ID: contract.CmdTableRowAbove}},
+		{"rowBelow", contract.EditCommand{ID: contract.CmdTableRowBelow}},
+		{"colLeft", contract.EditCommand{ID: contract.CmdTableColLeft}},
+		{"colRight", contract.EditCommand{ID: contract.CmdTableColRight}},
+		{"deleteRow", contract.EditCommand{ID: contract.CmdTableDeleteRow}},
+		{"deleteCol", contract.EditCommand{ID: contract.CmdTableDeleteCol}},
+		{"tableFormat", contract.EditCommand{ID: contract.CmdTableFormat}},
+	}
+	var out []contract.Command
+	for _, e := range edits {
+		out = append(out, contract.Command{ID: e.cmd.ID, Title: e.title, Enabled: live, Run: func() error {
+			err := s.active.live.RunEdit(e.cmd)
+			s.focusNext = true
+			s.invalidate()
+			return err
+		}})
+	}
+	return append(out,
+		contract.Command{ID: contract.CmdViewFocus, Title: "focus", Enabled: live,
+			Checked: func() bool { return live() && s.active.live.FocusMode() },
+			Run:     func() error { s.active.live.SetFocusMode(!s.active.live.FocusMode()); s.invalidate(); return nil }},
+		contract.Command{ID: contract.CmdViewTypewriter, Title: "typewriter", Enabled: live,
+			Checked: func() bool { return live() && s.active.live.Typewriter() },
+			Run:     func() error { s.active.live.SetTypewriter(!s.active.live.Typewriter()); s.invalidate(); return nil }},
+	)
+}
+
+var editTitles = map[string]func() string{
+	"strong": locales.ShellStrong, "emphasis": locales.ShellEmphasis, "underline": locales.ShellUnderline,
+	"strike": locales.ShellStrike, "inlineCode": locales.ShellInlineCode, "link": locales.ShellLink,
+	"paragraph": locales.ShellParagraph, "quote": locales.ShellQuote, "bulletList": locales.ShellBulletList,
+	"orderedList": locales.ShellOrderedList, "taskList": locales.ShellTaskList, "toggleTask": locales.ShellToggleTask,
+	"codeBlock": locales.ShellCodeBlock, "hr": locales.ShellHr, "indent": locales.ShellIndent,
+	"outdent": locales.ShellOutdent, "moveUp": locales.ShellMoveUp, "moveDown": locales.ShellMoveDown,
+	"tableInsert": locales.ShellTableInsert, "rowAbove": locales.ShellRowAbove, "rowBelow": locales.ShellRowBelow,
+	"colLeft": locales.ShellColLeft, "colRight": locales.ShellColRight, "deleteRow": locales.ShellDeleteRow,
+	"deleteCol": locales.ShellDeleteCol, "tableFormat": locales.ShellTableFormat, "focus": locales.ShellFocus,
+	"typewriter": locales.ShellTypewriter,
 }
 
 // Title says a command's title in the app's language.
@@ -108,6 +181,12 @@ func Title(key string) string {
 		return locales.ShellNextTab()
 	case "prevTab":
 		return locales.ShellPrevTab()
+	}
+	if f, ok := editTitles[key]; ok {
+		return f()
+	}
+	if n, err := strconv.Atoi(strings.TrimPrefix(key, "heading")); err == nil && strings.HasPrefix(key, "heading") {
+		return locales.ShellHeading(n)
 	}
 	if n, err := strconv.Atoi(strings.TrimPrefix(key, "goToTab")); err == nil && strings.HasPrefix(key, "goToTab") {
 		return locales.ShellGoToTab(n)
@@ -148,12 +227,16 @@ var namedKeys = map[string]ui.Key{
 	"H": ui.KeyH, "I": ui.KeyI, "J": ui.KeyJ, "K": ui.KeyK, "L": ui.KeyL, "M": ui.KeyM, "N": ui.KeyN,
 	"O": ui.KeyO, "P": ui.KeyP, "Q": ui.KeyQ, "R": ui.KeyR, "S": ui.KeyS, "T": ui.KeyT, "U": ui.KeyU,
 	"V": ui.KeyV, "W": ui.KeyW, "X": ui.KeyX, "Y": ui.KeyY, "Z": ui.KeyZ, "/": ui.KeySlash,
-	"Tab": ui.KeyTab,
+	"Tab": ui.KeyTab, "`": ui.KeyBackquote, "[": ui.KeyBracketLeft, "]": ui.KeyBracketRight,
 }
 
 func init() {
 	for i := range 10 {
 		namedKeys[strconv.Itoa(i)] = ui.Key0 + ui.Key(i)
+	}
+	for i, k := range []ui.Key{ui.KeyF1, ui.KeyF2, ui.KeyF3, ui.KeyF4, ui.KeyF5, ui.KeyF6,
+		ui.KeyF7, ui.KeyF8, ui.KeyF9, ui.KeyF10, ui.KeyF11, ui.KeyF12} {
+		namedKeys["F"+strconv.Itoa(i+1)] = k
 	}
 }
 

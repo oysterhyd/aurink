@@ -158,5 +158,126 @@
         "type": "int"
       }
     }
+  },
+  "shell_strong": "Bold",
+  "@shell_strong": {
+    "description": "Makes the selection bold, or removes bold."
+  },
+  "shell_emphasis": "Italic",
+  "@shell_emphasis": {
+    "description": "Makes the selection italic, or removes italic."
+  },
+  "shell_underline": "Underline",
+  "@shell_underline": {
+    "description": "Underlines the selection, or removes the underline."
+  },
+  "shell_strike": "Strikethrough",
+  "@shell_strike": {
+    "description": "Strikes through the selection, or removes it."
+  },
+  "shell_inline_code": "Inline Code",
+  "@shell_inline_code": {
+    "description": "Marks the selection as inline code."
+  },
+  "shell_link": "Link",
+  "@shell_link": {
+    "description": "Turns the selection into a link."
+  },
+  "shell_paragraph": "Paragraph",
+  "@shell_paragraph": {
+    "description": "Turns the block into a plain paragraph."
+  },
+  "shell_quote": "Quote",
+  "@shell_quote": {
+    "description": "Turns the block into a quote, or back."
+  },
+  "shell_bullet_list": "Bulleted List",
+  "@shell_bullet_list": {
+    "description": "Turns the block into a bulleted list item."
+  },
+  "shell_ordered_list": "Numbered List",
+  "@shell_ordered_list": {
+    "description": "Turns the block into a numbered list item."
+  },
+  "shell_task_list": "Task List",
+  "@shell_task_list": {
+    "description": "Turns the block into a task list item."
+  },
+  "shell_toggle_task": "Toggle Task",
+  "@shell_toggle_task": {
+    "description": "Checks or unchecks the task at the caret."
+  },
+  "shell_code_block": "Code Block",
+  "@shell_code_block": {
+    "description": "Turns the block into a code block."
+  },
+  "shell_hr": "Horizontal Rule",
+  "@shell_hr": {
+    "description": "Inserts a horizontal rule."
+  },
+  "shell_indent": "Indent",
+  "@shell_indent": {
+    "description": "Indents the list item or block."
+  },
+  "shell_outdent": "Outdent",
+  "@shell_outdent": {
+    "description": "Outdents the list item or block."
+  },
+  "shell_move_up": "Move Block Up",
+  "@shell_move_up": {
+    "description": "Moves the block above the previous one."
+  },
+  "shell_move_down": "Move Block Down",
+  "@shell_move_down": {
+    "description": "Moves the block below the next one."
+  },
+  "shell_table_insert": "Insert Table",
+  "@shell_table_insert": {
+    "description": "Inserts a 3 by 3 table."
+  },
+  "shell_row_above": "Insert Row Above",
+  "@shell_row_above": {
+    "description": "Inserts a table row above the caret's."
+  },
+  "shell_row_below": "Insert Row Below",
+  "@shell_row_below": {
+    "description": "Inserts a table row below the caret's."
+  },
+  "shell_col_left": "Insert Column Left",
+  "@shell_col_left": {
+    "description": "Inserts a table column left of the caret's."
+  },
+  "shell_col_right": "Insert Column Right",
+  "@shell_col_right": {
+    "description": "Inserts a table column right of the caret's."
+  },
+  "shell_delete_row": "Delete Row",
+  "@shell_delete_row": {
+    "description": "Deletes the caret's table row."
+  },
+  "shell_delete_col": "Delete Column",
+  "@shell_delete_col": {
+    "description": "Deletes the caret's table column."
+  },
+  "shell_table_format": "Format Table",
+  "@shell_table_format": {
+    "description": "Aligns the table's source columns."
+  },
+  "shell_focus": "Focus Mode",
+  "@shell_focus": {
+    "description": "Dims everything but the caret's block."
+  },
+  "shell_typewriter": "Typewriter Mode",
+  "@shell_typewriter": {
+    "description": "Keeps the caret's line in the middle of the window."
+  },
+  "shell_heading": "Heading {n}",
+  "@shell_heading": {
+    "description": "Turns the block into a heading of a level from 1 to 6.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

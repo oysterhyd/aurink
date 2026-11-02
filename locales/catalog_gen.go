@@ -537,3 +537,409 @@ func ShellGoToTab(n int) string { return In(i18n.Locale()).ShellGoToTab(n) }
 func (msgs Messages) ShellGoToTab(n int) string {
 	return Catalog.Format(msgs.locale, "shell_go_to_tab", map[string]any{"n": n})
 }
+
+// ShellStrong says "Bold"
+// in the language the app shows.
+//
+// Makes the selection bold, or removes bold.
+func ShellStrong() string { return In(i18n.Locale()).ShellStrong() }
+
+// ShellStrong says "Bold"
+// in the language of msgs.
+//
+// Makes the selection bold, or removes bold.
+func (msgs Messages) ShellStrong() string {
+	return Catalog.Format(msgs.locale, "shell_strong", nil)
+}
+
+// ShellEmphasis says "Italic"
+// in the language the app shows.
+//
+// Makes the selection italic, or removes italic.
+func ShellEmphasis() string { return In(i18n.Locale()).ShellEmphasis() }
+
+// ShellEmphasis says "Italic"
+// in the language of msgs.
+//
+// Makes the selection italic, or removes italic.
+func (msgs Messages) ShellEmphasis() string {
+	return Catalog.Format(msgs.locale, "shell_emphasis", nil)
+}
+
+// ShellUnderline says "Underline"
+// in the language the app shows.
+//
+// Underlines the selection, or removes the underline.
+func ShellUnderline() string { return In(i18n.Locale()).ShellUnderline() }
+
+// ShellUnderline says "Underline"
+// in the language of msgs.
+//
+// Underlines the selection, or removes the underline.
+func (msgs Messages) ShellUnderline() string {
+	return Catalog.Format(msgs.locale, "shell_underline", nil)
+}
+
+// ShellStrike says "Strikethrough"
+// in the language the app shows.
+//
+// Strikes through the selection, or removes it.
+func ShellStrike() string { return In(i18n.Locale()).ShellStrike() }
+
+// ShellStrike says "Strikethrough"
+// in the language of msgs.
+//
+// Strikes through the selection, or removes it.
+func (msgs Messages) ShellStrike() string {
+	return Catalog.Format(msgs.locale, "shell_strike", nil)
+}
+
+// ShellInlineCode says "Inline Code"
+// in the language the app shows.
+//
+// Marks the selection as inline code.
+func ShellInlineCode() string { return In(i18n.Locale()).ShellInlineCode() }
+
+// ShellInlineCode says "Inline Code"
+// in the language of msgs.
+//
+// Marks the selection as inline code.
+func (msgs Messages) ShellInlineCode() string {
+	return Catalog.Format(msgs.locale, "shell_inline_code", nil)
+}
+
+// ShellLink says "Link"
+// in the language the app shows.
+//
+// Turns the selection into a link.
+func ShellLink() string { return In(i18n.Locale()).ShellLink() }
+
+// ShellLink says "Link"
+// in the language of msgs.
+//
+// Turns the selection into a link.
+func (msgs Messages) ShellLink() string {
+	return Catalog.Format(msgs.locale, "shell_link", nil)
+}
+
+// ShellParagraph says "Paragraph"
+// in the language the app shows.
+//
+// Turns the block into a plain paragraph.
+func ShellParagraph() string { return In(i18n.Locale()).ShellParagraph() }
+
+// ShellParagraph says "Paragraph"
+// in the language of msgs.
+//
+// Turns the block into a plain paragraph.
+func (msgs Messages) ShellParagraph() string {
+	return Catalog.Format(msgs.locale, "shell_paragraph", nil)
+}
+
+// ShellQuote says "Quote"
+// in the language the app shows.
+//
+// Turns the block into a quote, or back.
+func ShellQuote() string { return In(i18n.Locale()).ShellQuote() }
+
+// ShellQuote says "Quote"
+// in the language of msgs.
+//
+// Turns the block into a quote, or back.
+func (msgs Messages) ShellQuote() string {
+	return Catalog.Format(msgs.locale, "shell_quote", nil)
+}
+
+// ShellBulletList says "Bulleted List"
+// in the language the app shows.
+//
+// Turns the block into a bulleted list item.
+func ShellBulletList() string { return In(i18n.Locale()).ShellBulletList() }
+
+// ShellBulletList says "Bulleted List"
+// in the language of msgs.
+//
+// Turns the block into a bulleted list item.
+func (msgs Messages) ShellBulletList() string {
+	return Catalog.Format(msgs.locale, "shell_bullet_list", nil)
+}
+
+// ShellOrderedList says "Numbered List"
+// in the language the app shows.
+//
+// Turns the block into a numbered list item.
+func ShellOrderedList() string { return In(i18n.Locale()).ShellOrderedList() }
+
+// ShellOrderedList says "Numbered List"
+// in the language of msgs.
+//
+// Turns the block into a numbered list item.
+func (msgs Messages) ShellOrderedList() string {
+	return Catalog.Format(msgs.locale, "shell_ordered_list", nil)
+}
+
+// ShellTaskList says "Task List"
+// in the language the app shows.
+//
+// Turns the block into a task list item.
+func ShellTaskList() string { return In(i18n.Locale()).ShellTaskList() }
+
+// ShellTaskList says "Task List"
+// in the language of msgs.
+//
+// Turns the block into a task list item.
+func (msgs Messages) ShellTaskList() string {
+	return Catalog.Format(msgs.locale, "shell_task_list", nil)
+}
+
+// ShellToggleTask says "Toggle Task"
+// in the language the app shows.
+//
+// Checks or unchecks the task at the caret.
+func ShellToggleTask() string { return In(i18n.Locale()).ShellToggleTask() }
+
+// ShellToggleTask says "Toggle Task"
+// in the language of msgs.
+//
+// Checks or unchecks the task at the caret.
+func (msgs Messages) ShellToggleTask() string {
+	return Catalog.Format(msgs.locale, "shell_toggle_task", nil)
+}
+
+// ShellCodeBlock says "Code Block"
+// in the language the app shows.
+//
+// Turns the block into a code block.
+func ShellCodeBlock() string { return In(i18n.Locale()).ShellCodeBlock() }
+
+// ShellCodeBlock says "Code Block"
+// in the language of msgs.
+//
+// Turns the block into a code block.
+func (msgs Messages) ShellCodeBlock() string {
+	return Catalog.Format(msgs.locale, "shell_code_block", nil)
+}
+
+// ShellHr says "Horizontal Rule"
+// in the language the app shows.
+//
+// Inserts a horizontal rule.
+func ShellHr() string { return In(i18n.Locale()).ShellHr() }
+
+// ShellHr says "Horizontal Rule"
+// in the language of msgs.
+//
+// Inserts a horizontal rule.
+func (msgs Messages) ShellHr() string {
+	return Catalog.Format(msgs.locale, "shell_hr", nil)
+}
+
+// ShellIndent says "Indent"
+// in the language the app shows.
+//
+// Indents the list item or block.
+func ShellIndent() string { return In(i18n.Locale()).ShellIndent() }
+
+// ShellIndent says "Indent"
+// in the language of msgs.
+//
+// Indents the list item or block.
+func (msgs Messages) ShellIndent() string {
+	return Catalog.Format(msgs.locale, "shell_indent", nil)
+}
+
+// ShellOutdent says "Outdent"
+// in the language the app shows.
+//
+// Outdents the list item or block.
+func ShellOutdent() string { return In(i18n.Locale()).ShellOutdent() }
+
+// ShellOutdent says "Outdent"
+// in the language of msgs.
+//
+// Outdents the list item or block.
+func (msgs Messages) ShellOutdent() string {
+	return Catalog.Format(msgs.locale, "shell_outdent", nil)
+}
+
+// ShellMoveUp says "Move Block Up"
+// in the language the app shows.
+//
+// Moves the block above the previous one.
+func ShellMoveUp() string { return In(i18n.Locale()).ShellMoveUp() }
+
+// ShellMoveUp says "Move Block Up"
+// in the language of msgs.
+//
+// Moves the block above the previous one.
+func (msgs Messages) ShellMoveUp() string {
+	return Catalog.Format(msgs.locale, "shell_move_up", nil)
+}
+
+// ShellMoveDown says "Move Block Down"
+// in the language the app shows.
+//
+// Moves the block below the next one.
+func ShellMoveDown() string { return In(i18n.Locale()).ShellMoveDown() }
+
+// ShellMoveDown says "Move Block Down"
+// in the language of msgs.
+//
+// Moves the block below the next one.
+func (msgs Messages) ShellMoveDown() string {
+	return Catalog.Format(msgs.locale, "shell_move_down", nil)
+}
+
+// ShellTableInsert says "Insert Table"
+// in the language the app shows.
+//
+// Inserts a 3 by 3 table.
+func ShellTableInsert() string { return In(i18n.Locale()).ShellTableInsert() }
+
+// ShellTableInsert says "Insert Table"
+// in the language of msgs.
+//
+// Inserts a 3 by 3 table.
+func (msgs Messages) ShellTableInsert() string {
+	return Catalog.Format(msgs.locale, "shell_table_insert", nil)
+}
+
+// ShellRowAbove says "Insert Row Above"
+// in the language the app shows.
+//
+// Inserts a table row above the caret's.
+func ShellRowAbove() string { return In(i18n.Locale()).ShellRowAbove() }
+
+// ShellRowAbove says "Insert Row Above"
+// in the language of msgs.
+//
+// Inserts a table row above the caret's.
+func (msgs Messages) ShellRowAbove() string {
+	return Catalog.Format(msgs.locale, "shell_row_above", nil)
+}
+
+// ShellRowBelow says "Insert Row Below"
+// in the language the app shows.
+//
+// Inserts a table row below the caret's.
+func ShellRowBelow() string { return In(i18n.Locale()).ShellRowBelow() }
+
+// ShellRowBelow says "Insert Row Below"
+// in the language of msgs.
+//
+// Inserts a table row below the caret's.
+func (msgs Messages) ShellRowBelow() string {
+	return Catalog.Format(msgs.locale, "shell_row_below", nil)
+}
+
+// ShellColLeft says "Insert Column Left"
+// in the language the app shows.
+//
+// Inserts a table column left of the caret's.
+func ShellColLeft() string { return In(i18n.Locale()).ShellColLeft() }
+
+// ShellColLeft says "Insert Column Left"
+// in the language of msgs.
+//
+// Inserts a table column left of the caret's.
+func (msgs Messages) ShellColLeft() string {
+	return Catalog.Format(msgs.locale, "shell_col_left", nil)
+}
+
+// ShellColRight says "Insert Column Right"
+// in the language the app shows.
+//
+// Inserts a table column right of the caret's.
+func ShellColRight() string { return In(i18n.Locale()).ShellColRight() }
+
+// ShellColRight says "Insert Column Right"
+// in the language of msgs.
+//
+// Inserts a table column right of the caret's.
+func (msgs Messages) ShellColRight() string {
+	return Catalog.Format(msgs.locale, "shell_col_right", nil)
+}
+
+// ShellDeleteRow says "Delete Row"
+// in the language the app shows.
+//
+// Deletes the caret's table row.
+func ShellDeleteRow() string { return In(i18n.Locale()).ShellDeleteRow() }
+
+// ShellDeleteRow says "Delete Row"
+// in the language of msgs.
+//
+// Deletes the caret's table row.
+func (msgs Messages) ShellDeleteRow() string {
+	return Catalog.Format(msgs.locale, "shell_delete_row", nil)
+}
+
+// ShellDeleteCol says "Delete Column"
+// in the language the app shows.
+//
+// Deletes the caret's table column.
+func ShellDeleteCol() string { return In(i18n.Locale()).ShellDeleteCol() }
+
+// ShellDeleteCol says "Delete Column"
+// in the language of msgs.
+//
+// Deletes the caret's table column.
+func (msgs Messages) ShellDeleteCol() string {
+	return Catalog.Format(msgs.locale, "shell_delete_col", nil)
+}
+
+// ShellTableFormat says "Format Table"
+// in the language the app shows.
+//
+// Aligns the table's source columns.
+func ShellTableFormat() string { return In(i18n.Locale()).ShellTableFormat() }
+
+// ShellTableFormat says "Format Table"
+// in the language of msgs.
+//
+// Aligns the table's source columns.
+func (msgs Messages) ShellTableFormat() string {
+	return Catalog.Format(msgs.locale, "shell_table_format", nil)
+}
+
+// ShellFocus says "Focus Mode"
+// in the language the app shows.
+//
+// Dims everything but the caret's block.
+func ShellFocus() string { return In(i18n.Locale()).ShellFocus() }
+
+// ShellFocus says "Focus Mode"
+// in the language of msgs.
+//
+// Dims everything but the caret's block.
+func (msgs Messages) ShellFocus() string {
+	return Catalog.Format(msgs.locale, "shell_focus", nil)
+}
+
+// ShellTypewriter says "Typewriter Mode"
+// in the language the app shows.
+//
+// Keeps the caret's line in the middle of the window.
+func ShellTypewriter() string { return In(i18n.Locale()).ShellTypewriter() }
+
+// ShellTypewriter says "Typewriter Mode"
+// in the language of msgs.
+//
+// Keeps the caret's line in the middle of the window.
+func (msgs Messages) ShellTypewriter() string {
+	return Catalog.Format(msgs.locale, "shell_typewriter", nil)
+}
+
+// ShellHeading says "Heading {n}"
+// in the language the app shows.
+//
+// Turns the block into a heading of a level from 1 to 6.
+func ShellHeading(n int) string { return In(i18n.Locale()).ShellHeading(n) }
+
+// ShellHeading says "Heading {n}"
+// in the language of msgs.
+//
+// Turns the block into a heading of a level from 1 to 6.
+func (msgs Messages) ShellHeading(n int) string {
+	return Catalog.Format(msgs.locale, "shell_heading", map[string]any{"n": n})
+}

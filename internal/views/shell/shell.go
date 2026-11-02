@@ -710,6 +710,11 @@ func (s *Shell) welcome(c *ui.Context, t *theme.Tokens) {
 
 // run runs a command, reporting what it returns.
 func (s *Shell) run(id contract.CommandID) {
+	// A shortcut for a command that is off right now (no tab, source mode) does
+	// nothing, as a greyed-out menu item would.
+	if cmd, ok := s.o.Commands.Lookup(id); ok && cmd.Enabled != nil && !cmd.Enabled() {
+		return
+	}
 	if err := s.o.Commands.Run(id); err != nil {
 		s.fail(err)
 	}
