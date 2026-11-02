@@ -77,6 +77,21 @@ func (Projector) Project(ast contract.AST, text contract.Text, leaf int, r contr
 	}
 	p := contract.BlockProjection{Block: n.ID, Index: leaf, Kind: n.Kind, Level: n.Level, Lang: strings.Clone(n.Lang)}
 	plain := containers(ast, leaf, &p)
+	if marker, container := pendingMarker(ast, text, n, p.Containers); !marker.Empty() {
+		p.Kind, p.Level = contract.BlockParagraph, 0
+		if container {
+			p.Containers = p.Containers[:len(p.Containers)-1]
+		}
+		// Empty containers can put the marker in either Lead or Trailer. The
+		// boundary segments make the entire visible marker editable in both cases.
+		p.Segments = []contract.Segment{
+			{Src: contract.Range{Start: n.Lead.Start, End: marker.Start}, Kind: contract.SegHidden},
+			{Src: marker, Kind: contract.SegText, Display: strings.Clone(text.Slice(marker))},
+			{Src: contract.Range{Start: marker.End, End: n.Trailer.End}, Kind: contract.SegHidden},
+		}
+		p.Sig = signature(&p)
+		return p
+	}
 	rule := blockRules[n.Kind]
 	if plain {
 		rule = blockRule{style: contract.StyleMarker}
@@ -122,6 +137,56 @@ func (Projector) Project(ast contract.AST, text contract.Text, leaf int, r contr
 	b.emit(n.Trailer.End, contract.SegHidden, "", 0, "", nil)
 	p.Sig = signature(&p)
 	return p
+}
+
+// pendingMarker finds only markers belonging to this empty leaf. In particular,
+// a setext underline and a container with content on a later line stay intact.
+func pendingMarker(ast contract.AST, text contract.Text, n *contract.Block, cs []contract.ContainerDecor) (contract.Range, bool) {
+	if n.Kind == contract.BlockHeading {
+		s := text.Slice(n.Range)
+		if len(s) >= 1 && len(s) <= 6 && strings.Trim(s, "#") == "" {
+			return n.Range, false
+		}
+	}
+	if n.Kind != contract.BlockBlank || len(cs) == 0 {
+		return contract.Range{}, false
+	}
+	s := text.Slice(contract.Range{Start: n.Lead.Start, End: n.Trailer.End})
+	if end := strings.IndexAny(s, "\r\n"); end >= 0 {
+		s = s[:end]
+	}
+	if len(s) == 0 {
+		return contract.Range{}, false
+	}
+	last, c := len(s)-1, cs[len(cs)-1]
+	if !c.First {
+		return contract.Range{}, false
+	}
+	index, ok := ast.Index(c.Block)
+	if !ok {
+		return contract.Range{}, false
+	}
+	for i, end := index+1, ast.Block(index).Next; i < end; i++ {
+		child := ast.Block(i)
+		if child.Next == i+1 && child.Kind != contract.BlockBlank {
+			return contract.Range{}, false
+		}
+	}
+	start := last
+	switch {
+	case c.Kind == contract.BlockQuote && s[last] == '>':
+	case c.Kind == contract.BlockItem && !c.Ordered && s[last] == c.Marker:
+	case c.Kind == contract.BlockItem && c.Ordered && s[last] == c.Marker:
+		for start > 0 && s[start-1] >= '0' && s[start-1] <= '9' {
+			start--
+		}
+		if start == last || last-start > 9 {
+			return contract.Range{}, false
+		}
+	default:
+		return contract.Range{}, false
+	}
+	return contract.Range{Start: n.Lead.Start + start, End: n.Lead.Start + len(s)}, true
 }
 
 func inlineBlock(b *builder, ast contract.AST, leaf int, style contract.Style) {

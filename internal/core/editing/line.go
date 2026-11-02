@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"aurink/internal/contract"
+	"aurink/internal/core/projection"
 )
 
 type prefix struct {
@@ -148,6 +149,46 @@ func (l sourceLine) containerContinuation() string {
 	return string(s)
 }
 
+// pendingLine uses the same classification as the visible projection, so a
+// marker inside a code block or a setext underline keeps its existing behavior.
+func pendingLine(ctx contract.EditContext, l sourceLine) (contract.BlockProjection, contract.Range, bool) {
+	if ctx.AST == nil || l.end == l.start || l.content != len(l.s) || len(l.parts) == 0 ||
+		!strings.ContainsRune("#-+*.)>", rune(l.s[len(l.s)-1])) {
+		return contract.BlockProjection{}, contract.Range{}, false
+	}
+	i, b := leaf(ctx, l.end-1)
+	if b == nil || b.Kind != contract.BlockHeading && b.Kind != contract.BlockBlank {
+		return contract.BlockProjection{}, contract.Range{}, false
+	}
+	p := projection.New().Project(ctx.AST, ctx.Text, i, contract.Reveal{Mode: contract.RevealNone})
+	if p.Kind == contract.BlockParagraph {
+		for _, s := range p.Segments {
+			if s.Kind == contract.SegText && s.Src.Start >= l.start && s.Src.End == l.end {
+				return p, s.Src, true
+			}
+		}
+	}
+	return contract.BlockProjection{}, contract.Range{}, false
+}
+
+func pendingContinuation(ctx contract.EditContext, l sourceLine, p contract.BlockProjection, marker contract.Range) string {
+	outer := scanLine(l.s[:marker.Start-l.start])
+	if outer.list >= 0 {
+		return outer.continuation()
+	}
+	if len(outer.parts) > 0 && outer.parts[len(outer.parts)-1].kind == '>' {
+		return outer.s[:outer.content]
+	}
+	for i := len(p.Containers) - 1; i >= 0; i-- {
+		if p.Containers[i].Kind == contract.BlockItem {
+			if index, ok := ctx.AST.Index(p.Containers[i].Block); ok {
+				return lineAt(ctx, ctx.AST.Block(index).Range.Start).continuation()
+			}
+		}
+	}
+	return eol(ctx)
+}
+
 func newline(ctx contract.EditContext) contract.Transaction {
 	r := ctx.Selection.Primary().Range()
 	l := lineAt(ctx, r.Start)
@@ -177,6 +218,9 @@ func newline(ctx contract.EditContext) contract.Transaction {
 		}
 		lead := rawContinuation(ctx, l, code)
 		return replace(r, nl+lead, contract.OriginUser, "newline")
+	}
+	if p, marker, ok := pendingLine(ctx, l); ok && r.Start >= marker.Start && r.End <= marker.End {
+		return replace(r, nl+pendingContinuation(ctx, l, p, marker), contract.OriginUser, "newline")
 	}
 	if r.Start >= l.start+l.content && strings.TrimSpace(l.s[l.content:]) == "" && len(l.parts) > 0 {
 		p := l.parts[len(l.parts)-1]

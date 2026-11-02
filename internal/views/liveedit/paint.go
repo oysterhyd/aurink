@@ -30,13 +30,6 @@ type labelKey struct {
 	size float32
 }
 
-func (e *Editor) serifMark() *ui.TextLayout {
-	if e.quoteMark == nil {
-		e.quoteMark = ui.ShapeText("“", ui.Font{Family: theme.Serif, Size: 34}, 0)
-	}
-	return e.quoteMark
-}
-
 func (e *Editor) copyLabel(b *contract.Block) string {
 	if e.copiedBlock == b.ID {
 		return locales.LiveeditCopied()
@@ -83,7 +76,7 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		b := e.block(i)
 		top := r.Y + float32(e.rowTop(i)-e.scroll)
 		rc := rowContext{e: e, p: p, t: t, row: i, b: b, l: l, ox: ox, top: top, height: e.rows[i].h}
-		w := widgetOf(b)
+		w := widgetOf(b, &l.proj)
 		w.back(&rc)
 		x, y := rc.textX(), rc.textY()
 		e.paintFind(p, l, b, x, y, r.Y, r.Y+r.H)
@@ -99,7 +92,7 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		rc.paintContainers()
 		w.front(&rc)
 		if i == e.caretRow && e.focused {
-			p.TextLayout(e.label(marginTag(b), theme.UIBadge), ox-theme.MarginLabel, y+2, t.Muted)
+			p.TextLayout(e.label(marginTag(&l.proj), theme.UIBadge), ox-theme.MarginLabel, y+2, t.Muted)
 		}
 	}
 	if e.focused && selFrom == selTo && !e.readOnly() {
@@ -111,9 +104,9 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 	}
 }
 
-func marginTag(b *contract.Block) string {
-	if b.Kind == contract.BlockHeading {
-		return "H" + itoa(b.Level)
+func marginTag(p *contract.BlockProjection) string {
+	if p.Kind == contract.BlockHeading {
+		return "H" + itoa(p.Level)
 	}
 	return "¶"
 }

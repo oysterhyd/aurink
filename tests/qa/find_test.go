@@ -169,7 +169,7 @@ func TestReplaceAllAtScale(t *testing.T) {
 	a.click(locales.KitReplaceAll())
 	took := time.Since(start)
 	a.want(a.text(), strings.Repeat("a cow and a dog\n\n", 30000))
-	if took > time.Second {
+	if took > time.Second && !raceOn {
 		t.Fatalf("Replace All of 30,000 took %v", took)
 	}
 	t.Logf("Replace All of 30,000 matches: %v", took)

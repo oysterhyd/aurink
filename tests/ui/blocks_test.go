@@ -395,3 +395,71 @@ func TestScrollToFirstRowKeepsTopMargin(t *testing.T) {
 		t.Fatalf("scroll %v, want the top margin %v", got, -float32(theme.PadTop))
 	}
 }
+
+// TestQuoteIsABar: a quote is body text beside a bar that runs unbroken down
+// all its paragraphs and stops at its end, as Typora shows it (user's ruling,
+// 2026-11-02).
+func TestQuoteIsABar(t *testing.T) {
+	src := "lead\n\nplain words\n\n> quoted words\n>\n> second\n\nafter\n"
+	h := open(t, src)
+	h.caret(0)
+	rows := cellRows(h)
+	plain, quoted, second, after := rows["plain words"], rows["quoted words"], rows["second"], rows["after"]
+	if h.e.RowHeight(quoted) != h.e.RowHeight(plain) {
+		t.Fatalf("a quote line is %v high, a body line %v: not body text", h.e.RowHeight(quoted), h.e.RowHeight(plain))
+	}
+	img := h.tt.Image()
+	bg := img.RGBAAt(2, 2)
+	x := int(h.e.RowText(plain).X) + 2 // the bar's middle: the quote's indent starts at the column's left
+	top, bottom := int(h.e.RowText(quoted).Y)+2, int(h.e.RowText(second).Y)+10
+	for y := top; y < bottom; y++ {
+		if img.RGBAAt(x, y) == bg {
+			t.Fatalf("the bar breaks at y=%d (from %d to %d)", y, top, bottom)
+		}
+	}
+	for _, r := range []int{plain, after} {
+		if y := int(h.e.RowText(r).Y) + 10; img.RGBAAt(x, y) != bg {
+			t.Fatalf("a bar beside %q", h.e.Display(r))
+		}
+	}
+}
+
+// TestLoneMarkerWaitsForItsSpace: typing "#", "+", "1." or ">" alone leaves a
+// plain line showing the marker at body size; the space turns it into the
+// block, as in Typora (user's report, 2026-11-02).
+func TestLoneMarkerWaitsForItsSpace(t *testing.T) {
+	for _, tc := range []struct {
+		marker string
+		kind   string
+	}{{"#", "heading"}, {"+", "list"}, {"1.", "list"}, {">", "quote"}} {
+		h := open(t, "lead\n\nplain\n\n")
+		h.caret(len("lead\n\nplain\n\n"))
+		body := h.e.RowHeight(cellRows(h)["plain"])
+		h.typed(tc.marker)
+		r := h.e.RowCount() - 1
+		if d := h.e.Display(r); d != tc.marker {
+			t.Fatalf("%q alone shows %q", tc.marker, d)
+		}
+		if h.e.RowHeight(r) != body || h.e.RowText(r).X != h.e.RowText(cellRows(h)["plain"]).X {
+			t.Fatalf("%q alone is not a plain line: height %v (body %v), x %v", tc.marker, h.e.RowHeight(r), body, h.e.RowText(r).X)
+		}
+		h.typed("a")
+		h.wantSrc("lead\n\nplain\n\n" + tc.marker + "a")
+		h.key(ui.KeyBackspace)
+		h.typed(" x")
+		r = h.e.RowCount() - 1
+		if d := h.e.Display(r); d != "x" {
+			t.Fatalf("%q then a space shows %q, want the %s's text alone", tc.marker, d, tc.kind)
+		}
+		switch tc.kind {
+		case "heading":
+			if h.e.RowHeight(r) <= body {
+				t.Fatal("\"# x\" is not a heading")
+			}
+		default:
+			if h.e.RowText(r).X <= h.e.RowText(cellRows(h)["plain"]).X {
+				t.Fatalf("%q is not indented as a %s", tc.marker+" x", tc.kind)
+			}
+		}
+	}
+}

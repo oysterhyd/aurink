@@ -223,7 +223,14 @@ func checkProjection(t *testing.T, pr contract.Projector, src string, b *contrac
 	if pr.DisplayText(p) != display.String() {
 		fail("DisplayText %q, segments %q", pr.DisplayText(p), display.String())
 	}
-	// docs/04 §4.3.3 and §4.3.7.
+	// docs/04 §4.3.3 and §4.3.7. The bounds widen to cover visible text a
+	// pending marker shows from the Lead (§4.3.7's one exception).
+	lo, hi := b.Range.Start, b.Range.End
+	for _, s := range p.Segments {
+		if s.Kind == contract.SegText && s.Src.Len() > 0 {
+			lo, hi = min(lo, s.Src.Start), max(hi, s.Src.End)
+		}
+	}
 	prev := -1
 	for off := b.Lead.Start; off <= b.Trailer.End; off++ {
 		for _, aff := range []contract.Affinity{contract.Upstream, contract.Downstream} {
@@ -235,8 +242,8 @@ func checkProjection(t *testing.T, pr contract.Projector, src string, b *contrac
 				prev = d
 			}
 			snap := pr.Snap(p, off, aff)
-			if snap < b.Range.Start || snap > b.Range.End {
-				fail("Snap(%d) = %d outside %+v", off, snap, b.Range)
+			if snap < lo || snap > hi {
+				fail("Snap(%d) = %d outside [%d, %d] (Range %+v)", off, snap, lo, hi, b.Range)
 			}
 			if inside(p, snap) {
 				fail("Snap(%d) = %d is inside a hidden part or an object", off, snap)

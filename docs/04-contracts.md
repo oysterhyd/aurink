@@ -84,7 +84,7 @@
 4. `Sig` 是排版缓存键（CR-002）：覆盖 `Kind`、`Level`、`Lang`、`Revealed`、`Containers`（不含 `Block`、`TaskSrc`）与各片段的 `Kind`、`Display`、`Style`、`Object`；不含 `Block`、`Index` 与绝对偏移，块整体平移时不变；任一影响排版的输出变化必须改变 `Sig`。`Sig` 相同不代表 `Src` 映射相同（如 `&amp;` 与 `&#x26;`）。
 5. `RevealNone`（阅读模式）下不存在 `SegMarker`。
 6. 投影的输入（CR-002）：`Project` 的输出在平移后只取决于该叶子 `[Lead.Start, Trailer.End)` 的字节与容器链、`Reveal` 中与本块相关的部分，以及全局表 `LinkDefs`、`Footnotes`、`Outline`（`[TOC]` 用）、`Exts`、`ObjectLangs`。缓存的投影只有在本块未与任何 `Change` 相交且全局表未变时才能平移复用（`Segments[].Src` 与 `Containers[].TaskSrc` 一起平移）；不能以 `Sig` 相同为复用条件。
-7. `Affinity`（CR-002）：显示索引 `d` 处夹着连续的零宽片段（`SegHidden`，含 `Lead`、`Trailer`）时，`d` 对应源码区间 `[h0, h1]`：`Upstream` 取 `h0`，`Downstream` 取 `h1`。`ToSource` 与 `Snap` 的结果限制在 `[Range.Start, Range.End]` 内（不进入 `Lead`、不越过 `Trailer`）；`ToDisplay` 对该区间内任何偏移返回同一个 `d`。
+7. `Affinity`（CR-002）：显示索引 `d` 处夹着连续的零宽片段（`SegHidden`，含 `Lead`、`Trailer`）时，`d` 对应源码区间 `[h0, h1]`：`Upstream` 取 `h0`，`Downstream` 取 `h1`。`ToSource` 与 `Snap` 的结果限制在 `[Range.Start, Range.End]` 内（不进入 `Lead`、不越过 `Trailer`）。唯一例外是待定标记（02 §5 显隐规则：其后尚无空格的单独 `#`、`+`、`>` 等按普通文本显示）：它的源码在 `Lead` 或 `Trailer` 里（解析器把 `>` 放在 `Trailer`，`1.` 可能横跨两者），作为可见的 `SegText` 1:1 映射，结果区间扩到覆盖这些可见片段；§4.3.1 "`Lead`、`Trailer` 隐藏"对它同样例外（2026-11-02）；`ToDisplay` 对该区间内任何偏移返回同一个 `d`。
 
 ### 4.4 Editing
 1. 纯函数：同输入同输出，不读写全局状态、不做 I/O。

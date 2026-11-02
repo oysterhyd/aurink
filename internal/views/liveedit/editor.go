@@ -167,7 +167,6 @@ type Editor struct {
 	linkDefs      map[string]contract.LinkDef
 	footnotes     map[string]int
 	labels        map[labelKey]*ui.TextLayout
-	quoteMark     *ui.TextLayout
 	t             *theme.Tokens
 	images        map[string]*imageState
 	codeState     uint64

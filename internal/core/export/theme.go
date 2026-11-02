@@ -30,8 +30,8 @@ h3 { font-size: 1.12em; font-weight: 650; margin: 1.5em 0 .4em; }
 h4, h5 { font-size: 1em; font-weight: 600; }
 h6 { font-size: .95em; font-weight: 600; }
 a { color: var(--accent); } img { max-width: 100%; height: auto; }
-blockquote { margin: 1.5em 0; padding: 0 1.5em; color: var(--muted);
-  font: italic 1.14em/1.6 Newsreader, "Noto Serif SC", Georgia, SimSun, serif; }
+blockquote { margin: 1em 0; padding: 0 18px; color: var(--muted);
+  border-left: 4px solid color-mix(in srgb, var(--faint) 35%, transparent); }
 code, pre { font: .85em/1.55 "JetBrains Mono", "Cascadia Code", "SF Mono", "DejaVu Sans Mono", monospace; }
 code { background: var(--code-bg); border-radius: 4px; padding: .1em .25em; }
 pre { overflow-x: auto; background: var(--code-bg); border-radius: 8px; padding: 16px; }

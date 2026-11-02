@@ -128,6 +128,9 @@ func deletion(ctx contract.EditContext, in contract.Intent) contract.Transaction
 	if in.Gran == contract.GranChar {
 		if back {
 			l := lineAt(ctx, p)
+			if _, marker, ok := pendingLine(ctx, l); ok && p > marker.Start && p <= marker.End {
+				return replace(contract.Range{Start: previousGrapheme(s, p), End: p}, "", contract.OriginUser, "delete")
+			}
 			_, block := leaf(ctx, p)
 			if block != nil && block.Kind == contract.BlockHeading && p == block.Content.Start && len(l.parts) == 0 {
 				for _, marker := range block.Markers {

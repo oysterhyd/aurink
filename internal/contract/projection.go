@@ -119,6 +119,8 @@ type ContainerDecor struct {
 }
 
 // BlockProjection 是一个叶子块在给定显隐上下文下的显示投影。
+// Kind 通常等于 AST 块的类型；待定标记（其后尚无空格的单独块标记）按段落投影，
+// Kind 为 BlockParagraph、Level 为 0（2026-11-02）。
 type BlockProjection struct {
 	Block      BlockID
 	Index      int

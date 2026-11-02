@@ -66,8 +66,14 @@ var widgets = map[contract.BlockKind]widget{
 	contract.BlockBlank:         blankWidget{},
 }
 
-func widgetOf(b *contract.Block) widget {
-	if w, ok := widgets[b.Kind]; ok {
+// widgetOf picks a row's widget by its projection's kind, which differs from the
+// block's while a lone marker waits for its space (a "#" is a paragraph).
+func widgetOf(b *contract.Block, p *contract.BlockProjection) widget {
+	kind := b.Kind
+	if p.Block == b.ID {
+		kind = p.Kind
+	}
+	if w, ok := widgets[kind]; ok {
 		return w
 	}
 	return plainWidget{}
@@ -75,7 +81,8 @@ func widgetOf(b *contract.Block) widget {
 
 const (
 	listIndent  = 26
-	quoteIndent = 36
+	quoteIndent = 22 // the bar and the gap after it
+	quoteBar    = 4
 	codePadX    = 14
 	codeGutter  = 30
 	codeHeader  = 30
@@ -91,9 +98,10 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 	for i := range p.Containers {
 		switch c := &p.Containers[i]; c.Kind {
 		case contract.BlockQuote:
+			// Typora's look (user's ruling 2026-11-02, replacing 02 §4.2's
+			// serif italic): body text, muted, beside a bar.
 			m.x += quoteIndent
-			m.font = theme.QuoteFont()
-			m.below = theme.Body * 1.5
+			m.muted = true
 		case contract.BlockItem:
 			m.x += listIndent
 			m.below = theme.Body * .4
@@ -104,7 +112,7 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 			m.muted = true
 		}
 	}
-	widgetOf(b).metrics(e, r, b, &m)
+	widgetOf(b, p).metrics(e, r, b, &m)
 	m.width = max(m.width-m.x, 1)
 	return m
 }
@@ -313,7 +321,7 @@ func (rc *rowContext) cell() ui.Rect {
 }
 
 // paintContainers draws what a row's containers show: list markers, checkboxes,
-// the hanging quote mark and footnote labels.
+// quote bars and footnote labels.
 func (rc *rowContext) paintContainers() {
 	e, p, t := rc.e, rc.p, rc.t
 	x := rc.ox
@@ -323,9 +331,7 @@ func (rc *rowContext) paintContainers() {
 		c := &rc.l.proj.Containers[i]
 		switch c.Kind {
 		case contract.BlockQuote:
-			if c.First {
-				p.TextLayout(e.serifMark(), x+2, y-4, t.Accent.Alpha(.5))
-			}
+			rc.paintQuoteBar(c, x)
 			x += quoteIndent
 		case contract.BlockItem:
 			if c.First {
@@ -349,6 +355,32 @@ func (rc *rowContext) paintContainers() {
 			}
 		}
 	}
+}
+
+// paintQuoteBar draws a quote's bar along the row at x. The bars of a quote's
+// rows meet, so it runs unbroken from its first line to its last.
+func (rc *rowContext) paintQuoteBar(c *contract.ContainerDecor, x float32) {
+	top, bottom := rc.top, rc.top+rc.height
+	if c.First {
+		top = rc.textY()
+	}
+	if rc.e.lastInQuote(rc.row, c.Block) {
+		bottom = rc.textY() + rc.l.h
+	}
+	rc.p.Fill(ui.Rect{X: x, Y: top, W: quoteBar, H: bottom - top}, rc.t.Faint.Alpha(.35), 0)
+}
+
+// lastInQuote reports whether row r is the quote's last: the next row starts
+// past the quote's end.
+func (e *Editor) lastInQuote(r int, quote contract.BlockID) bool {
+	b := e.block(r)
+	for b != nil && b.ID != quote {
+		if b.Parent < 0 {
+			return true
+		}
+		b = e.ast.Block(b.Parent)
+	}
+	return b == nil || r+1 >= len(e.rows) || e.block(r+1).Range.Start >= b.Range.End
 }
 
 // taskBoxAt returns the task container whose checkbox holds a point of the element.

@@ -133,16 +133,11 @@ func HeadingFont(level int) ui.Font {
 	return ui.Font{Family: Sans, Size: Body, Weight: 600, LineHeight: 1.5}
 }
 
-// BodyFont, LeadFont, QuoteFont and CodeFont are the other text levels of §4.2.
+// BodyFont, LeadFont and CodeFont are the other text levels of §4.2.
 func BodyFont() ui.Font { return ui.Font{Family: Sans, Size: Body, LineHeight: 1.75} }
 
 // LeadFont is the first paragraph's level.
 func LeadFont() ui.Font { return ui.Font{Family: Sans, Size: Body * 1.14, LineHeight: 1.7} }
-
-// QuoteFont is a quote's level.
-func QuoteFont() ui.Font {
-	return ui.Font{Family: Serif, Size: Body * 1.14, Italic: true, LineHeight: 1.6}
-}
 
 // CodeFont is the level of code and of shown markers.
 func CodeFont() ui.Font { return ui.Font{Family: Mono, Size: Body * .85, LineHeight: 1.55} }
