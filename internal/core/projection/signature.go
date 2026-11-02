@@ -5,6 +5,11 @@ import "aurink/internal/contract"
 type digest uint64
 
 func (h *digest) number(n uint64) {
+	if n == 0 {
+		// Eight zero bytes only multiply the FNV state by the prime eight times.
+		*h *= 0x1efac7090aef4a21
+		return
+	}
 	for range 8 {
 		*h = (*h ^ digest(byte(n))) * 1099511628211
 		n >>= 8

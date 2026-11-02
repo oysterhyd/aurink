@@ -140,6 +140,23 @@ func TestSignatureFields(t *testing.T) {
 	}
 }
 
+func TestDigestNumbers(t *testing.T) {
+	for _, initial := range []digest{0, 1, 14695981039346656037, ^digest(0)} {
+		for _, n := range []uint64{0, 1, 256, ^uint64(0)} {
+			want, remaining := initial, n
+			for range 8 {
+				want = (want ^ digest(byte(remaining))) * 1099511628211
+				remaining >>= 8
+			}
+			got := initial
+			got.number(n)
+			if got != want {
+				t.Fatalf("digest(%x, %x) = %x, want %x", initial, n, got, want)
+			}
+		}
+	}
+}
+
 func TestDefinitionsOwnershipAndPurity(t *testing.T) {
 	pr := New()
 	for _, dest := range []string{"one", "two"} {

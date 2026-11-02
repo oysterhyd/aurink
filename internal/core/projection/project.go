@@ -63,8 +63,8 @@ func init() {
 		contract.InlineImage:       {apply: imageInline},
 		contract.InlineEscape:      {apply: replacedInline},
 		contract.InlineEntity:      {apply: replacedInline},
-		contract.InlineHTML:        {contract.StyleHTML | contract.StyleMarker, textInline},
-		contract.InlineFootnoteRef: {contract.StyleFootnoteRef | contract.StyleMarker, textInline},
+		contract.InlineHTML:        {apply: htmlInline},
+		contract.InlineFootnoteRef: {apply: footnoteInline},
 	}
 }
 
@@ -81,7 +81,7 @@ func (Projector) Project(ast contract.AST, text contract.Text, leaf int, r contr
 	if plain {
 		rule = blockRule{style: contract.StyleMarker}
 	}
-	b := builder{block: n, reveal: r, p: &p, base: n.Lead.Start, at: n.Lead.Start,
+	b := builder{ast: ast, block: n, reveal: r, p: &p, base: n.Lead.Start, at: n.Lead.Start,
 		own: strings.Clone(text.Slice(contract.Range{Start: n.Lead.Start, End: n.Trailer.End}))}
 	// Keep even empty boundary segments: they encode the editable range for the
 	// mapper, without retaining a block or adding fields to the contract.
@@ -189,6 +189,7 @@ type mask struct {
 }
 
 type builder struct {
+	ast          contract.AST
 	block        *contract.Block
 	reveal       contract.Reveal
 	p            *contract.BlockProjection
@@ -273,6 +274,7 @@ func (b *builder) padding(at int) string {
 }
 
 func (b *builder) inlines(in []contract.Inline, start, end int, style contract.Style, link string) {
+	in = in[:end]
 	for i := start; i < end; i = max(i+1, in[i].Next) {
 		n := in[i]
 		if n.Range.Start < b.at || n.Range.End > b.block.Range.End {
@@ -295,6 +297,23 @@ func (b *builder) inlines(in []contract.Inline, start, end int, style contract.S
 		}
 		rule.apply(b, in, i, style|rule.style, link, b.nodeRevealed(n))
 	}
+}
+
+func footnoteInline(b *builder, in []contract.Inline, i int, style contract.Style, link string, show bool) {
+	n := in[i]
+	// Footnotes uses the same label normalization as the Markdown snapshot.
+	label := strings.Join(strings.FieldsFunc(n.Text, func(r rune) bool {
+		return r == ' ' || r == '\t' || r == '\r' || r == '\n'
+	}), " ")
+	label = strings.ReplaceAll(strings.ToLower(label), "ß", "ss")
+	label = strings.ToLower(strings.ToUpper(label))
+	if _, ok := b.ast.Footnotes()[label]; !ok || show {
+		b.raw(n.Range.End, style|contract.StyleFootnoteRef|contract.StyleMarker, link, "\n")
+		return
+	}
+	label = b.sub(n.Range.Start+2, n.Range.End-1)
+	b.emit(n.Range.End, contract.SegObject, "\ufffc", style|contract.StyleFootnoteRef, link,
+		&contract.ObjectRef{Kind: contract.ObjFootnoteRef, Source: strings.Clone(label)})
 }
 
 func linkInline(b *builder, in []contract.Inline, i int, style contract.Style, _ string, show bool) {
