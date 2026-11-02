@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"aurink/internal/adapters/clipboard"
 	"aurink/internal/adapters/richpaste"
 	"aurink/internal/contract"
 	"aurink/internal/core/document"
@@ -38,6 +39,16 @@ func (a *fakeAssets) ImportImage(doc string, png []byte, hint string) (string, e
 	return "assets/image.png", nil
 }
 
+// testerClip is the system clipboard as the Tester keeps it, through the same
+// conversion the app's adapter uses.
+type testerClip struct{ tt **ui.Tester }
+
+func (c testerClip) Read() contract.ClipData { return clipboard.FromData((*c.tt).ClipboardData()) }
+func (c testerClip) Write(d contract.ClipData) error {
+	(*c.tt).SetClipboardData(clipboard.ToData(d))
+	return nil
+}
+
 type clipEnv struct {
 	*harness
 	assets *fakeAssets
@@ -49,10 +60,12 @@ type clipEnv struct {
 func openClip(t *testing.T, src, path string) *clipEnv {
 	t.Helper()
 	env := &clipEnv{assets: &fakeAssets{}, path: path}
+	var tt *ui.Tester
 	m := document.Factory{}.New("doc", src, contract.DocMeta{Dominant: "\n", Encoding: "utf-8"}, 0)
 	e := liveedit.New(liveedit.Options{Model: m, Projector: projection.New(), Editing: editing.New(),
 		Clip:      func(md string) string { return "<p>" + md + "</p>" },
 		Converter: richpaste.New(),
+		Clipboard: testerClip{&tt},
 		Assets:    env.assets,
 		DocPath:   func() string { return env.path },
 		SaveFirst: func(done func(bool)) {
@@ -64,7 +77,7 @@ func openClip(t *testing.T, src, path string) *clipEnv {
 		OnError:  func(err error) { t.Errorf("background error: %v", err) }})
 	t.Cleanup(e.Close)
 	e.Focus()
-	tt := ui.NewTester(func(c *ui.Context) { e.View(c) }, 1000, 700)
+	tt = ui.NewTester(func(c *ui.Context) { e.View(c) }, 1000, 700)
 	tt.Frame()
 	env.harness = &harness{t, m, e, tt}
 	return env

@@ -74,6 +74,7 @@ type Options struct {
 	// liveedit.Options.
 	Clip      func(markdown string) string
 	Converter contract.PasteConverter
+	Clipboard contract.Clipboard
 	Assets    contract.Assets
 }
 
@@ -217,7 +218,7 @@ func (s *Shell) attach(x contract.Session) *doc {
 				return filepath.Dir(p)
 			}
 			return ""
-		}, KeyLabel: s.keyLabel, OpenFile: s.Open, Clip: s.o.Clip, Converter: s.o.Converter, Assets: s.o.Assets,
+		}, KeyLabel: s.keyLabel, OpenFile: s.Open, Clip: s.o.Clip, Converter: s.o.Converter, Clipboard: s.o.Clipboard, Assets: s.o.Assets,
 		DocPath: func() string { return x.State().Path },
 		SaveFirst: func(done func(bool)) {
 			if d := s.docOf(x); d != nil {

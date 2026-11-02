@@ -122,3 +122,20 @@ type PasteConverter interface {
 	HTMLToMarkdown(html string) (string, error)
 	RTFToMarkdown(rtf string) (string, error)
 }
+
+// ClipData 是剪贴板上的内容，各格式可为空（FE-1.5）。
+type ClipData struct {
+	Text     string
+	Markdown string // text/markdown
+	HTML     string // 片段
+	RTF      string
+	Files    []string // 复制的文件，绝对路径
+	PNG      []byte   // 复制的图片
+}
+
+// Clipboard 读写系统剪贴板的多种格式（adapters/clipboard 用 MyGo 的 Clipboard 实现；
+// 视图不能导入 mygo/transfer，03 §1.1）。主线程调用。
+type Clipboard interface {
+	Read() ClipData
+	Write(d ClipData) error
+}

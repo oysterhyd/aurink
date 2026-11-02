@@ -11,6 +11,7 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
+	"aurink/internal/adapters/clipboard"
 	"aurink/internal/adapters/richpaste"
 	"aurink/internal/adapters/trash"
 	"aurink/internal/adapters/watch"
@@ -107,7 +108,7 @@ func newApplication() (*application, error) {
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
 		Workspace: workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}), Search: search.NewWorkspaceSearch(),
-		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Assets: workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages),
+		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages),
 		WindowButtons: runtime.GOOS != "darwin",
 	})
 	if err := registry.Register(a.shell.Commands()...); err != nil {

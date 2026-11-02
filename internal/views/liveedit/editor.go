@@ -48,6 +48,9 @@ type Options struct {
 	// Clip turns copied Markdown into the HTML fragment copied with it; nil
 	// copies the Markdown only.
 	Clip func(markdown string) (html string)
+	// Clipboard reads and writes the clipboard's formats (adapters/clipboard);
+	// nil copies and pastes plain text only.
+	Clipboard contract.Clipboard
 	// Converter turns pasted HTML and RTF into Markdown; nil pastes their text.
 	Converter contract.PasteConverter
 	// Assets imports pasted and dropped images next to the document; nil inserts

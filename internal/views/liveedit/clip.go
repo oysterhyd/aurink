@@ -5,11 +5,7 @@ import (
 	"strings"
 
 	"aurink/internal/contract"
-	"github.com/egoist/mygo/transfer"
 )
-
-// rtfFormat is how MyGo names the system's rich text on the clipboard.
-const rtfFormat transfer.Format = "text/rtf"
 
 // imageExts are the files a paste or a drop imports as images.
 var imageExts = map[string]bool{".png": true, ".jpg": true, ".jpeg": true, ".gif": true, ".svg": true, ".webp": true}
@@ -45,14 +41,17 @@ func (e *Editor) copySelection(as copyAs) bool {
 		}
 		plain = html
 	}
-	reps := []transfer.Representation{transfer.Bytes(transfer.Text, []byte(plain))}
+	if e.opts.Clipboard == nil {
+		e.services.WriteClipboard(plain)
+		return true
+	}
+	d := contract.ClipData{Text: plain, HTML: html}
 	if as != copyHTML {
-		reps = append(reps, transfer.Bytes(transfer.Markdown, []byte(md)))
+		d.Markdown = md
 	}
-	if html != "" {
-		reps = append(reps, transfer.Bytes(transfer.HTML, []byte(html)))
+	if err := e.opts.Clipboard.Write(d); err != nil {
+		e.report(err)
 	}
-	e.services.WriteClipboardData(transfer.New(transfer.NewItem(reps...)))
 	return true
 }
 
@@ -63,19 +62,16 @@ func (e *Editor) paste(asPlain bool) {
 	if e.readOnly() || !e.hasView {
 		return
 	}
-	data := e.services.ReadClipboardData(transfer.Markdown, transfer.HTML, rtfFormat, transfer.Text,
-		transfer.FileList, transfer.PNG)
-	read := func(f transfer.Format) string {
-		b, err := data.Read(f)
-		if err != nil {
-			return ""
-		}
-		return string(b)
+	var data contract.ClipData
+	if e.opts.Clipboard != nil {
+		data = e.opts.Clipboard.Read()
+	} else {
+		data.Text = e.services.ReadClipboard()
 	}
 	if !asPlain {
-		if files, err := data.Files(); err == nil && len(files) > 0 {
+		if len(data.Files) > 0 {
 			var images []string
-			for _, f := range files {
+			for _, f := range data.Files {
 				if isImage(f) {
 					images = append(images, f)
 				}
@@ -86,16 +82,16 @@ func (e *Editor) paste(asPlain bool) {
 			}
 		}
 	}
-	p := &contract.PastePayload{Plain: read(transfer.Text), AsPlain: asPlain}
+	p := &contract.PastePayload{Plain: data.Text, AsPlain: asPlain}
 	if !asPlain {
-		p.Markdown = read(transfer.Markdown)
+		p.Markdown = data.Markdown
 		if p.Markdown == "" && e.opts.Converter != nil {
-			if html := read(transfer.HTML); html != "" {
+			if html := data.HTML; html != "" {
 				p.HTML = html
 				if md, err := e.opts.Converter.HTMLToMarkdown(html); err == nil {
 					p.Markdown = md
 				}
-			} else if rtf := read(rtfFormat); rtf != "" {
+			} else if rtf := data.RTF; rtf != "" {
 				p.RTF = rtf
 				if md, err := e.opts.Converter.RTFToMarkdown(rtf); err == nil {
 					p.Markdown = md
@@ -103,8 +99,8 @@ func (e *Editor) paste(asPlain bool) {
 			}
 		}
 		if p.Plain == "" && p.Markdown == "" {
-			if png, err := data.Read(transfer.PNG); err == nil && len(png) > 0 {
-				e.importPNG(png, e.head)
+			if len(data.PNG) > 0 {
+				e.importPNG(data.PNG, e.head)
 				return
 			}
 		}
