@@ -19,6 +19,7 @@
 | [04-contracts.md](04-contracts.md) | 统一接口契约：线程规则、不变式、事件、错误码、Mock 与一致性测试 |
 | [05-delivery-plan.md](05-delivery-plan.md) | 工作方式、代码规则、门禁与 CI、Phase 0–4 任务卡、阶段门、最终验收清单 |
 | [06-phase1.md](06-phase1.md) | Phase 1 实施计划：M1 范围、批次顺序、Codex 流程、任务要点、风险、验收 |
+| [07-phase2.md](07-phase2.md) | Phase 2 实施计划：M2 范围、M1 留下的缺口、批次顺序、设计决定、风险、验收 |
 | `../spikes/00-probe/` | 可行性探针（独立模块，`go test -v ./...` 复现 P1–P14） |
 | `../spikes/01-contract-rc/` | 契约 Go 代码 RC（独立模块，仅依赖标准库，`go vet`/`go build` 通过） |
 
