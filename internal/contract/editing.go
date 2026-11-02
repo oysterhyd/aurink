@@ -23,7 +23,10 @@ const (
 	GranLine
 )
 
-// PastePayload 是剪贴板内容的各种表示（视图读取后交给编辑逻辑）。
+// PastePayload 是剪贴板内容的各种表示（视图读取后交给编辑逻辑）。Editing 是纯函数，不做
+// 格式转换：剪贴板有 HTML 或 RTF 时，视图先用 PasteConverter 转好放进 Markdown（D11、D12）。
+// Editing 用 Markdown，没有时或 AsPlain 时用 Plain；代码块里总是用 Plain；表格单元格里
+// 换行变为 <br>，| 转义为 \|。
 type PastePayload struct {
 	Plain    string
 	HTML     string

@@ -204,7 +204,7 @@ func TestWorkspace(t *testing.T, newFixture func(t *testing.T) WorkspaceFixture)
 	})
 	t.Run("create", func(t *testing.T) {
 		h := newWs(t, newFixture, 0, "sub/")
-		h.wantNames("")
+		h.wantNames("", "sub/")
 		var got string
 		err := h.call(func(done func(error)) {
 			h.ws.Create(h.path("sub"), "新文档.md", false, func(p string, err error) { got = p; done(err) })

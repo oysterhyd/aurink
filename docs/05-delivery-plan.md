@@ -41,6 +41,7 @@
 | `golang.org/x/text` | 编码转换、Unicode |
 | `github.com/rivo/uniseg` | 字素/词边界 |
 | `gopkg.in/yaml.v3` | Front Matter 页眉 |
+| `golang.org/x/net/html` | 粘贴的 HTML 转 Markdown（07 D11，2026-11-01 加入） |
 | MathJax 3（Apache-2.0）、Mermaid（MIT）离线包 | 渲染服务 |
 | Newsreader、Noto Serif SC（子集）、JetBrains Mono（OFL） | 内置字体，许可证随 `resources/fonts` 分发 |
 | Lucide 图标（ISC） | 图标 SVG |

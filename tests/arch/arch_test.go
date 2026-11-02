@@ -13,7 +13,7 @@ const (
 
 // thirdParty is the dependency whitelist of docs/05-delivery-plan.md §3.3,
 // apart from MyGo itself.
-var thirdParty = []string{"golang.org/x/text", "github.com/rivo/uniseg", "gopkg.in/yaml.v3"}
+var thirdParty = []string{"golang.org/x/text", "golang.org/x/net/html", "github.com/rivo/uniseg", "gopkg.in/yaml.v3"}
 
 // rule is one row of docs/03-architecture.md §1.1. An import outside the
 // standard library must match an entry of allow, as a path or a path prefix.
