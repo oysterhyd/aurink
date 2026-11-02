@@ -42,9 +42,15 @@ func (s *session) writeCopy() {
 	m.enqueue(func() {
 		path := s.copyPath()
 		var copy *recoveryCopy
-		if path != "" && !s.closed && s.state.Edited {
-			copy = &recoveryCopy{Format: 1, ID: s.ID(), Path: s.state.Path, Name: s.state.Name,
-				Text: []byte(s.model.Text().String()), BaseText: []byte(s.saved), Meta: s.model.Meta(), Stamp: s.stamp, Version: s.model.Version()}
+		if path != "" && !s.closed {
+			if s.state.Edited {
+				copy = &recoveryCopy{Format: 1, ID: s.ID(), Path: s.state.Path, Name: s.state.Name,
+					Text: []byte(s.model.Text().String()), BaseText: []byte(s.saved), Meta: s.model.Meta(), Stamp: s.stamp, Version: s.model.Version()}
+			} else if s.rescue != nil {
+				value := *s.rescue
+				value.Path, value.Name = s.state.Path, s.state.Name
+				copy = &value
+			}
 		}
 		m.background(func() func() {
 			var err error

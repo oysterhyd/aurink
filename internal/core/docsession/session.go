@@ -1,7 +1,6 @@
 package docsession
 
 import (
-	"path/filepath"
 	"slices"
 
 	"aurink/internal/contract"
@@ -12,6 +11,8 @@ type session struct {
 	model      contract.DocumentModel
 	state      contract.DocState
 	stamp      contract.FileStamp
+	observed   contract.FileStamp
+	pathEpoch  uint64
 	saved      string
 	savedHash  uint64
 	previous   contract.Text
@@ -21,6 +22,8 @@ type session struct {
 	closed     bool
 	loading    bool
 	forcedEdit bool
+	localSaved bool
+	rescue     *recoveryCopy
 	saves      int
 	auto       Timer
 	copyTimer  Timer
@@ -55,6 +58,7 @@ func (s *session) changed(event contract.DocEvent) {
 	s.state.ReadOnly = s.model.ReadOnly()
 	next := s.model.Text()
 	if next.Version() != s.previous.Version() && (event.Kind == contract.DocTextChanged || event.Kind == contract.DocReplaced) {
+		s.rescue = nil
 		if next.Version() == event.Version {
 			for _, c := range event.Changes {
 				s.hash -= fingerprint(s.previous.Slice(contract.Range{Start: c.OldStart, End: c.OldEnd}))
@@ -111,7 +115,11 @@ func (s *session) schedule() {
 		return
 	}
 	if !s.state.Edited {
-		s.removeCopy()
+		if s.rescue != nil {
+			s.writeCopy()
+		} else {
+			s.removeCopy()
+		}
 		return
 	}
 	m := s.manager
@@ -169,19 +177,27 @@ func (s *session) save(path string, force bool, done func(error)) {
 			err = contract.E(contract.CodeReadOnly, "docsession.Save", nil)
 		} else if other := m.paths[key]; other != nil && other != s {
 			err = contract.E(contract.CodeExists, "docsession.SaveAs", nil)
-		} else if s.state.Conflict && !force && (path == "" || sameTarget) {
+		} else if s.state.Conflict && !s.state.Deleted && !force && (path == "" || sameTarget) {
 			err = contract.E(contract.CodeConflict, "docsession.Save", nil)
 		}
 		var expect *contract.FileStamp
-		if sameTarget && !force {
+		if sameTarget && !force && !s.state.Deleted {
 			stamp := s.stamp
 			expect = &stamp
 		}
 		copyPath := s.copyPath()
+		wasDeleted, pathEpoch := s.state.Deleted && sameTarget, s.pathEpoch
 		m.background(func() func() {
 			var stamp contract.FileStamp
 			deleted := false
-			if err == nil && expect == nil && !force {
+			if err == nil && wasDeleted && !force {
+				_, statErr := m.files.Stat(target)
+				if statErr == nil {
+					err = contract.E(contract.CodeConflict, "docsession.Save", nil)
+				} else if contract.CodeOf(statErr) != contract.CodeNotFound {
+					err = statErr
+				}
+			} else if err == nil && expect == nil && !force {
 				targetStamp, statErr := m.files.Stat(target)
 				if statErr == nil {
 					expect = &targetStamp
@@ -206,20 +222,28 @@ func (s *session) save(path string, force bool, done func(error)) {
 					callDone(done, contract.E(contract.CodeCanceled, "docsession.Save", nil))
 					return
 				}
+				if sameTarget && s.pathEpoch != pathEpoch {
+					s.schedule()
+					s.writeCopy()
+					s.notify()
+					m.checkPath(s)
+					callDone(done, contract.E(contract.CodeConflict, "docsession.Save", nil))
+					return
+				}
 				if err == nil {
-					if s.state.Path != "" {
-						_, old, _ := normalized(s.state.Path)
-						delete(m.paths, old)
-					}
-					m.paths[key] = s
-					s.state.Path, s.state.Name = target, filepath.Base(target)
-					s.stamp, s.saved, s.savedHash = stamp, text.String(), hash
+					m.setPath(s, target)
+					s.localSaved = s.localSaved || text.String() != s.saved
+					s.rescue = nil
+					s.stamp, s.observed, s.saved, s.savedHash = stamp, stamp, text.String(), hash
 					s.state.SavedAt = m.options.Clock()
 					s.state.Conflict, s.state.Deleted, s.forcedEdit = false, false, false
 					s.updateEdited()
 				} else {
-					s.state.Conflict = s.state.Conflict || contract.CodeOf(err) == contract.CodeConflict
+					s.state.Conflict = s.state.Conflict || (contract.CodeOf(err) == contract.CodeConflict && !deleted)
 					s.state.Deleted = s.state.Deleted || deleted
+					if wasDeleted && contract.CodeOf(err) == contract.CodeConflict && !deleted {
+						s.state.Deleted = false
+					}
 				}
 				s.state.Err = failure(err)
 				s.schedule()
@@ -269,10 +293,11 @@ func (s *session) reload(done func(error)) {
 					s.model.SetMeta(content.Meta)
 					s.model.Replace(content.Text, contract.OriginReload)
 					s.loading = false
-					s.stamp, s.saved, s.savedHash = content.Stamp, content.Text, fingerprint(content.Text)
+					s.stamp, s.observed, s.saved, s.savedHash = content.Stamp, content.Stamp, content.Text, fingerprint(content.Text)
 					s.previous = s.model.Text()
 					s.hash = fingerprint(s.previous.String())
 					s.state.Conflict, s.state.Deleted, s.forcedEdit = false, false, false
+					s.localSaved, s.rescue = false, nil
 					s.updateEdited()
 					s.schedule()
 				} else if contract.CodeOf(err) == contract.CodeNotFound {
@@ -301,6 +326,7 @@ func (s *session) Close(force bool) contract.CloseDecision {
 	if s.state.Path != "" {
 		_, key, _ := normalized(s.state.Path)
 		delete(m.paths, key)
+		m.removeWatch(s.state.Path)
 	}
 	i := slices.Index(m.sessions, s)
 	m.sessions = slices.Delete(m.sessions, i, i+1)

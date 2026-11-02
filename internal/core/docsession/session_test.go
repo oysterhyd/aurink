@@ -101,6 +101,7 @@ type harness struct {
 	clock    *fakeClock
 	queue    *queued
 	files    *probeStore
+	watcher  contract.FileWatcher
 	settings contract.Settings
 	managers []*Manager
 	factory  contract.DocumentFactory
@@ -171,7 +172,7 @@ func newHarness(t *testing.T) *harness {
 
 func (h *harness) manager() *Manager {
 	m := New(h.files, h.factory, h.queue, h.recovery, Options{Settings: &h.settings,
-		Clock: func() time.Time { return h.clock.now }, AfterFunc: h.clock.after})
+		Clock: func() time.Time { return h.clock.now }, AfterFunc: h.clock.after, Watcher: h.watcher})
 	h.managers = append(h.managers, m)
 	return m
 }

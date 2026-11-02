@@ -28,6 +28,8 @@ type Options struct {
 	AfterFunc func(time.Duration, func()) Timer
 	// RecoveryDelay defaults to half the autosave delay when nonpositive.
 	RecoveryDelay time.Duration
+	// Watcher monitors the directory of each open file. Nil disables watching.
+	Watcher contract.FileWatcher
 }
 
 // Manager implements contract.Sessions. All methods and model mutations belong
@@ -42,6 +44,7 @@ type Manager struct {
 	sessions   []*session
 	paths      map[string]*session
 	opening    map[string][]func(contract.Session, error)
+	watches    map[string]*directoryWatch
 	events     listeners[contract.SessionsEvent]
 	jobs       []func()
 	busy       bool
@@ -62,7 +65,8 @@ func New(files contract.FileStore, factory contract.DocumentFactory, dispatcher 
 		opts.AfterFunc = func(d time.Duration, fn func()) Timer { return time.AfterFunc(d, fn) }
 	}
 	m := &Manager{files: files, factory: factory, dispatcher: dispatcher, recovery: recoveryDir, options: opts,
-		settings: settings.Defaults(), paths: make(map[string]*session), opening: make(map[string][]func(contract.Session, error))}
+		settings: settings.Defaults(), paths: make(map[string]*session), opening: make(map[string][]func(contract.Session, error)),
+		watches: make(map[string]*directoryWatch)}
 	if opts.Settings != nil {
 		m.settings = *opts.Settings
 	}
@@ -154,13 +158,14 @@ func (m *Manager) create(id contract.DocID, path, name, source string, meta cont
 	if model == nil {
 		return nil, contract.E(contract.CodeInternal, "docsession.create", nil)
 	}
-	s := &session{manager: m, model: model, stamp: stamp, saved: source, savedHash: fingerprint(source), previous: model.Text(), hash: fingerprint(source),
+	s := &session{manager: m, model: model, stamp: stamp, observed: stamp, saved: source, savedHash: fingerprint(source), previous: model.Text(), hash: fingerprint(source),
 		state: contract.DocState{ID: id, Path: path, Name: name, ReadOnly: model.ReadOnly()}}
 	s.off = model.Subscribe(s.changed)
 	m.sessions = append(m.sessions, s)
 	if path != "" {
 		_, key, _ := normalized(path)
 		m.paths[key] = s
+		m.addWatch(path)
 	}
 	return s, nil
 }
@@ -236,9 +241,3 @@ func (m *Manager) background(work func() func()) {
 		})
 	}()
 }
-
-// Recheck does nothing yet: external changes come with BE-2.7.
-func (m *Manager) Recheck() {}
-
-// Moved does nothing yet: following renames comes with BE-2.7.
-func (m *Manager) Moved(oldPath, newPath string) {}
