@@ -3,14 +3,26 @@ package app
 import (
 	"testing"
 
-	"github.com/egoist/mygo/ui"
+	"aurink/internal/contract"
+	"aurink/internal/core/commands"
 )
 
-// The empty window settles: it asks for no further frames while idle.
-func TestViewIsIdle(t *testing.T) {
-	tt := ui.NewTester(view, 1100, 720)
-	tt.Frame()
-	if tt.FramePending() {
-		t.Error("the empty window keeps asking for frames")
+// The menu holds registered commands alone: nothing the app cannot do.
+func TestMenuComesFromTheRegistry(t *testing.T) {
+	r := commands.New()
+	if err := r.Register(contract.Command{ID: contract.CmdFileSave, Title: "save", Run: func() error { return nil }}); err != nil {
+		t.Fatal(err)
+	}
+	var labels []string
+	for _, top := range buildMenu(r).Items() {
+		for _, it := range top.Submenu {
+			// The roles' items of the app and edit menus are the system's.
+			if it.Click != nil {
+				labels = append(labels, it.Label)
+			}
+		}
+	}
+	if len(labels) != 1 {
+		t.Fatalf("menu items %q", labels)
 	}
 }

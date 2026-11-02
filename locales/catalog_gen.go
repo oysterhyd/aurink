@@ -75,3 +75,409 @@ func LiveeditCopied() string { return In(i18n.Locale()).LiveeditCopied() }
 func (msgs Messages) LiveeditCopied() string {
 	return Catalog.Format(msgs.locale, "liveedit_copied", nil)
 }
+
+// ShellNew says "New"
+// in the language the app shows.
+//
+// Creates a new document.
+func ShellNew() string { return In(i18n.Locale()).ShellNew() }
+
+// ShellNew says "New"
+// in the language of msgs.
+//
+// Creates a new document.
+func (msgs Messages) ShellNew() string {
+	return Catalog.Format(msgs.locale, "shell_new", nil)
+}
+
+// ShellOpen says "Open File"
+// in the language the app shows.
+//
+// Opens a file from disk.
+func ShellOpen() string { return In(i18n.Locale()).ShellOpen() }
+
+// ShellOpen says "Open File"
+// in the language of msgs.
+//
+// Opens a file from disk.
+func (msgs Messages) ShellOpen() string {
+	return Catalog.Format(msgs.locale, "shell_open", nil)
+}
+
+// ShellOpenHint says "Open a file"
+// in the language the app shows.
+//
+// What the box in the title bar says it does.
+func ShellOpenHint() string { return In(i18n.Locale()).ShellOpenHint() }
+
+// ShellOpenHint says "Open a file"
+// in the language of msgs.
+//
+// What the box in the title bar says it does.
+func (msgs Messages) ShellOpenHint() string {
+	return Catalog.Format(msgs.locale, "shell_open_hint", nil)
+}
+
+// ShellSave says "Save"
+// in the language the app shows.
+//
+// Saves the document.
+func ShellSave() string { return In(i18n.Locale()).ShellSave() }
+
+// ShellSave says "Save"
+// in the language of msgs.
+//
+// Saves the document.
+func (msgs Messages) ShellSave() string {
+	return Catalog.Format(msgs.locale, "shell_save", nil)
+}
+
+// ShellSaveAs says "Save As"
+// in the language the app shows.
+//
+// Saves the document to a file the user picks.
+func ShellSaveAs() string { return In(i18n.Locale()).ShellSaveAs() }
+
+// ShellSaveAs says "Save As"
+// in the language of msgs.
+//
+// Saves the document to a file the user picks.
+func (msgs Messages) ShellSaveAs() string {
+	return Catalog.Format(msgs.locale, "shell_save_as", nil)
+}
+
+// ShellClose says "Close"
+// in the language the app shows.
+//
+// Closes a tab or the window.
+func ShellClose() string { return In(i18n.Locale()).ShellClose() }
+
+// ShellClose says "Close"
+// in the language of msgs.
+//
+// Closes a tab or the window.
+func (msgs Messages) ShellClose() string {
+	return Catalog.Format(msgs.locale, "shell_close", nil)
+}
+
+// ShellMinimize says "Minimize"
+// in the language the app shows.
+//
+// The window button that minimizes.
+func ShellMinimize() string { return In(i18n.Locale()).ShellMinimize() }
+
+// ShellMinimize says "Minimize"
+// in the language of msgs.
+//
+// The window button that minimizes.
+func (msgs Messages) ShellMinimize() string {
+	return Catalog.Format(msgs.locale, "shell_minimize", nil)
+}
+
+// ShellMaximize says "Maximize"
+// in the language the app shows.
+//
+// The window button that maximizes.
+func ShellMaximize() string { return In(i18n.Locale()).ShellMaximize() }
+
+// ShellMaximize says "Maximize"
+// in the language of msgs.
+//
+// The window button that maximizes.
+func (msgs Messages) ShellMaximize() string {
+	return Catalog.Format(msgs.locale, "shell_maximize", nil)
+}
+
+// ShellToggleSidebar says "Sidebar"
+// in the language the app shows.
+//
+// Shows or hides the sidebar.
+func ShellToggleSidebar() string { return In(i18n.Locale()).ShellToggleSidebar() }
+
+// ShellToggleSidebar says "Sidebar"
+// in the language of msgs.
+//
+// Shows or hides the sidebar.
+func (msgs Messages) ShellToggleSidebar() string {
+	return Catalog.Format(msgs.locale, "shell_toggle_sidebar", nil)
+}
+
+// ShellToggleTheme says "Light or dark"
+// in the language the app shows.
+//
+// The button that flips the theme.
+func ShellToggleTheme() string { return In(i18n.Locale()).ShellToggleTheme() }
+
+// ShellToggleTheme says "Light or dark"
+// in the language of msgs.
+//
+// The button that flips the theme.
+func (msgs Messages) ShellToggleTheme() string {
+	return Catalog.Format(msgs.locale, "shell_toggle_theme", nil)
+}
+
+// ShellThemeLight says "Light"
+// in the language the app shows.
+//
+// The light theme.
+func ShellThemeLight() string { return In(i18n.Locale()).ShellThemeLight() }
+
+// ShellThemeLight says "Light"
+// in the language of msgs.
+//
+// The light theme.
+func (msgs Messages) ShellThemeLight() string {
+	return Catalog.Format(msgs.locale, "shell_theme_light", nil)
+}
+
+// ShellThemeDark says "Dark"
+// in the language the app shows.
+//
+// The dark theme.
+func ShellThemeDark() string { return In(i18n.Locale()).ShellThemeDark() }
+
+// ShellThemeDark says "Dark"
+// in the language of msgs.
+//
+// The dark theme.
+func (msgs Messages) ShellThemeDark() string {
+	return Catalog.Format(msgs.locale, "shell_theme_dark", nil)
+}
+
+// ShellViewLive says "Live"
+// in the language the app shows.
+//
+// The view that renders Markdown as you type.
+func ShellViewLive() string { return In(i18n.Locale()).ShellViewLive() }
+
+// ShellViewLive says "Live"
+// in the language of msgs.
+//
+// The view that renders Markdown as you type.
+func (msgs Messages) ShellViewLive() string {
+	return Catalog.Format(msgs.locale, "shell_view_live", nil)
+}
+
+// ShellViewSource says "Source"
+// in the language the app shows.
+//
+// The view of the plain Markdown text.
+func ShellViewSource() string { return In(i18n.Locale()).ShellViewSource() }
+
+// ShellViewSource says "Source"
+// in the language of msgs.
+//
+// The view of the plain Markdown text.
+func (msgs Messages) ShellViewSource() string {
+	return Catalog.Format(msgs.locale, "shell_view_source", nil)
+}
+
+// ShellOpenDocuments says "Open documents"
+// in the language the app shows.
+//
+// The heading of the sidebar list.
+func ShellOpenDocuments() string { return In(i18n.Locale()).ShellOpenDocuments() }
+
+// ShellOpenDocuments says "Open documents"
+// in the language of msgs.
+//
+// The heading of the sidebar list.
+func (msgs Messages) ShellOpenDocuments() string {
+	return Catalog.Format(msgs.locale, "shell_open_documents", nil)
+}
+
+// ShellSaved says "Saved"
+// in the language the app shows.
+//
+// The status of a document with nothing to save.
+func ShellSaved() string { return In(i18n.Locale()).ShellSaved() }
+
+// ShellSaved says "Saved"
+// in the language of msgs.
+//
+// The status of a document with nothing to save.
+func (msgs Messages) ShellSaved() string {
+	return Catalog.Format(msgs.locale, "shell_saved", nil)
+}
+
+// ShellSaving says "Saving"
+// in the language the app shows.
+//
+// The status while writing to disk.
+func ShellSaving() string { return In(i18n.Locale()).ShellSaving() }
+
+// ShellSaving says "Saving"
+// in the language of msgs.
+//
+// The status while writing to disk.
+func (msgs Messages) ShellSaving() string {
+	return Catalog.Format(msgs.locale, "shell_saving", nil)
+}
+
+// ShellUnsaved says "Unsaved"
+// in the language the app shows.
+//
+// The status of a document with changes not on disk.
+func ShellUnsaved() string { return In(i18n.Locale()).ShellUnsaved() }
+
+// ShellUnsaved says "Unsaved"
+// in the language of msgs.
+//
+// The status of a document with changes not on disk.
+func (msgs Messages) ShellUnsaved() string {
+	return Catalog.Format(msgs.locale, "shell_unsaved", nil)
+}
+
+// ShellConflict says "Conflict, not written"
+// in the language the app shows.
+//
+// The file changed on disk, so saving stopped.
+func ShellConflict() string { return In(i18n.Locale()).ShellConflict() }
+
+// ShellConflict says "Conflict, not written"
+// in the language of msgs.
+//
+// The file changed on disk, so saving stopped.
+func (msgs Messages) ShellConflict() string {
+	return Catalog.Format(msgs.locale, "shell_conflict", nil)
+}
+
+// ShellSaveFailed says "Not saved"
+// in the language the app shows.
+//
+// The status after a failed save.
+func ShellSaveFailed() string { return In(i18n.Locale()).ShellSaveFailed() }
+
+// ShellSaveFailed says "Not saved"
+// in the language of msgs.
+//
+// The status after a failed save.
+func (msgs Messages) ShellSaveFailed() string {
+	return Catalog.Format(msgs.locale, "shell_save_failed", nil)
+}
+
+// ShellWelcome says "Open a file and start writing"
+// in the language the app shows.
+//
+// The line under the name on the welcome page.
+func ShellWelcome() string { return In(i18n.Locale()).ShellWelcome() }
+
+// ShellWelcome says "Open a file and start writing"
+// in the language of msgs.
+//
+// The line under the name on the welcome page.
+func (msgs Messages) ShellWelcome() string {
+	return Catalog.Format(msgs.locale, "shell_welcome", nil)
+}
+
+// ShellTooLarge says "This file is over 5 MB and cannot be opened yet"
+// in the language the app shows.
+//
+// A notice when a file is too large.
+func ShellTooLarge() string { return In(i18n.Locale()).ShellTooLarge() }
+
+// ShellTooLarge says "This file is over 5 MB and cannot be opened yet"
+// in the language of msgs.
+//
+// A notice when a file is too large.
+func (msgs Messages) ShellTooLarge() string {
+	return Catalog.Format(msgs.locale, "shell_too_large", nil)
+}
+
+// ShellNotFound says "The file no longer exists"
+// in the language the app shows.
+//
+// A notice when a file is gone.
+func ShellNotFound() string { return In(i18n.Locale()).ShellNotFound() }
+
+// ShellNotFound says "The file no longer exists"
+// in the language of msgs.
+//
+// A notice when a file is gone.
+func (msgs Messages) ShellNotFound() string {
+	return Catalog.Format(msgs.locale, "shell_not_found", nil)
+}
+
+// ShellFailed says "That did not work"
+// in the language the app shows.
+//
+// A notice for any other failure.
+func ShellFailed() string { return In(i18n.Locale()).ShellFailed() }
+
+// ShellFailed says "That did not work"
+// in the language of msgs.
+//
+// A notice for any other failure.
+func (msgs Messages) ShellFailed() string {
+	return Catalog.Format(msgs.locale, "shell_failed", nil)
+}
+
+// ShellConfirmTitle says "Save changes to {name}?"
+// in the language the app shows.
+//
+// Asked when closing a document with unsaved changes.
+func ShellConfirmTitle(name string) string { return In(i18n.Locale()).ShellConfirmTitle(name) }
+
+// ShellConfirmTitle says "Save changes to {name}?"
+// in the language of msgs.
+//
+// Asked when closing a document with unsaved changes.
+func (msgs Messages) ShellConfirmTitle(name string) string {
+	return Catalog.Format(msgs.locale, "shell_confirm_title", map[string]any{"name": name})
+}
+
+// ShellDiscard says "Don't Save"
+// in the language the app shows.
+//
+// Closes without saving.
+func ShellDiscard() string { return In(i18n.Locale()).ShellDiscard() }
+
+// ShellDiscard says "Don't Save"
+// in the language of msgs.
+//
+// Closes without saving.
+func (msgs Messages) ShellDiscard() string {
+	return Catalog.Format(msgs.locale, "shell_discard", nil)
+}
+
+// ShellCancel says "Cancel"
+// in the language the app shows.
+//
+// Keeps the document open.
+func ShellCancel() string { return In(i18n.Locale()).ShellCancel() }
+
+// ShellCancel says "Cancel"
+// in the language of msgs.
+//
+// Keeps the document open.
+func (msgs Messages) ShellCancel() string {
+	return Catalog.Format(msgs.locale, "shell_cancel", nil)
+}
+
+// ShellMarkdownFiles says "Markdown documents"
+// in the language the app shows.
+//
+// The file type in file dialogs.
+func ShellMarkdownFiles() string { return In(i18n.Locale()).ShellMarkdownFiles() }
+
+// ShellMarkdownFiles says "Markdown documents"
+// in the language of msgs.
+//
+// The file type in file dialogs.
+func (msgs Messages) ShellMarkdownFiles() string {
+	return Catalog.Format(msgs.locale, "shell_markdown_files", nil)
+}
+
+// ShellWords says "{count} words"
+// in the language the app shows.
+//
+// The number of words in the document.
+func ShellWords(count int) string { return In(i18n.Locale()).ShellWords(count) }
+
+// ShellWords says "{count} words"
+// in the language of msgs.
+//
+// The number of words in the document.
+func (msgs Messages) ShellWords(count int) string {
+	return Catalog.Format(msgs.locale, "shell_words", map[string]any{"count": count})
+}

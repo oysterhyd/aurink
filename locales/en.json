@@ -11,5 +11,131 @@
   "liveedit_copied": "Copied",
   "@liveedit_copied": {
     "description": "What the copy button of a code block says just after copying."
+  },
+  "shell_new": "New",
+  "@shell_new": {
+    "description": "Creates a new document."
+  },
+  "shell_open": "Open File",
+  "@shell_open": {
+    "description": "Opens a file from disk."
+  },
+  "shell_open_hint": "Open a file",
+  "@shell_open_hint": {
+    "description": "What the box in the title bar says it does."
+  },
+  "shell_save": "Save",
+  "@shell_save": {
+    "description": "Saves the document."
+  },
+  "shell_save_as": "Save As",
+  "@shell_save_as": {
+    "description": "Saves the document to a file the user picks."
+  },
+  "shell_close": "Close",
+  "@shell_close": {
+    "description": "Closes a tab or the window."
+  },
+  "shell_minimize": "Minimize",
+  "@shell_minimize": {
+    "description": "The window button that minimizes."
+  },
+  "shell_maximize": "Maximize",
+  "@shell_maximize": {
+    "description": "The window button that maximizes."
+  },
+  "shell_toggle_sidebar": "Sidebar",
+  "@shell_toggle_sidebar": {
+    "description": "Shows or hides the sidebar."
+  },
+  "shell_toggle_theme": "Light or dark",
+  "@shell_toggle_theme": {
+    "description": "The button that flips the theme."
+  },
+  "shell_theme_light": "Light",
+  "@shell_theme_light": {
+    "description": "The light theme."
+  },
+  "shell_theme_dark": "Dark",
+  "@shell_theme_dark": {
+    "description": "The dark theme."
+  },
+  "shell_view_live": "Live",
+  "@shell_view_live": {
+    "description": "The view that renders Markdown as you type."
+  },
+  "shell_view_source": "Source",
+  "@shell_view_source": {
+    "description": "The view of the plain Markdown text."
+  },
+  "shell_open_documents": "Open documents",
+  "@shell_open_documents": {
+    "description": "The heading of the sidebar list."
+  },
+  "shell_saved": "Saved",
+  "@shell_saved": {
+    "description": "The status of a document with nothing to save."
+  },
+  "shell_saving": "Saving",
+  "@shell_saving": {
+    "description": "The status while writing to disk."
+  },
+  "shell_unsaved": "Unsaved",
+  "@shell_unsaved": {
+    "description": "The status of a document with changes not on disk."
+  },
+  "shell_conflict": "Conflict, not written",
+  "@shell_conflict": {
+    "description": "The file changed on disk, so saving stopped."
+  },
+  "shell_save_failed": "Not saved",
+  "@shell_save_failed": {
+    "description": "The status after a failed save."
+  },
+  "shell_welcome": "Open a file and start writing",
+  "@shell_welcome": {
+    "description": "The line under the name on the welcome page."
+  },
+  "shell_too_large": "This file is over 5 MB and cannot be opened yet",
+  "@shell_too_large": {
+    "description": "A notice when a file is too large."
+  },
+  "shell_not_found": "The file no longer exists",
+  "@shell_not_found": {
+    "description": "A notice when a file is gone."
+  },
+  "shell_failed": "That did not work",
+  "@shell_failed": {
+    "description": "A notice for any other failure."
+  },
+  "shell_confirm_title": "Save changes to {name}?",
+  "@shell_confirm_title": {
+    "description": "Asked when closing a document with unsaved changes.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shell_discard": "Don't Save",
+  "@shell_discard": {
+    "description": "Closes without saving."
+  },
+  "shell_cancel": "Cancel",
+  "@shell_cancel": {
+    "description": "Keeps the document open."
+  },
+  "shell_markdown_files": "Markdown documents",
+  "@shell_markdown_files": {
+    "description": "The file type in file dialogs."
+  },
+  "shell_words": "{count} words",
+  "@shell_words": {
+    "description": "The number of words in the document.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

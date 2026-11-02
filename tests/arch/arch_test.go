@@ -100,7 +100,8 @@ func TestImportRules(t *testing.T) {
 	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
 		parts := strings.SplitN(line, "|", 3)
 		pkg := parts[0]
-		if pkg == "aurink" || under2(pkg, unrestricted) {
+		// build/ is mygo build's output, ignored by git, with a copy of resources in it.
+		if pkg == "aurink" || under2(pkg, unrestricted) || strings.HasPrefix(pkg, "aurink/build/") {
 			continue
 		}
 		if ruleFor(pkg) == nil {

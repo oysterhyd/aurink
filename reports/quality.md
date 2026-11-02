@@ -175,3 +175,39 @@ Owner's rerun, 300 consecutive edits without undo, including events, no full reb
 ## QA-1.1 fidelity
 
 Owner's run, `tests/fidelity` [实测]: 83 corpus files open and save byte-identical through the real file store and sessions. Three seeds of 10,000 steps each (edits, undo, redo, save) match a plain string model, on mixed, CRLF and BOM documents; total 24 s. A failure prints a minimized script.
+
+## QA-1.2 scenarios
+
+`tests/qa` [实测，Tester 加真实核心]: about 50 scenarios through the whole interface with fake timers, including every risk of 06 §7, PASS. Coverage of `views/shell` and `app` together: 87.9%. `app` is mostly the real window and the dialogs, which these tests do not reach.
+
+`TestRandomEditsTenThousandSteps` [实测]: seeds 1, 2, 3 with 10,000 applied edits each through the real model and editor. The text equals a string model at every step, and undo walks back the same texts up to its limit of 1000 steps. The contract suite's own random test is only 500 steps per seed, which did not meet 06 §8, so this test was added.
+
+`tests/e2e` kill recovery and `tests/fidelity` PASS.
+
+## QA-1.3 performance
+
+Windows 11, one machine. Nothing here says anything about integrated graphics, macOS or Linux, which are unverified.
+
+| Benchmark (`tests/perf`, Tester, no real painting) | Result |
+|---|---|
+| `TypeFrame` 200 KB | 1.14 ms/op |
+| `TypeFrame` 1 MB | 2.40 ms/op |
+| `Scroll` 10,000 blocks | 1.14 ms/op, 9.6 shapes/frame |
+| `Open` 1 MB | 83 ms/op (245 ms on an earlier run of few iterations) |
+
+`TestScrollShapesNoWholeScreen` PASS.
+
+Real window, `tools/windowcheck`, 500 keystrokes from the edit to the painted frame, two runs:
+
+| Size | p50 | p95 | max |
+|---|---|---|---|
+| 200 KB | 7.7 ms | 9.2 ms, 16.8 ms | 18.8 ms, 18.9 ms |
+| 1 MB | 7.7 ms, 8.2 ms | 9.5 ms, 17.1 ms | 18.3 ms, 29.2 ms |
+
+**The 06 §8 condition "p95 < 8 ms in the real window" is not met as written.** This number includes waiting for the display's refresh, and frame work alone was not measured separately in the real window. The owner stopped pursuing it on the user's instruction of 2026-11-01. p95 varies a lot between runs.
+
+`tests/ui/perf_test.go`'s limit was raised from 8 ms to 16 ms in `ce57fb1`, because the Windows CI runner reached 11 ms. That test no longer guards the 8 ms budget.
+
+## Not exercised
+
+Open, save and confirm dialogs in a real window. Installer file association. Microsoft Pinyin. `RevealInline` feel. Launching with a file argument and the second instance were checked on Windows [实测]; macOS and Linux real use was not.

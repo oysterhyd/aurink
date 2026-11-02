@@ -1,13 +1,17 @@
 package liveedit
 
 import (
+	"slices"
 	"strings"
+	"unicode/utf8"
 
 	"aurink/internal/contract"
 	"aurink/internal/views/theme"
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/editor"
 )
+
+const tabColumns = 4
 
 // rowMetrics is a row's typography and geometry, fixed when it is shaped.
 type rowMetrics struct {
@@ -370,7 +374,59 @@ func (e *Editor) spansOf(l *laid, b *contract.Block, preedit string, at int) []u
 	if preedit != "" {
 		spans = append(spans, pre())
 	}
+	if b.Kind == contract.BlockCode {
+		spans = expandTabs(spans, m)
+	}
 	return spans
+}
+
+// expandTabs gives a code row's tabs their width: the shaper draws a tab as nothing.
+// An object is one UTF-16 unit like the tab, so display indices do not move.
+func expandTabs(spans []ui.Span, m *rowMetrics) []ui.Span {
+	first := slices.IndexFunc(spans, func(s ui.Span) bool { return strings.IndexByte(s.Text, '\t') >= 0 })
+	if first < 0 {
+		return spans
+	}
+	font := m.font
+	if f := spans[first].Font; f != "" {
+		font.Family = f
+	}
+	if z := spans[first].Size; z > 0 {
+		font.Size = z
+	}
+	w, _ := ui.ShapeText("0", font, 0).Size()
+	out := make([]ui.Span, 0, len(spans)+2)
+	col := 0
+	for _, sp := range spans {
+		if sp.ObjectWidth > 0 {
+			out = append(out, sp)
+			continue
+		}
+		text, start, mark := sp.Text, 0, 0
+		emit := func(to int) {
+			if to > start {
+				part := sp
+				part.Text = text[start:to]
+				out = append(out, part)
+			}
+		}
+		for j := range len(text) {
+			switch text[j] {
+			case '\n':
+				col, mark = 0, j+1
+			case '\t':
+				col += utf8.RuneCountInString(text[mark:j])
+				emit(j)
+				n := tabColumns - col%tabColumns
+				out = append(out, ui.Span{Text: "\uFFFC", ObjectWidth: float32(n) * w, ObjectHeight: 1})
+				col += n
+				start, mark = j+1, j+1
+			}
+		}
+		col += utf8.RuneCountInString(text[mark:])
+		emit(len(text))
+	}
+	return out
 }
 
 func (e *Editor) appendCode(spans []ui.Span, base ui.Span, text string, b *contract.Block) []ui.Span {

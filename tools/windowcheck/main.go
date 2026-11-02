@@ -1,0 +1,238 @@
+// Command windowcheck drives the real interface in a real window on this machine: it
+// times keystrokes to the painted frame and saves the screens compared with the design
+// baselines (QA-1.3). It opens a window for about a minute and writes only under -out.
+package main
+
+import (
+	"flag"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"slices"
+	"time"
+
+	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/ui"
+
+	"aurink/internal/contract"
+	"aurink/internal/core/commands"
+	"aurink/internal/core/docsession"
+	"aurink/internal/core/document"
+	"aurink/internal/core/editing"
+	"aurink/internal/core/fsstore"
+	"aurink/internal/core/projection"
+	"aurink/internal/core/settings"
+	"aurink/internal/views/shell"
+	"aurink/resources"
+	"aurink/tests/corpus"
+)
+
+type dispatcher struct{ w *mygo.Window }
+
+func (d *dispatcher) Post(fn func()) {
+	if d.w != nil {
+		d.w.Update(fn)
+	}
+}
+
+type platform struct{ w *mygo.Window }
+
+func (platform) OpenFile(done func(string))                     { done("") }
+func (platform) SavePath(_ string, done func(string))           { done("") }
+func (platform) ConfirmClose(_ string, done func(shell.Choice)) { done(shell.ChoiceDiscard) }
+func (p platform) Minimize()                                    { p.w.Minimize() }
+func (p platform) ToggleMaximize()                              { p.w.ToggleMaximize() }
+func (p platform) IsMaximized() bool                            { return p.w.IsMaximized() }
+func (p platform) Close()                                       { p.w.Close() }
+
+const demo = `# Aurink 是什么
+
+轻量、即开即写的 Markdown 编辑器。**Markdown 文件就是你的文件**：打开、编辑、保存，都不会改动你没碰过的任何一个字节。规划细节见 [可行性报告](https://example.com)。
+
+## 写作时的感受
+
+光标进入一段文字时，它的 ` + "`标记`" + ` 才淡淡地出现；*离开之后*，页面又回到干净的排版。这只是显示上的变化，源码本身从未被改写。
+
+> 内容优先：编辑区之外的一切默认安静，需要时才出现。
+
+- 键盘即一切：所有功能都能通过快捷键到达。
+- 动效服务于理解：说明东西从哪来、到哪去。
+- 无损与可信：保存状态永远可见、可恢复。
+
+### 上线前要确认的事
+
+- [x] 冻结接口契约 contract-v1.0
+- [x] 通过微软拼音真机候选框验证
+- [ ] 点击复选框时，只改动源码中的 1 个字节
+
+` + "```go\nfunc main() {\n\tfmt.Println(\"hello\") // 代码\n}\n```" + `
+
+| 项 | 值 |
+|---|---|
+| 行距 | 1.75 |
+`
+
+func main() {
+	out := flag.String("out", "reports/parity/screens", "where the screens go")
+	design := flag.Bool("design", false, "save only the design system screen")
+	flag.Parse()
+	if err := os.MkdirAll(*out, 0o755); err != nil {
+		log.Fatal(err)
+	}
+	tmp, err := os.MkdirTemp("", "aurink-windowcheck")
+	if err != nil {
+		log.Fatal(err)
+	}
+	mygo.App.WhenReady(func() {
+		if err := resources.RegisterFonts(); err != nil {
+			log.Fatal(err)
+		}
+		if *design {
+			designSystem(*out)
+			return
+		}
+		d := &dispatcher{}
+		files := fsstore.New()
+		store, err := settings.New(filepath.Join(tmp, "settings.json"), files, d, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := store.Update(func(v *contract.Settings) { v.Appearance.Theme = "light" }); err != nil {
+			log.Fatal(err)
+		}
+		base := store.Get()
+		base.Editor.Exts = contract.ExtFrontMatter
+		// Autosave stays out of the measured frames and off the disk.
+		base.Files.AutosaveDelayMs = 3600000
+		sessions := docsession.New(files, document.Factory{}, d, filepath.Join(tmp, "recovery"), docsession.Options{Settings: &base})
+		reg := commands.New()
+		reg.SetDefaults(commands.DefaultBindings())
+		var w *mygo.Window
+		var s *shell.Shell
+		p := &platform{}
+		s = shell.New(shell.Options{Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
+			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter})
+		if err := reg.Register(s.Commands()...); err != nil {
+			log.Fatal(err)
+		}
+		w = mygo.NewWindow(mygo.WindowOptions{Title: "Aurink", Width: 1280, Height: 800, TitleBarStyle: mygo.TitleBarHidden,
+			HideWindowButtons: true, Content: ui.View(s.View)})
+		d.w, p.w = w, w
+		go script(w, s, reg, store, tmp, *out)
+	})
+	if err := mygo.App.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// on runs fn on the window's thread and waits for it.
+func on(w *mygo.Window, fn func()) {
+	done := make(chan struct{})
+	w.Update(func() { fn(); close(done) })
+	<-done
+}
+
+func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *settings.Store, tmp, out string) {
+	shot := func(name string) {
+		time.Sleep(900 * time.Millisecond)
+		data, err := w.CapturePage()
+		if err != nil {
+			log.Fatal(name, ": ", err)
+		}
+		if err := os.WriteFile(filepath.Join(out, name+".png"), data, 0o644); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("saved", name)
+	}
+	run := func(id contract.CommandID) {
+		on(w, func() {
+			if err := reg.Run(id); err != nil {
+				log.Fatal(err)
+			}
+		})
+	}
+	open := func(name, text string) {
+		path := filepath.Join(tmp, name)
+		if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
+			log.Fatal(err)
+		}
+		on(w, func() { s.Open(path) })
+		time.Sleep(500 * time.Millisecond)
+	}
+	shot("Welcome")
+	open("README.md", demo)
+	on(w, func() { s.ActiveSession().Model().SetSelection(contract.Caret(60)) })
+	shot("Main")
+	run(contract.CmdViewThemeDark)
+	shot("Dark")
+	run(contract.CmdViewThemeLight)
+	run(contract.CmdViewSource)
+	shot("Source")
+	run(contract.CmdViewLive)
+	on(w, func() {
+		s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: "已保存到磁盘", Detail: "README.md", Sticky: true})
+	})
+	on(w, func() {
+		s.Notify(contract.Notice{Level: contract.NoticeError, Message: "保存失败", Detail: "磁盘已满", Sticky: true})
+	})
+	shot("Notify")
+	on(w, func() {
+		if err := store.Update(func(v *contract.Settings) { v.Appearance.ReduceTransparency = true }); err != nil {
+			log.Fatal(err)
+		}
+	})
+	run(contract.CmdViewToggleSidebar)
+	shot("LowPower")
+	on(w, func() {
+		if err := store.Update(func(v *contract.Settings) { v.Appearance.ReduceTransparency = false }); err != nil {
+			log.Fatal(err)
+		}
+	})
+	for _, size := range []int{200 << 10, 1 << 20} {
+		open(fmt.Sprintf("stress-%d.md", size), corpus.Generate(size, 1))
+		stress(w, s, size)
+	}
+	on(w, func() { w.Destroy(); mygo.App.Quit() })
+}
+
+// stress times 500 keystrokes from the edit to the end of the frame that paints it.
+func stress(w *mygo.Window, s *shell.Shell, size int) {
+	const n = 500
+	times := make([]time.Duration, 0, n)
+	painted := make(chan struct{}, 1)
+	on(w, func() {
+		e := s.ActiveLive()
+		e.OnPainted = func() {
+			select {
+			case painted <- struct{}{}:
+			default:
+			}
+		}
+		e.Model().SetSelection(contract.Caret(size / 2))
+	})
+	time.Sleep(300 * time.Millisecond)
+	for range n {
+		var t0 time.Time
+		select {
+		case <-painted:
+		default:
+		}
+		on(w, func() {
+			t0 = time.Now()
+			m := s.ActiveSession().Model()
+			at := m.Selection().Primary().Head
+			if _, err := m.Apply(contract.Transaction{Edits: []contract.TextEdit{{Range: contract.Range{Start: at, End: at}, Text: "x"}}, Origin: contract.OriginUser}); err != nil {
+				log.Fatal(err)
+			}
+		})
+		select {
+		case <-painted:
+			times = append(times, time.Since(t0))
+		case <-time.After(2 * time.Second):
+			log.Fatal("no frame painted the edit")
+		}
+	}
+	slices.Sort(times)
+	fmt.Printf("window %d KB: p50 %v p95 %v max %v\n", size>>10, times[n/2], times[n*95/100], times[n-1])
+}

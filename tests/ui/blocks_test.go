@@ -6,6 +6,7 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -350,4 +351,47 @@ func TestEveryBlockKindPaints(t *testing.T) {
 		}
 	}
 	h.wantSrc(src)
+}
+
+// A tab in a code block takes up to the next stop and stays one byte in the source.
+func TestCodeTabHasWidthAndStaysInSource(t *testing.T) {
+	src := "```go\n\tx\nab\ty\n```\n"
+	h := open(t, src)
+	h.caret(strings.Index(src, "x"))
+	d := h.e.Display(0)
+	xAt := func(i int) float32 {
+		t.Helper()
+		r, _, ok := h.e.BoundsForRange(ui.TextInputRange{Start: i, End: i})
+		if !ok {
+			t.Fatalf("no bounds at %d of %q", i, d)
+		}
+		return r.X
+	}
+	tab := strings.Index(d, "\tx")
+	if tab < 0 {
+		t.Fatalf("display %q lost the tab", d)
+	}
+	ab := strings.Index(d, "ab")
+	col := xAt(ab+1) - xAt(ab)
+	if got := xAt(tab+1) - xAt(tab); got < 3.9*col || got > 4.1*col {
+		t.Fatalf("leading tab is %v wide, a column is %v", got, col)
+	}
+	if got := xAt(ab+3) - xAt(ab); got < 3.9*col || got > 4.1*col {
+		t.Fatalf("ab and a tab end at %v, want the stop at 4 columns of %v", got, col)
+	}
+	h.tt.Type("q")
+	h.tt.Frame()
+	h.wantSrc("```go\n\tqx\nab\ty\n```\n")
+}
+
+// Back at the first row, the page keeps its top margin.
+func TestScrollToFirstRowKeepsTopMargin(t *testing.T) {
+	h := open(t, strings.Repeat("a line\n\n", 200))
+	h.e.ScrollBy(900)
+	h.tt.Frame()
+	h.e.ScrollToOffset(0)
+	h.tt.Frame()
+	if got := h.e.ScrollOffset(); got != -float32(theme.PadTop) {
+		t.Fatalf("scroll %v, want the top margin %v", got, -float32(theme.PadTop))
+	}
 }

@@ -85,6 +85,8 @@ try {
         Step 'No Go file is ignored by git'
         $ignored = git ls-files -o -i --exclude-standard -- '*.go'
         if ($LASTEXITCODE -ne 0) { throw 'git ls-files failed' }
+        # mygo build copies resources/ next to the executable.
+        $ignored = $ignored | Where-Object { $_ -notlike 'build/*' }
         if ($ignored) { throw "Go files ignored by git:`n$($ignored -join "`n")" }
 
         Step 'Contract depends on the standard library only'

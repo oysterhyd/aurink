@@ -314,6 +314,9 @@ func (e *Editor) Ghost(c *ui.Context, t *theme.Tokens) ui.Element {
 // SetTheme changes the palette. A change other than light and dark drops the forms,
 // whose keys do not tell them apart.
 func (e *Editor) SetTheme(t *theme.Tokens) {
+	if e.t == t {
+		return
+	}
 	if e.t.Dark == t.Dark && *e.t != *t {
 		e.dropAllForms()
 	}
@@ -930,4 +933,25 @@ func (e *Editor) LinkHint() string { return e.hoverLink }
 func (e *Editor) ImageFailed(source string) bool {
 	st := e.images[source]
 	return st != nil && st.failed
+}
+
+// TopOffset returns the source offset of the row at the top of the view.
+func (e *Editor) TopOffset() int {
+	if e.anchorIdx >= len(e.rows) {
+		return 0
+	}
+	return e.block(e.anchorIdx).Lead.Start
+}
+
+// ScrollToOffset puts the row of a source offset at the top, leaving the caret.
+func (e *Editor) ScrollToOffset(off int) {
+	if len(e.rows) == 0 {
+		return
+	}
+	e.anchorIdx, e.anchorOff = e.rowAt(off), 0
+	if e.anchorIdx == 0 {
+		e.anchorOff = -padTop
+	}
+	e.revealPending = false
+	e.invalidate()
 }
