@@ -279,5 +279,54 @@
         "type": "int"
       }
     }
+  },
+  "shell_palette_files": "Files",
+  "@shell_palette_files": {
+    "description": "The palette's badge and group title for files."
+  },
+  "shell_palette_commands": "Commands",
+  "@shell_palette_commands": {
+    "description": "The palette's badge and group title for commands."
+  },
+  "shell_palette_headings": "Headings",
+  "@shell_palette_headings": {
+    "description": "The palette's badge and group title for the document's headings."
+  },
+  "shell_palette_placeholder": "Search files, > for commands, @ for headings",
+  "@shell_palette_placeholder": {
+    "description": "The palette's empty query."
+  },
+  "shell_palette_footer": "↑↓ Select · Enter Run · Esc Close",
+  "@shell_palette_footer": {
+    "description": "The keys the palette takes, in its footer."
+  },
+  "shell_palette_empty": "No matches",
+  "@shell_palette_empty": {
+    "description": "The palette when nothing matches."
+  },
+  "shell_omnibox": "Open a file or command",
+  "@shell_omnibox": {
+    "description": "The title bar's omnibox, which opens the palette."
+  },
+  "shell_quick_open": "Quick Open",
+  "@shell_quick_open": {
+    "description": "Opens the palette on files."
+  },
+  "shell_command_palette": "Command Palette",
+  "@shell_command_palette": {
+    "description": "Opens the palette on commands."
+  },
+  "shell_go_to_heading": "Go to Heading",
+  "@shell_go_to_heading": {
+    "description": "Opens the palette on the document's headings."
+  },
+  "shell_palette_count": "{n} items",
+  "@shell_palette_count": {
+    "description": "How many rows the palette lists.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }

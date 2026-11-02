@@ -18,6 +18,7 @@ import (
 	"aurink/internal/core/editing"
 	"aurink/internal/core/fsstore"
 	"aurink/internal/core/projection"
+	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
 	"aurink/internal/views/shell"
 	"aurink/locales"
@@ -100,7 +101,7 @@ func newApplication() (*application, error) {
 	registry.SetDefaults(commands.DefaultBindings())
 	a.shell = shell.New(shell.Options{
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts,
+		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
 		WindowButtons: runtime.GOOS != "darwin",
 	})
 	if err := registry.Register(a.shell.Commands()...); err != nil {

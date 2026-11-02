@@ -16,6 +16,7 @@ import (
 	"aurink/internal/views/kit"
 	"aurink/internal/views/liveedit"
 	"aurink/internal/views/motion"
+	"aurink/internal/views/palette"
 	"aurink/internal/views/source"
 	"aurink/internal/views/theme"
 	"aurink/locales"
@@ -57,6 +58,10 @@ type Options struct {
 	WindowButtons bool
 	// Exts are the syntax extensions M1 renders.
 	Exts contract.Extensions
+	// Fuzzy ranks the palette's rows; nil matches by substring.
+	Fuzzy contract.Fuzzy
+	// Files lists the workspace's files for quick open; nil lists open and closed tabs only.
+	Files func() []string
 }
 
 const maxNotices = 4
@@ -105,6 +110,7 @@ type Shell struct {
 	closed []string
 	// reveal scrolls the active tab into view in the next frame.
 	reveal bool
+	pal    *palette.Palette
 }
 
 // maxClosed is how many closed tabs file.reopenClosed remembers.
@@ -116,6 +122,7 @@ const tabGap = 6
 // New returns a shell over the sessions, with a tab for each already open.
 func New(o Options) *Shell {
 	s := &Shell{o: o, tokens: map[theme.Options]*theme.Tokens{}, widths: map[*doc]float32{}}
+	s.pal = palette.New(o.Fuzzy, paletteSource{s})
 	s.off = o.Sessions.Subscribe(s.sessionsChanged)
 	s.offSet = o.Settings.Subscribe(func(contract.Settings) { s.applyTheme() })
 	for _, x := range o.Sessions.All() {
@@ -385,6 +392,7 @@ func (s *Shell) window(c *ui.Context, t *theme.Tokens) {
 			s.sideBar(c, t)
 			s.sheet(c, t)
 		})
+		s.paletteView(c, t)
 	})
 }
 
@@ -495,14 +503,18 @@ func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
 
 func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {
 	om := ui.Row(c).Size(280, 30).Padding(0, 10).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusButton).
-		Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.ShellOpen())
+		Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.ShellOmnibox())
+	// The palette grows out of the omnibox and goes back into it (02 §5.4).
+	if !s.pal.IsOpen() && !c.Preferences().ReduceMotion {
+		om.Transition(s.matched(&motion.Gentle, palette.Match))
+	}
 	om.Children(func() {
 		ui.Icon(c, kit.IconSearch).Size(14, 14).TextColor(t.Muted)
-		ui.Text(c, locales.ShellOpenHint()).FontSize(theme.UIText).TextColor(t.Muted).Grow(1)
-		kit.KeyHint(c, t, s.keyLabel(contract.CmdFileOpen))
+		ui.Text(c, locales.ShellOmnibox()).FontSize(theme.UIText).TextColor(t.Muted).Grow(1).SingleLine()
+		kit.KeyHint(c, t, s.keyLabel(contract.CmdNavQuickOpen))
 	})
 	if om.Clicked() {
-		s.run(contract.CmdFileOpen)
+		s.openPalette(palette.ModeFiles)
 	}
 }
 

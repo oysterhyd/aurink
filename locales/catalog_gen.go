@@ -943,3 +943,157 @@ func ShellHeading(n int) string { return In(i18n.Locale()).ShellHeading(n) }
 func (msgs Messages) ShellHeading(n int) string {
 	return Catalog.Format(msgs.locale, "shell_heading", map[string]any{"n": n})
 }
+
+// ShellPaletteFiles says "Files"
+// in the language the app shows.
+//
+// The palette's badge and group title for files.
+func ShellPaletteFiles() string { return In(i18n.Locale()).ShellPaletteFiles() }
+
+// ShellPaletteFiles says "Files"
+// in the language of msgs.
+//
+// The palette's badge and group title for files.
+func (msgs Messages) ShellPaletteFiles() string {
+	return Catalog.Format(msgs.locale, "shell_palette_files", nil)
+}
+
+// ShellPaletteCommands says "Commands"
+// in the language the app shows.
+//
+// The palette's badge and group title for commands.
+func ShellPaletteCommands() string { return In(i18n.Locale()).ShellPaletteCommands() }
+
+// ShellPaletteCommands says "Commands"
+// in the language of msgs.
+//
+// The palette's badge and group title for commands.
+func (msgs Messages) ShellPaletteCommands() string {
+	return Catalog.Format(msgs.locale, "shell_palette_commands", nil)
+}
+
+// ShellPaletteHeadings says "Headings"
+// in the language the app shows.
+//
+// The palette's badge and group title for the document's headings.
+func ShellPaletteHeadings() string { return In(i18n.Locale()).ShellPaletteHeadings() }
+
+// ShellPaletteHeadings says "Headings"
+// in the language of msgs.
+//
+// The palette's badge and group title for the document's headings.
+func (msgs Messages) ShellPaletteHeadings() string {
+	return Catalog.Format(msgs.locale, "shell_palette_headings", nil)
+}
+
+// ShellPalettePlaceholder says "Search files, > for commands, @ for headings"
+// in the language the app shows.
+//
+// The palette's empty query.
+func ShellPalettePlaceholder() string { return In(i18n.Locale()).ShellPalettePlaceholder() }
+
+// ShellPalettePlaceholder says "Search files, > for commands, @ for headings"
+// in the language of msgs.
+//
+// The palette's empty query.
+func (msgs Messages) ShellPalettePlaceholder() string {
+	return Catalog.Format(msgs.locale, "shell_palette_placeholder", nil)
+}
+
+// ShellPaletteFooter says "↑↓ Select · Enter Run · Esc Close"
+// in the language the app shows.
+//
+// The keys the palette takes, in its footer.
+func ShellPaletteFooter() string { return In(i18n.Locale()).ShellPaletteFooter() }
+
+// ShellPaletteFooter says "↑↓ Select · Enter Run · Esc Close"
+// in the language of msgs.
+//
+// The keys the palette takes, in its footer.
+func (msgs Messages) ShellPaletteFooter() string {
+	return Catalog.Format(msgs.locale, "shell_palette_footer", nil)
+}
+
+// ShellPaletteEmpty says "No matches"
+// in the language the app shows.
+//
+// The palette when nothing matches.
+func ShellPaletteEmpty() string { return In(i18n.Locale()).ShellPaletteEmpty() }
+
+// ShellPaletteEmpty says "No matches"
+// in the language of msgs.
+//
+// The palette when nothing matches.
+func (msgs Messages) ShellPaletteEmpty() string {
+	return Catalog.Format(msgs.locale, "shell_palette_empty", nil)
+}
+
+// ShellOmnibox says "Open a file or command"
+// in the language the app shows.
+//
+// The title bar's omnibox, which opens the palette.
+func ShellOmnibox() string { return In(i18n.Locale()).ShellOmnibox() }
+
+// ShellOmnibox says "Open a file or command"
+// in the language of msgs.
+//
+// The title bar's omnibox, which opens the palette.
+func (msgs Messages) ShellOmnibox() string {
+	return Catalog.Format(msgs.locale, "shell_omnibox", nil)
+}
+
+// ShellQuickOpen says "Quick Open"
+// in the language the app shows.
+//
+// Opens the palette on files.
+func ShellQuickOpen() string { return In(i18n.Locale()).ShellQuickOpen() }
+
+// ShellQuickOpen says "Quick Open"
+// in the language of msgs.
+//
+// Opens the palette on files.
+func (msgs Messages) ShellQuickOpen() string {
+	return Catalog.Format(msgs.locale, "shell_quick_open", nil)
+}
+
+// ShellCommandPalette says "Command Palette"
+// in the language the app shows.
+//
+// Opens the palette on commands.
+func ShellCommandPalette() string { return In(i18n.Locale()).ShellCommandPalette() }
+
+// ShellCommandPalette says "Command Palette"
+// in the language of msgs.
+//
+// Opens the palette on commands.
+func (msgs Messages) ShellCommandPalette() string {
+	return Catalog.Format(msgs.locale, "shell_command_palette", nil)
+}
+
+// ShellGoToHeading says "Go to Heading"
+// in the language the app shows.
+//
+// Opens the palette on the document's headings.
+func ShellGoToHeading() string { return In(i18n.Locale()).ShellGoToHeading() }
+
+// ShellGoToHeading says "Go to Heading"
+// in the language of msgs.
+//
+// Opens the palette on the document's headings.
+func (msgs Messages) ShellGoToHeading() string {
+	return Catalog.Format(msgs.locale, "shell_go_to_heading", nil)
+}
+
+// ShellPaletteCount says "{n} items"
+// in the language the app shows.
+//
+// How many rows the palette lists.
+func ShellPaletteCount(n int) string { return In(i18n.Locale()).ShellPaletteCount(n) }
+
+// ShellPaletteCount says "{n} items"
+// in the language of msgs.
+//
+// How many rows the palette lists.
+func (msgs Messages) ShellPaletteCount(n int) string {
+	return Catalog.Format(msgs.locale, "shell_palette_count", map[string]any{"n": n})
+}

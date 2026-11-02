@@ -64,5 +64,16 @@
   "shell_table_format": "整理表格",
   "shell_focus": "专注模式",
   "shell_typewriter": "打字机模式",
-  "shell_heading": "标题 {n}"
+  "shell_heading": "标题 {n}",
+  "shell_palette_files": "文件",
+  "shell_palette_commands": "命令",
+  "shell_palette_headings": "标题",
+  "shell_palette_placeholder": "搜索文件，输入 > 执行命令，@ 跳转标题",
+  "shell_palette_footer": "↑↓ 选择 · Enter 执行 · Esc 关闭",
+  "shell_palette_empty": "没有匹配项",
+  "shell_omnibox": "搜索文件或执行命令",
+  "shell_quick_open": "快速打开",
+  "shell_command_palette": "命令面板",
+  "shell_go_to_heading": "跳转到标题",
+  "shell_palette_count": "{n} 项"
 }

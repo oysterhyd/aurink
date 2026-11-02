@@ -19,6 +19,8 @@ var (
 	IconCheck    = icon(`<path d="M3.5 8.5l3 3 6-7"/>`)
 	IconFile     = icon(`<path d="M4 2.5h5l3 3v8H4z"/><path d="M9 2.5v3h3"/>`)
 	IconInfo     = icon(`<circle cx="8" cy="8" r="5.5"/><path d="M8 7.5v3M8 5.2v.1"/>`)
+	IconCommand  = icon(`<path d="M3.5 5l3 3-3 3M8 11.5h4.5"/>`)
+	IconHeading  = icon(`<path d="M4 3.5v9M10 3.5v9M4 8h6M12.5 7.5l1-1v6"/>`)
 	IconWarn     = icon(`<path d="M8 2.8l5.8 10H2.2z"/><path d="M8 6.5v3M8 11.2v.1"/>`)
 )
 

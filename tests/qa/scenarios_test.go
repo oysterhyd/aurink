@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -18,9 +19,12 @@ import (
 	"aurink/internal/core/fsstore"
 	"aurink/internal/core/markdown"
 	"aurink/internal/core/projection"
+	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
 	"aurink/internal/views/editorapi"
+	"aurink/internal/views/palette"
 	"aurink/internal/views/shell"
+	"aurink/internal/views/theme"
 	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/editor"
@@ -75,6 +79,7 @@ type app struct {
 	p        *platform
 	store    *settings.Store
 	sessions *docsession.Manager
+	files    []string
 	reg      *commands.Registry
 	s        *shell.Shell
 	tt       *ui.Tester
@@ -113,7 +118,8 @@ func (a *app) boot() {
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter})
+		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
+		Files: func() []string { return a.files }})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}
@@ -316,6 +322,126 @@ var scenarios = []scenario{
 		if tableRows(doc.Snapshot()) != 3 {
 			a.t.Fatalf("delete row did not remove a row: %q", a.text())
 		}
+	}},
+	{"primary+P opens a file by typing its name", func(a *app) {
+		a.open("alpha.md", "a\n")
+		a.open("beta.md", "b\n")
+		a.tt.Key(ui.Cmd, ui.KeyP)
+		a.settle()
+		if !a.s.Palette().IsOpen() || a.s.Palette().Mode() != palette.ModeFiles {
+			a.t.Fatal("primary+P did not open the palette on files")
+		}
+		a.typed("alp")
+		a.want(fmt.Sprint(a.s.Palette().Rows()), "[alpha.md]")
+		a.tt.Key(0, ui.KeyEnter)
+		a.settle()
+		if a.s.Palette().IsOpen() {
+			a.t.Fatal("Enter left the palette open")
+		}
+		a.want(a.s.ActiveSession().State().Name, "alpha.md")
+		a.typed("Z")
+		a.settle()
+		a.want(a.text(), "Za\n")
+	}},
+	{"the arrows move the selection and wrap", func(a *app) {
+		a.open("a.md", "x\n")
+		a.open("b.md", "x\n")
+		a.open("c.md", "x\n")
+		a.run(contract.CmdNavQuickOpen)
+		p := a.s.Palette()
+		if p.Selected() != 0 {
+			a.t.Fatalf("selected %d at first", p.Selected())
+		}
+		a.tt.Key(0, ui.KeyUp)
+		a.tt.Frame()
+		if p.Selected() != len(p.Rows())-1 {
+			a.t.Fatalf("Up from the first row selected %d of %d", p.Selected(), len(p.Rows()))
+		}
+		a.tt.Key(0, ui.KeyDown)
+		a.tt.Key(0, ui.KeyDown)
+		a.tt.Frame()
+		want := p.Rows()[1]
+		a.tt.Key(0, ui.KeyEnter)
+		a.settle()
+		a.want(a.s.ActiveSession().State().Name, want)
+	}},
+	{"primary+shift+P runs a command by name", func(a *app) {
+		a.open("a.md", "hello\n")
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.tt.Key(ui.Cmd|ui.Shift, ui.KeyP)
+		a.settle()
+		a.want(a.s.Palette().Query(), ">")
+		a.typed(locales.ShellStrong())
+		a.tt.Key(0, ui.KeyEnter)
+		a.settle()
+		a.want(a.text(), "**hello**\n")
+	}},
+	{"the command list has only commands that can run, with their keys", func(a *app) {
+		a.run(contract.CmdNavPalette)
+		rows := a.s.Palette().Rows()
+		for _, r := range rows {
+			if r == locales.ShellSave() || r == locales.ShellStrong() {
+				a.t.Fatalf("with no document the palette lists %q", r)
+			}
+			if r == locales.ShellCommandPalette() {
+				a.t.Fatal("the palette lists itself")
+			}
+		}
+		if !slices.Contains(rows, locales.ShellNew()) {
+			a.t.Fatalf("no %q in %v", locales.ShellNew(), rows)
+		}
+	}},
+	{"Escape closes the palette and typing goes back to the document", func(a *app) {
+		a.open("a.md", "hello\n")
+		a.run(contract.CmdNavPalette)
+		a.typed("zz")
+		a.tt.Key(0, ui.KeyEscape)
+		a.settle()
+		if a.s.Palette().IsOpen() {
+			a.t.Fatal("Escape left the palette open")
+		}
+		a.typed("x")
+		a.settle()
+		if !strings.Contains(a.text(), "x") || strings.Contains(a.text(), "zz") {
+			a.t.Fatalf("typing after Escape: %q", a.text())
+		}
+	}},
+	{"@ goes to a heading", func(a *app) {
+		src := "# Intro\n\ntext\n\n## Details\n\nmore\n"
+		a.open("a.md", src)
+		a.run(contract.CmdNavQuickOpen)
+		a.typed("@det")
+		a.want(fmt.Sprint(a.s.Palette().Rows()), "[Details]")
+		a.tt.Key(0, ui.KeyEnter)
+		a.settle()
+		a.caret(strings.Index(src, "## Details"))
+	}},
+	{"@ in source mode goes to the heading too", func(a *app) {
+		src := "# Intro\n\ntext\n\n## Details\n"
+		a.open("a.md", src)
+		a.run(contract.CmdViewSource)
+		a.run(contract.CmdNavGoToHeading)
+		a.typed("Det")
+		a.tt.Key(0, ui.KeyEnter)
+		a.settle()
+		a.run(contract.CmdViewSource) // back to live, which takes the source view's caret
+		a.caret(strings.Index(src, "## Details"))
+	}},
+	{"clicking the omnibox opens the palette", func(a *app) {
+		a.click(locales.ShellOmnibox())
+		if !a.s.Palette().IsOpen() || a.s.Palette().Mode() != palette.ModeFiles {
+			a.t.Fatal("the omnibox did not open the palette on files")
+		}
+	}},
+	{"Chinese names match and open", func(a *app) {
+		a.open("笔记.md", "x\n")
+		a.open("路线图.md", "y\n")
+		a.run(contract.CmdNavQuickOpen)
+		a.typed("路线")
+		a.want(fmt.Sprint(a.s.Palette().Rows()), "[路线图.md]")
+		a.tt.Key(0, ui.KeyEnter)
+		a.settle()
+		a.want(a.s.ActiveSession().State().Name, "路线图.md")
 	}},
 	{"format shortcuts do nothing in source mode", func(a *app) {
 		a.open("a.md", "hello\n")
@@ -942,3 +1068,59 @@ func TestScenarios(t *testing.T) {
 		})
 	}
 }
+
+// TestPaletteAtScale types into quick open over 10,000 files, and into a
+// palette over 500 commands (05 FE-2.4): each keystroke must answer in one
+// frame's work, which the palette bounds by building only the rows in view.
+// Measured on 2026-11-02: 73 ms per keystroke over 10,000 files while it built
+// 200 rows, 10 ms with the virtual list.
+func TestPaletteAtScale(t *testing.T) {
+	a := newApp(t)
+	for i := range 10000 {
+		a.files = append(a.files, filepath.Join(a.dir, fmt.Sprintf("dir%03d", i%300), fmt.Sprintf("note-%05d.md", i)))
+	}
+	a.run(contract.CmdNavQuickOpen)
+	typing(t, a.tt, a.s.Palette(), "note0042")
+
+	var cmds []palette.Item
+	for i := range 500 {
+		cmds = append(cmds, palette.Item{Title: fmt.Sprintf("Command number %03d", i), Keys: "Ctrl K"})
+	}
+	p := palette.New(search.NewFuzzy(), fixedSource{cmds})
+	tokens := theme.For(theme.Options{Hue: theme.DefaultHue})
+	tt := ui.NewTester(func(c *ui.Context) {
+		p.View(c, tokens, palette.Labels{Count: func(n int) string { return fmt.Sprint(n) }}, false)
+	}, 1280, 800)
+	p.Open(palette.ModeCommands)
+	tt.Frame()
+	typing(t, tt, p, "num04")
+}
+
+func typing(t *testing.T, tt *ui.Tester, p *palette.Palette, text string) {
+	t.Helper()
+	var worst time.Duration
+	for _, r := range text {
+		t0 := time.Now()
+		tt.Type(string(r))
+		tt.Frame()
+		worst = max(worst, time.Since(t0))
+		if n := len(p.Rows()); n > palette.MaxRows {
+			t.Fatalf("%d rows listed", n)
+		}
+		// 460 DIPs of panel show about ten 40-DIP rows; the list builds a few beyond.
+		if p.Built > 30 {
+			t.Fatalf("%d rows built in a frame", p.Built)
+		}
+	}
+	rows := p.Rows()
+	if len(rows) == 0 {
+		t.Fatalf("%q matched nothing", text)
+	}
+	t.Logf("%q: slowest keystroke %v, %d rows, %d built, first %q", text, worst, len(rows), p.Built, rows[0])
+}
+
+type fixedSource struct{ cmds []palette.Item }
+
+func (f fixedSource) Files() []palette.Item    { return nil }
+func (f fixedSource) Commands() []palette.Item { return f.cmds }
+func (f fixedSource) Headings() []palette.Item { return nil }

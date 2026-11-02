@@ -22,6 +22,7 @@ import (
 	"aurink/internal/core/editing"
 	"aurink/internal/core/fsstore"
 	"aurink/internal/core/projection"
+	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
 	"aurink/internal/views/shell"
 	"aurink/resources"
@@ -79,7 +80,8 @@ func main() {
 	locale := flag.String("locale", "", "show the interface in this language, such as zh-Hans")
 	flag.Parse()
 	if *locale != "" {
-		mygo.App.SetLocale(*locale)
+		// For this run only: App.SetLocale would keep the language for later runs.
+		os.Setenv("MYGO_LOCALE", *locale)
 	}
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		log.Fatal(err)
@@ -116,7 +118,7 @@ func main() {
 		var s *shell.Shell
 		p := &platform{}
 		s = shell.New(shell.Options{Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter})
+			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy()})
 		if err := reg.Register(s.Commands()...); err != nil {
 			log.Fatal(err)
 		}
@@ -174,6 +176,13 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	run(contract.CmdViewSource)
 	shot("Source")
 	run(contract.CmdViewLive)
+	run(contract.CmdNavPalette)
+	time.Sleep(1600 * time.Millisecond) // past the one-time glow
+	shot("Palette")
+	on(w, func() { s.Palette().SetQuery(">切换") })
+	shot("PaletteQuery")
+	on(w, func() { s.Palette().Close() })
+	time.Sleep(300 * time.Millisecond)
 	on(w, func() {
 		s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: "已保存到磁盘", Detail: "README.md", Sticky: true})
 	})

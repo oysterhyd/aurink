@@ -6,6 +6,7 @@ import (
 
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
+	"aurink/internal/views/palette"
 	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 )
@@ -63,6 +64,9 @@ func (s *Shell) Commands() []contract.Command {
 			}
 			return nil
 		}},
+		{ID: contract.CmdNavQuickOpen, Title: "quickOpen", Run: func() error { s.openPalette(palette.ModeFiles); return nil }},
+		{ID: contract.CmdNavPalette, Title: "palette", Run: func() error { s.openPalette(palette.ModeCommands); return nil }},
+		{ID: contract.CmdNavGoToHeading, Title: "goToHeading", Enabled: hasDoc, Run: func() error { s.openPalette(palette.ModeHeadings); return nil }},
 		{ID: contract.CmdFileReopenClosed, Title: "reopenClosed", Enabled: func() bool { return len(s.closed) > 0 },
 			Run: func() error { s.reopenClosed(); return nil }},
 		{ID: contract.CmdNavNextTab, Title: "nextTab", Enabled: func() bool { return len(s.docs) > 1 },
@@ -150,7 +154,8 @@ var editTitles = map[string]func() string{
 	"tableInsert": locales.ShellTableInsert, "rowAbove": locales.ShellRowAbove, "rowBelow": locales.ShellRowBelow,
 	"colLeft": locales.ShellColLeft, "colRight": locales.ShellColRight, "deleteRow": locales.ShellDeleteRow,
 	"deleteCol": locales.ShellDeleteCol, "tableFormat": locales.ShellTableFormat, "focus": locales.ShellFocus,
-	"typewriter": locales.ShellTypewriter,
+	"typewriter": locales.ShellTypewriter, "quickOpen": locales.ShellQuickOpen, "palette": locales.ShellCommandPalette,
+	"goToHeading": locales.ShellGoToHeading,
 }
 
 // Title says a command's title in the app's language.
