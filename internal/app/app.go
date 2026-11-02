@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
@@ -54,18 +55,27 @@ func Run() error {
 			a.open(path)
 		}
 	})
-	mygo.App.OnSecondInstance(func([]string, string) {
+	mygo.App.OnSecondInstance(func(args []string, wd string) {
 		if a != nil {
 			a.window.Show()
 			a.window.Focus()
+			for _, dir := range folderArgs(args, wd) {
+				a.open(dir)
+			}
 		}
 	})
+	wd, _ := os.Getwd()
+	folders := folderArgs(os.Args[1:], wd)
 	mygo.App.WhenReady(func() {
 		var err error
 		if a, err = newApplication(); err != nil {
 			slog.Error("startup failed", "error", err)
 			mygo.Dialog.Error(locales.AppName(), err.Error())
 			mygo.App.Quit()
+			return
+		}
+		for _, dir := range folders {
+			a.open(dir)
 		}
 	})
 	return mygo.App.Run()
@@ -104,10 +114,12 @@ func newApplication() (*application, error) {
 	a.sessions = sessions
 	registry := commands.New()
 	registry.SetDefaults(commands.DefaultBindings())
-	a.shell = shell.New(shell.Options{
+	ws := workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{})
+	index := newFileIndex(ws, dispatcher)
+	a.shell = shell.New(shell.Options{Files: index.Files,
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
-		Workspace: workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}), Search: search.NewWorkspaceSearch(), Finder: search.NewFinder(),
+		Workspace: ws, Search: search.NewWorkspaceSearch(), Finder: search.NewFinder(),
 		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages),
 		WindowButtons: runtime.GOOS != "darwin",
 		SessionStore:  docsession.NewSessionStore(filepath.Join(data, "session.json"), files),
@@ -148,7 +160,7 @@ func newApplication() (*application, error) {
 		a.shell.RestoreSession(func() {
 			a.restored = true
 			for _, p := range a.pending {
-				a.shell.Open(p)
+				a.openNow(p)
 			}
 			a.pending = nil
 		})
@@ -185,14 +197,42 @@ func (r systemRecent) Add(path string, isDir bool) {
 	}
 }
 
+// folderArgs are the arguments naming folders, which open as the workspace
+// ("aurink ."). MyGo hands over only files, through OnOpenFile.
+func folderArgs(args []string, wd string) []string {
+	var out []string
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "-") {
+			continue
+		}
+		p := arg
+		if !filepath.IsAbs(p) {
+			p = filepath.Join(wd, p)
+		}
+		if info, err := os.Stat(p); err == nil && info.IsDir() {
+			out = append(out, filepath.Clean(p))
+		}
+	}
+	return out
+}
+
+// open opens a file the system hands over, or a folder as the workspace.
 func (a *application) open(path string) {
 	a.window.Update(func() {
 		if !a.restored {
 			a.pending = append(a.pending, path)
 			return
 		}
-		a.shell.Open(path)
+		a.openNow(path)
 	})
+}
+
+func (a *application) openNow(path string) {
+	if info, err := os.Stat(path); err == nil && info.IsDir() {
+		a.shell.OpenFolder(path)
+		return
+	}
+	a.shell.Open(path)
 }
 
 // buildMenu is the application menu (macOS): the registered commands and nothing else.
