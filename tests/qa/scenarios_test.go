@@ -480,6 +480,34 @@ var scenarios = []scenario{
 			a.t.Fatalf("document caret %d", got)
 		}
 	}},
+	{"the view menu is drawn in the window and switches the view", func(a *app) {
+		a.open("a.md", "a\n")
+		a.click(locales.ShellViewLive())
+		if len(a.tt.Menu()) != 0 {
+			a.t.Fatal("the view menu went to the native menu, which clips at 150% scale")
+		}
+		a.click(locales.ShellViewSource())
+		if a.s.ActiveMode() != editorapi.ModeSource {
+			a.t.Fatal("the menu did not switch to source")
+		}
+	}},
+	{"the view menu follows the app's dark theme on a light system", func(a *app) {
+		a.open("a.md", "a\n")
+		a.run(contract.CmdViewThemeDark)
+		a.tt.Advance(2 * time.Second)
+		a.tt.Frame()
+		a.click(locales.ShellViewLive())
+		a.tt.Advance(500 * time.Millisecond)
+		a.tt.Frame()
+		r, ok := a.tt.Find(locales.ShellViewSource())
+		if !ok {
+			a.t.Fatal("the menu is not open")
+		}
+		red, _, _, _ := a.tt.Image().At(int(r.X-4), int(r.Y+r.H/2)).RGBA()
+		if red>>8 > 80 {
+			a.t.Fatalf("the menu's face has red %d in a dark window", red>>8)
+		}
+	}},
 	{"views are per tab", func(a *app) {
 		a.open("a.md", "a\n")
 		a.run(contract.CmdViewSource)

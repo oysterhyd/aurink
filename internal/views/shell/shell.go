@@ -257,6 +257,15 @@ func (s *Shell) Dark() bool { return s.dark }
 func (s *Shell) View(c *ui.Context) {
 	s.services, s.hasServ = c.Services(), true
 	s.followSystem(c)
+	// The toolkit draws the view menu: it follows the app's theme, not only the system's.
+	if own := c.Theme(); own.Dark != s.dark {
+		base := ui.LightTheme()
+		if s.dark {
+			base = ui.DarkTheme()
+		}
+		base.Font, base.FontSize = own.Font, own.FontSize
+		c.SetTheme(base)
+	}
 	s.bindCommands(c)
 	s.live = true
 	root := ui.Box(c).Fill().Clip()
@@ -407,7 +416,8 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 		ui.Text(c, label).FontSize(theme.UIText).TextColor(t.Muted)
 		ui.Icon(c, kit.IconChevron).Size(12, 12).TextColor(t.Muted)
 	})
-	b.Menu(func(m *ui.Menu) {
+	// Drawn in the window: at 150% scale the native Windows menu clips its widest item.
+	b.PopoverMenuButton(func(m *ui.Menu) {
 		if m.Item(locales.ShellViewLive()).Checked(s.active.mode == editorapi.ModeLive).Chosen() {
 			s.setMode(s.active, editorapi.ModeLive)
 		}
