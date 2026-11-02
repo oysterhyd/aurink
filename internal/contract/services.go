@@ -142,18 +142,33 @@ type Workspace interface {
 	Rename(path, newName string, done func(newPath string, err error))
 	Move(paths []string, dstDir string, done func(err error))
 	Trash(paths []string, done func(err error))
-	// SetShowAll 切换显示全部文件或仅 Markdown 与图片。
+	// SetShowAll 切换显示全部文件或仅 Markdown 与图片（.md .markdown .png .jpg .jpeg .gif
+	// .svg .webp，不分大小写）。目录总是显示。切换后已加载的目录各发一次 WsListed。
 	SetShowAll(all bool)
+	// Ignored 报告忽略规则（.git、node_modules、隐藏文件）是否排除 rel；rel 相对根、以 /
+	// 分隔。文件树和 WorkspaceSearch 共用这份规则（D15）。不受 SetShowAll 影响。
+	// 任意 goroutine 可调用。
+	Ignored(rel string, isDir bool) bool
 	Subscribe(fn func(WorkspaceEvent)) (off func())
 }
 
-// Assets 把图片导入文档的资源目录，返回可写入 Markdown 的相对路径。阻塞。
+// Assets 把图片导入文档的资源目录，返回可写入 Markdown 的路径。阻塞。
+//
+// 目录来自 Settings.Files.ImageDir，其中 ${filename} 是文档名去掉扩展名。返回的路径相对
+// 文档所在目录，以 / 分隔，空格写成 %20；目录在另一个盘符等无法相对时返回绝对路径。
+// 重名时在扩展名前加 -1、-2……，不覆盖已有文件。CopyImages 为 false 时 ImportFiles 不
+// 复制，直接返回原文件的路径。docPath 为 "" 时返回 CodeInvalid。
 type Assets interface {
 	ImportFiles(docPath string, files []string) ([]string, error)
+	// ImportImage 写入 PNG；nameHint 为 "" 时用 "image"，扩展名总是 .png。
 	ImportImage(docPath string, png []byte, nameHint string) (string, error)
 }
 
-// Recent 是最近打开的文件与文件夹（主线程）。
+// RecentMax 是 Recent 每个列表的上限。
+const RecentMax = 20
+
+// Recent 是最近打开的文件与文件夹（主线程，写盘在后台）。列表最近的在前，同一路径只
+// 出现一次（Windows 上不分大小写），超过 RecentMax 时丢弃最旧的。
 type Recent interface {
 	Files() []string
 	Folders() []string
@@ -164,18 +179,25 @@ type Recent interface {
 // Query 是查找条件。
 type Query struct {
 	Text          string
-	CaseSensitive bool
-	WholeWord     bool
-	Regex         bool
+	CaseSensitive bool // false 时按 Unicode 简单大小写折叠比较
+	// WholeWord：匹配两侧紧邻的字符都不是字母、数字或下划线（按 Unicode 判断）。中文等
+	// 没有空格分词的文字按字母处理。
+	WholeWord bool
+	Regex     bool // RE2 语法；Text 为空时没有匹配
 }
 
-// Match 是一处匹配。
+// Match 是一处匹配。匹配按位置排序，互不重叠；空匹配（如正则 `a*`）不报告。
 type Match struct {
-	Range   Range
-	Line    int
-	Preview string // 所在行（过长时截断）
-	Hit     Range  // 匹配在 Preview 中的区间
+	Range Range // 在文本中，字节偏移
+	Line  int   // Range.Start 所在行，0 起
+	// Preview 是所在行，不含换行符。超过 PreviewMax 字节时截取匹配附近，截断处不切开
+	// UTF-8 字符，并以 "…" 标出。
+	Preview string
+	Hit     Range // 匹配在 Preview 中的区间；跨行的匹配截到行尾
 }
+
+// PreviewMax 是 Match.Preview 的最大字节数（不含 "…"）。
+const PreviewMax = 200
 
 // Finder 在一个文本快照中查找（纯函数，可在任意 goroutine）。
 type Finder interface {
@@ -189,9 +211,21 @@ type FileMatches struct {
 	Matches []Match
 }
 
-// WorkspaceSearch 在目录树中搜索。阻塞；onBatch 在调用者 goroutine 上按批回调。
+// SearchOptions 是目录搜索的范围。
+type SearchOptions struct {
+	// Ignore 可为 nil；通常是 Workspace.Ignored。参数同 Workspace.Ignored。
+	Ignore func(rel string, isDir bool) bool
+	// MaxFileSize 之上的文件跳过；0 为 5 MB。
+	MaxFileSize int64
+	// PerFile 是每个文件最多的匹配数；0 不限。
+	PerFile int
+}
+
+// WorkspaceSearch 在目录树中搜索文本文件，跳过二进制、超大和非 UTF-8/UTF-16 的文件。
+// 阻塞；onBatch 在调用者 goroutine 上按批回调，每个文件至多出现一次，没有匹配的文件
+// 不出现。ctx 取消时尽快返回 CodeCanceled，之后不再回调。
 type WorkspaceSearch interface {
-	Search(ctx context.Context, root string, q Query, onBatch func([]FileMatches)) error
+	Search(ctx context.Context, root string, q Query, opts SearchOptions, onBatch func([]FileMatches)) error
 }
 
 // FuzzyItem 是模糊匹配的候选项。
@@ -207,7 +241,9 @@ type FuzzyHit struct {
 	Positions []int
 }
 
-// Fuzzy 是模糊匹配（纯函数）。
+// Fuzzy 是模糊匹配（纯函数）。query 的每个字符（忽略空白）须按顺序出现在 Text 中，
+// 不分大小写，否则不算命中。结果按 Score 降序，同分按 Index 升序，至多 limit 个
+// （0 不限）。连续命中、词首（分隔符或大小写边界之后）和文件名部分（最后一个 / 或 // 之后）的命中得分更高。query 为空时按原顺序返回，Score 为 0，Positions 为空。
 type Fuzzy interface {
 	Match(query string, items []FuzzyItem, limit int) []FuzzyHit
 }

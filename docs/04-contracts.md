@@ -182,3 +182,20 @@
 | `ast.go` | 新增 `BlockLine`、`Block.Lines`；`Content`、`Prefixes` 注释澄清 | CR-003；§4.2.4 |
 | `ast.go` | `BlockID` 的存活规则 | CR-004；§4.2.6 |
 | `render.go` | 数学公式可回退 PNG；SVG 和 PNG 恰有一个非空 | CR-005 |
+
+## 附：Phase 2 批次 1（2026-11-01）
+
+依据 [07 §5](07-phase2.md) 的设计决定。套件在 `internal/contracttest`：`TestWorkspace` `TestAssets` `TestRecent` `TestFinder` `TestWorkspaceSearch` `TestFuzzy` `TestExporter`，测试替身 `SnapshotWatcher`（手动 `Flush` 比对真实目录产生事件，不靠计时）、`RecordingTrasher`。
+
+| 文件 | 变更 | 依据 |
+|---|---|---|
+| `watch.go`（新） | `FileWatcher` `Watch` `WatchEvent` `WatchOptions`；事件路径以传入的路径为前缀 | D1 |
+| `watch.go` | `Trasher`，core 通过它删除到回收站 | D7、D18 |
+| `watch.go` | `SessionState` `TabState` `ViewState` `SessionStore` | D9、D10 |
+| `services.go` | `Workspace.Ignored`；`SetShowAll` 的过滤范围和事件 | D15 |
+| `services.go` | `WorkspaceSearch.Search` 增加 `SearchOptions`（忽略规则、大小上限、每文件上限）；跳过的文件种类、取消语义 | D15 |
+| `services.go` | `Match` 的行号、预览截断、跨行命中；`Query` 的大小写和全词规则；`PreviewMax` | BE-2.6 |
+| `services.go` | `Fuzzy` 的命中与排序规则；`Assets` 的目录模板、命名、相对路径；`RecentMax` 与去重 | BE-2.5、BE-2.6 |
+| `render.go` | `ExportOptions.Highlight` 与 `CodeToken`；导出 HTML 的结构约定（id、TOC、代码、脚注、安全范围、内嵌图片） | D13、D17 |
+
+`Sessions` 的改动（`Recheck`、路径跟随）随 BE-2.7 的套件一起落地，那时才有实现能同步修改。
