@@ -130,7 +130,20 @@ func (s *Store) Write(path, text string, meta contract.DocMeta, expect *contract
 			return contract.FileStamp{}, ioFailure(op, path, err)
 		}
 	}
-	if err := s.writeSafely(target, data, info); err != nil {
+	// The stamp is checked again just before the replacement: another program writing
+	// meanwhile is a conflict too. What it writes between that check and the rename
+	// itself is still lost; no system offers a rename that compares first (07 §8).
+	same := func() bool {
+		now, err := os.Stat(target)
+		return err == nil && now.Size() == expect.Size && now.ModTime().Equal(expect.ModTime)
+	}
+	if expect == nil {
+		same = nil
+	}
+	if err := s.writeSafely(target, data, info, same); err != nil {
+		if errors.Is(err, errChanged) {
+			return contract.FileStamp{}, failure(contract.CodeConflict, op, path, nil)
+		}
 		return contract.FileStamp{}, ioFailure(op, path, err)
 	}
 	info, err = os.Stat(target)
@@ -140,7 +153,12 @@ func (s *Store) Write(path, text string, meta contract.DocMeta, expect *contract
 	return stampOf(info), nil
 }
 
-func (s *Store) writeSafely(path string, data []byte, info os.FileInfo) error {
+// errChanged is the file changing under a write that expected a stamp.
+var errChanged = errors.New("fsstore: the file changed during the write")
+
+// writeSafely writes data to path through a sibling; same, if not nil, must still
+// hold just before the sibling replaces the file.
+func (s *Store) writeSafely(path string, data []byte, info os.FileInfo, same func() bool) error {
 	if info != nil {
 		linked, err := multipleLinks(path, info)
 		if err != nil {
@@ -184,6 +202,9 @@ func (s *Store) writeSafely(path string, data []byte, info os.FileInfo) error {
 	}
 	if err != nil {
 		return err
+	}
+	if same != nil && !same() {
+		return errChanged
 	}
 	return ops.replace(path, name)
 }

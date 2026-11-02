@@ -478,3 +478,23 @@ func TestPathErrors(t *testing.T) {
 	_, err = s.Write(dir, "text", contract.DocMeta{}, nil)
 	wantError(t, err, contract.CodeInvalid, "Write", dir)
 }
+
+// Another program writing while the replacement is being prepared is a conflict, and
+// its text stays (07 §8).
+func TestWriteChecksTheStampAgainBeforeReplacing(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "doc.md")
+	put(t, path, []byte("original"))
+	s := New()
+	before, err := s.Stat(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.ops.sync = func(f *os.File) error {
+		put(t, path, []byte("theirs, written meanwhile"))
+		return f.Sync()
+	}
+	_, err = s.Write(path, "mine", contract.DocMeta{}, &before)
+	wantError(t, err, contract.CodeConflict, "Write", path)
+	wantBytes(t, path, []byte("theirs, written meanwhile"))
+	wantOnlyFile(t, path)
+}
