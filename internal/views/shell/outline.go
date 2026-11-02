@@ -91,8 +91,3 @@ func (s *Shell) outlinePanel(c *ui.Context, t *theme.Tokens) {
 		}
 	}).Grow(1).MinHeight(0).Padding(0, 8, 8)
 }
-
-// searchPanel searches the open folder; it arrives with the search card.
-func (s *Shell) searchPanel(c *ui.Context, t *theme.Tokens) {
-	ui.Text(c, locales.ShellSearchSoon()).FontSize(theme.UIText).TextColor(t.Muted).Padding(12, 16)
-}

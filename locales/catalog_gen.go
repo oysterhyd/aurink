@@ -1280,18 +1280,146 @@ func (msgs Messages) ShellNoHeadings() string {
 	return Catalog.Format(msgs.locale, "shell_no_headings", nil)
 }
 
-// ShellSearchSoon says "Search arrives with the next update"
+// ShellSearchPlaceholder says "Search in folder"
 // in the language the app shows.
 //
-// The search panel before it is built.
-func ShellSearchSoon() string { return In(i18n.Locale()).ShellSearchSoon() }
+// The search panel's field.
+func ShellSearchPlaceholder() string { return In(i18n.Locale()).ShellSearchPlaceholder() }
 
-// ShellSearchSoon says "Search arrives with the next update"
+// ShellSearchPlaceholder says "Search in folder"
 // in the language of msgs.
 //
-// The search panel before it is built.
-func (msgs Messages) ShellSearchSoon() string {
-	return Catalog.Format(msgs.locale, "shell_search_soon", nil)
+// The search panel's field.
+func (msgs Messages) ShellSearchPlaceholder() string {
+	return Catalog.Format(msgs.locale, "shell_search_placeholder", nil)
+}
+
+// ShellSearchCase says "Match case"
+// in the language the app shows.
+//
+// The search option comparing case.
+func ShellSearchCase() string { return In(i18n.Locale()).ShellSearchCase() }
+
+// ShellSearchCase says "Match case"
+// in the language of msgs.
+//
+// The search option comparing case.
+func (msgs Messages) ShellSearchCase() string {
+	return Catalog.Format(msgs.locale, "shell_search_case", nil)
+}
+
+// ShellSearchWord says "Whole word"
+// in the language the app shows.
+//
+// The search option matching whole words.
+func ShellSearchWord() string { return In(i18n.Locale()).ShellSearchWord() }
+
+// ShellSearchWord says "Whole word"
+// in the language of msgs.
+//
+// The search option matching whole words.
+func (msgs Messages) ShellSearchWord() string {
+	return Catalog.Format(msgs.locale, "shell_search_word", nil)
+}
+
+// ShellSearchRegex says "Regular expression"
+// in the language the app shows.
+//
+// The search option reading the query as a regular expression.
+func ShellSearchRegex() string { return In(i18n.Locale()).ShellSearchRegex() }
+
+// ShellSearchRegex says "Regular expression"
+// in the language of msgs.
+//
+// The search option reading the query as a regular expression.
+func (msgs Messages) ShellSearchRegex() string {
+	return Catalog.Format(msgs.locale, "shell_search_regex", nil)
+}
+
+// ShellSearching says "Searching…"
+// in the language the app shows.
+//
+// While the search runs.
+func ShellSearching() string { return In(i18n.Locale()).ShellSearching() }
+
+// ShellSearching says "Searching…"
+// in the language of msgs.
+//
+// While the search runs.
+func (msgs Messages) ShellSearching() string {
+	return Catalog.Format(msgs.locale, "shell_searching", nil)
+}
+
+// ShellSearchNone says "No results"
+// in the language the app shows.
+//
+// A search that found nothing.
+func ShellSearchNone() string { return In(i18n.Locale()).ShellSearchNone() }
+
+// ShellSearchNone says "No results"
+// in the language of msgs.
+//
+// A search that found nothing.
+func (msgs Messages) ShellSearchNone() string {
+	return Catalog.Format(msgs.locale, "shell_search_none", nil)
+}
+
+// ShellSearchCount says "{matches} in {files} files"
+// in the language the app shows.
+//
+// The count of a search's matches and files.
+func ShellSearchCount(matches string, files string) string {
+	return In(i18n.Locale()).ShellSearchCount(matches, files)
+}
+
+// ShellSearchCount says "{matches} in {files} files"
+// in the language of msgs.
+//
+// The count of a search's matches and files.
+func (msgs Messages) ShellSearchCount(matches string, files string) string {
+	return Catalog.Format(msgs.locale, "shell_search_count", map[string]any{"matches": matches, "files": files})
+}
+
+// ShellSearchCapped says "First {matches} results"
+// in the language the app shows.
+//
+// A search stopped at its cap.
+func ShellSearchCapped(matches string) string { return In(i18n.Locale()).ShellSearchCapped(matches) }
+
+// ShellSearchCapped says "First {matches} results"
+// in the language of msgs.
+//
+// A search stopped at its cap.
+func (msgs Messages) ShellSearchCapped(matches string) string {
+	return Catalog.Format(msgs.locale, "shell_search_capped", map[string]any{"matches": matches})
+}
+
+// ShellSearchBadRegex says "Invalid regular expression"
+// in the language the app shows.
+//
+// A query that is not a valid regular expression.
+func ShellSearchBadRegex() string { return In(i18n.Locale()).ShellSearchBadRegex() }
+
+// ShellSearchBadRegex says "Invalid regular expression"
+// in the language of msgs.
+//
+// A query that is not a valid regular expression.
+func (msgs Messages) ShellSearchBadRegex() string {
+	return Catalog.Format(msgs.locale, "shell_search_bad_regex", nil)
+}
+
+// ShellSearchInFolder says "Search in Folder"
+// in the language the app shows.
+//
+// The command showing the search panel.
+func ShellSearchInFolder() string { return In(i18n.Locale()).ShellSearchInFolder() }
+
+// ShellSearchInFolder says "Search in Folder"
+// in the language of msgs.
+//
+// The command showing the search panel.
+func (msgs Messages) ShellSearchInFolder() string {
+	return Catalog.Format(msgs.locale, "shell_search_in_folder", nil)
 }
 
 // ShellTrashUnsaved says "{name} has unsaved changes. Move it to the trash?"

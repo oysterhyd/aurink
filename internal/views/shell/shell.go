@@ -68,6 +68,8 @@ type Options struct {
 	Files func() []string
 	// Workspace backs the file tree; nil shows the open documents instead.
 	Workspace contract.Workspace
+	// Search searches the workspace folder; nil leaves the search panel empty.
+	Search contract.WorkspaceSearch
 }
 
 const maxNotices = 4
@@ -121,6 +123,7 @@ type Shell struct {
 	panel   int
 	files   files
 	outline outline
+	search  wsearch
 }
 
 const (
@@ -150,6 +153,7 @@ func New(o Options) *Shell {
 
 // Dispose stops following the sessions and settings.
 func (s *Shell) Dispose() {
+	s.search.stop()
 	if s.files.off != nil {
 		s.files.off()
 	}

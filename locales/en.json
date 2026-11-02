@@ -381,9 +381,58 @@
   "@shell_no_headings": {
     "description": "The outline panel of a document without headings."
   },
-  "shell_search_soon": "Search arrives with the next update",
-  "@shell_search_soon": {
-    "description": "The search panel before it is built."
+  "shell_search_placeholder": "Search in folder",
+  "@shell_search_placeholder": {
+    "description": "The search panel's field."
+  },
+  "shell_search_case": "Match case",
+  "@shell_search_case": {
+    "description": "The search option comparing case."
+  },
+  "shell_search_word": "Whole word",
+  "@shell_search_word": {
+    "description": "The search option matching whole words."
+  },
+  "shell_search_regex": "Regular expression",
+  "@shell_search_regex": {
+    "description": "The search option reading the query as a regular expression."
+  },
+  "shell_searching": "Searching…",
+  "@shell_searching": {
+    "description": "While the search runs."
+  },
+  "shell_search_none": "No results",
+  "@shell_search_none": {
+    "description": "A search that found nothing."
+  },
+  "shell_search_count": "{matches} in {files} files",
+  "@shell_search_count": {
+    "description": "The count of a search's matches and files.",
+    "placeholders": {
+      "matches": {
+        "type": "String"
+      },
+      "files": {
+        "type": "String"
+      }
+    }
+  },
+  "shell_search_capped": "First {matches} results",
+  "@shell_search_capped": {
+    "description": "A search stopped at its cap.",
+    "placeholders": {
+      "matches": {
+        "type": "String"
+      }
+    }
+  },
+  "shell_search_bad_regex": "Invalid regular expression",
+  "@shell_search_bad_regex": {
+    "description": "A query that is not a valid regular expression."
+  },
+  "shell_search_in_folder": "Search in Folder",
+  "@shell_search_in_folder": {
+    "description": "The command showing the search panel."
   },
   "shell_trash_unsaved": "{name} has unsaved changes. Move it to the trash?",
   "@shell_trash_unsaved": {

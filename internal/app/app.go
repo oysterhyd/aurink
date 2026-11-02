@@ -105,7 +105,7 @@ func newApplication() (*application, error) {
 	a.shell = shell.New(shell.Options{
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
-		Workspace:     workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}),
+		Workspace: workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}), Search: search.NewWorkspaceSearch(),
 		WindowButtons: runtime.GOOS != "darwin",
 	})
 	if err := registry.Register(a.shell.Commands()...); err != nil {

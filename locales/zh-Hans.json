@@ -89,7 +89,16 @@
   "shell_name_invalid": "这个名字不能用",
   "shell_untitled": "未命名",
   "shell_no_headings": "没有标题",
-  "shell_search_soon": "搜索面板随下一次更新提供",
+  "shell_search_placeholder": "在文件夹中搜索",
+  "shell_search_case": "区分大小写",
+  "shell_search_word": "全字匹配",
+  "shell_search_regex": "正则表达式",
+  "shell_searching": "正在搜索…",
+  "shell_search_none": "没有结果",
+  "shell_search_count": "{files} 个文件中 {matches} 处",
+  "shell_search_capped": "前 {matches} 条结果",
+  "shell_search_bad_regex": "正则表达式无效",
+  "shell_search_in_folder": "在文件夹中搜索",
   "shell_trash_unsaved": "{name} 有未保存的修改，仍要移到回收站吗？",
   "shell_trashed": "已将 {name} 移到回收站"
 }

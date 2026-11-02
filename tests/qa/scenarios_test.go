@@ -132,7 +132,7 @@ func (a *app) boot() {
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
-		Files: func() []string { return a.files }, Workspace: a.ws})
+		Files: func() []string { return a.files }, Workspace: a.ws, Search: search.NewWorkspaceSearch()})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}
@@ -316,6 +316,14 @@ func (a *app) notices(want int) {
 func (a *app) caret(off int) {
 	a.s.ActiveSession().Model().SetSelection(contract.Caret(off))
 	a.tt.Frame()
+}
+
+// wantCaret checks the active document's caret.
+func (a *app) wantCaret(off int) {
+	a.t.Helper()
+	if got := a.s.ActiveSession().Model().Selection().Primary(); got.Anchor != off || got.Head != off {
+		a.t.Fatalf("the caret is at %+v, want %d", got, off)
+	}
 }
 
 type scenario struct {
@@ -620,7 +628,7 @@ var scenarios = []scenario{
 			}
 		}
 		a.click("Three")
-		a.caret(strings.Index(src, "### Three"))
+		a.wantCaret(strings.Index(src, "### Three"))
 	}},
 	{"the outline follows edits", func(a *app) {
 		a.open("a.md", "# One\n")
@@ -632,6 +640,62 @@ var scenarios = []scenario{
 		a.settle()
 		if !a.tt.HasText("Added") {
 			a.t.Fatal("the outline did not pick up a new heading")
+		}
+	}},
+	{"search streams the folder's matches and a click goes to one", func(a *app) {
+		root := a.folder("a.md", "sub/b.md", "c.md")
+		write := func(name, text string) {
+			if err := os.WriteFile(filepath.Join(root, filepath.FromSlash(name)), []byte(text), 0o644); err != nil {
+				a.t.Fatal(err)
+			}
+		}
+		write("a.md", "alpha\nneedle one\n")
+		write("sub/b.md", "x needle two needle\n")
+		write("c.md", "nothing\n")
+		a.run(contract.CmdNavSearchWorkspace)
+		a.typed("needle")
+		a.until("the matches come", func() bool { return a.tt.HasText(locales.ShellSearchCount("3", "2")) })
+		a.click("x needle two needle")
+		a.until("b.md opens", func() bool { return a.s.ActiveSession().State().Name == "b.md" })
+		a.wantCaret(2)
+		// The other file's match goes to its line.
+		a.click("needle one")
+		a.until("a.md opens", func() bool { return a.s.ActiveSession().State().Name == "a.md" })
+		a.wantCaret(len("alpha\n"))
+		a.tabs(2)
+	}},
+	{"search options narrow the matches and a bad pattern says so", func(a *app) {
+		root := a.folder("a.md")
+		if err := os.WriteFile(filepath.Join(root, "a.md"), []byte("Needle needles\n"), 0o644); err != nil {
+			a.t.Fatal(err)
+		}
+		a.run(contract.CmdNavSearchWorkspace)
+		a.typed("needle")
+		a.until("both", func() bool { return a.tt.HasText(locales.ShellSearchCount("2", "1")) })
+		a.click(locales.ShellSearchCase())
+		a.until("the lowercase one", func() bool { return a.tt.HasText(locales.ShellSearchCount("1", "1")) })
+		a.click(locales.ShellSearchWord())
+		a.until("none", func() bool { return a.tt.HasText(locales.ShellSearchNone()) })
+		a.click(locales.ShellSearchWord())
+		a.click(locales.ShellSearchRegex())
+		a.typed("(")
+		a.until("the error", func() bool { return a.tt.HasText(locales.ShellSearchBadRegex()) })
+	}},
+	{"a file's header folds its matches", func(a *app) {
+		root := a.folder("a.md")
+		if err := os.WriteFile(filepath.Join(root, "a.md"), []byte("needle\nneedle again\n"), 0o644); err != nil {
+			a.t.Fatal(err)
+		}
+		a.run(contract.CmdNavSearchWorkspace)
+		a.typed("needle")
+		a.until("the matches", func() bool { return a.tt.HasText("needle again") })
+		a.click("a.md")
+		if a.tt.HasText(" again") {
+			a.t.Fatal("the folded file still shows its matches")
+		}
+		a.click("a.md")
+		if !a.tt.HasText(" again") {
+			a.t.Fatal("the file did not unfold")
 		}
 	}},
 	{"format shortcuts do nothing in source mode", func(a *app) {
@@ -1331,5 +1395,35 @@ func TestFileTreeAtScale(t *testing.T) {
 	t.Logf("frame %v, %d rows built", time.Since(t0), n)
 	if n == 0 || n > 60 {
 		t.Fatalf("%d tree rows built for 10,000 files", n)
+	}
+}
+
+// TestSearchAtScale searches a folder of 10,000 files that all match: the
+// panel stops at its cap and builds the rows in view only.
+func TestSearchAtScale(t *testing.T) {
+	a := newApp(t)
+	names := make([]string, 10000)
+	for i := range names {
+		names[i] = fmt.Sprintf("note-%05d.md", i)
+	}
+	a.folder(names...)
+	a.run(contract.CmdNavSearchWorkspace)
+	t0 := time.Now()
+	a.typed("note")
+	a.until("the search stops at its cap", func() bool { return a.tt.HasText(locales.ShellSearchCapped("2000")) })
+	t.Logf("capped after %v", time.Since(t0))
+	t0 = time.Now()
+	a.tt.Frame()
+	n := a.s.SearchRowsBuilt()
+	t.Logf("frame %v, %d rows built", time.Since(t0), n)
+	if n == 0 || n > 60 {
+		t.Fatalf("%d search rows built", n)
+	}
+	total := 0
+	for _, f := range a.s.SearchResults() {
+		total += len(f.Matches)
+	}
+	if total != 2000 {
+		t.Fatalf("%d matches kept, want the cap", total)
 	}
 }

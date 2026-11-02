@@ -124,7 +124,7 @@ func main() {
 		p := &platform{}
 		s = shell.New(shell.Options{Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
-			Workspace: workspace.New(watch.New(), trash.New(), d, workspace.Options{})})
+			Workspace: workspace.New(watch.New(), trash.New(), d, workspace.Options{}), Search: search.NewWorkspaceSearch()})
 		if err := reg.Register(s.Commands()...); err != nil {
 			log.Fatal(err)
 		}
@@ -226,6 +226,10 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	shot("Files")
 	run(contract.CmdViewOutline)
 	shot("Outline")
+	run(contract.CmdNavSearchWorkspace)
+	on(w, func() { s.SetSearch("Markdown") })
+	time.Sleep(800 * time.Millisecond)
+	shot("Search")
 	run(contract.CmdViewFiles)
 	for _, size := range []int{200 << 10, 1 << 20} {
 		open(fmt.Sprintf("stress-%d.md", size), corpus.Generate(size, 1))
