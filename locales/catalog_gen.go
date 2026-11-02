@@ -1477,3 +1477,199 @@ func ShellUndo() string { return In(i18n.Locale()).ShellUndo() }
 func (msgs Messages) ShellUndo() string {
 	return Catalog.Format(msgs.locale, "shell_undo", nil)
 }
+
+// LiveeditStructure says "Document structure"
+// in the language the app shows.
+//
+// The structure rail of headings at the editor's edge.
+func LiveeditStructure() string { return In(i18n.Locale()).LiveeditStructure() }
+
+// LiveeditStructure says "Document structure"
+// in the language of msgs.
+//
+// The structure rail of headings at the editor's edge.
+func (msgs Messages) LiveeditStructure() string {
+	return Catalog.Format(msgs.locale, "liveedit_structure", nil)
+}
+
+// LiveeditTableBar says "Table"
+// in the language the app shows.
+//
+// The toolbar over the table holding the caret.
+func LiveeditTableBar() string { return In(i18n.Locale()).LiveeditTableBar() }
+
+// LiveeditTableBar says "Table"
+// in the language of msgs.
+//
+// The toolbar over the table holding the caret.
+func (msgs Messages) LiveeditTableBar() string {
+	return Catalog.Format(msgs.locale, "liveedit_table_bar", nil)
+}
+
+// LiveeditRow says "Row"
+// in the language the app shows.
+//
+// The table toolbar button adding a row (after "+ ").
+func LiveeditRow() string { return In(i18n.Locale()).LiveeditRow() }
+
+// LiveeditRow says "Row"
+// in the language of msgs.
+//
+// The table toolbar button adding a row (after "+ ").
+func (msgs Messages) LiveeditRow() string {
+	return Catalog.Format(msgs.locale, "liveedit_row", nil)
+}
+
+// LiveeditColumn says "Column"
+// in the language the app shows.
+//
+// The table toolbar button adding a column (after "+ ").
+func LiveeditColumn() string { return In(i18n.Locale()).LiveeditColumn() }
+
+// LiveeditColumn says "Column"
+// in the language of msgs.
+//
+// The table toolbar button adding a column (after "+ ").
+func (msgs Messages) LiveeditColumn() string {
+	return Catalog.Format(msgs.locale, "liveedit_column", nil)
+}
+
+// LiveeditRowAbove says "Insert Row Above"
+// in the language the app shows.
+//
+// Table menu item.
+func LiveeditRowAbove() string { return In(i18n.Locale()).LiveeditRowAbove() }
+
+// LiveeditRowAbove says "Insert Row Above"
+// in the language of msgs.
+//
+// Table menu item.
+func (msgs Messages) LiveeditRowAbove() string {
+	return Catalog.Format(msgs.locale, "liveedit_row_above", nil)
+}
+
+// LiveeditRowBelow says "Insert Row Below"
+// in the language the app shows.
+//
+// Table menu item.
+func LiveeditRowBelow() string { return In(i18n.Locale()).LiveeditRowBelow() }
+
+// LiveeditRowBelow says "Insert Row Below"
+// in the language of msgs.
+//
+// Table menu item.
+func (msgs Messages) LiveeditRowBelow() string {
+	return Catalog.Format(msgs.locale, "liveedit_row_below", nil)
+}
+
+// LiveeditColLeft says "Insert Column Left"
+// in the language the app shows.
+//
+// Table menu item.
+func LiveeditColLeft() string { return In(i18n.Locale()).LiveeditColLeft() }
+
+// LiveeditColLeft says "Insert Column Left"
+// in the language of msgs.
+//
+// Table menu item.
+func (msgs Messages) LiveeditColLeft() string {
+	return Catalog.Format(msgs.locale, "liveedit_col_left", nil)
+}
+
+// LiveeditColRight says "Insert Column Right"
+// in the language the app shows.
+//
+// Table menu item.
+func LiveeditColRight() string { return In(i18n.Locale()).LiveeditColRight() }
+
+// LiveeditColRight says "Insert Column Right"
+// in the language of msgs.
+//
+// Table menu item.
+func (msgs Messages) LiveeditColRight() string {
+	return Catalog.Format(msgs.locale, "liveedit_col_right", nil)
+}
+
+// LiveeditDeleteRow says "Delete Row"
+// in the language the app shows.
+//
+// Table menu item.
+func LiveeditDeleteRow() string { return In(i18n.Locale()).LiveeditDeleteRow() }
+
+// LiveeditDeleteRow says "Delete Row"
+// in the language of msgs.
+//
+// Table menu item.
+func (msgs Messages) LiveeditDeleteRow() string {
+	return Catalog.Format(msgs.locale, "liveedit_delete_row", nil)
+}
+
+// LiveeditDeleteCol says "Delete Column"
+// in the language the app shows.
+//
+// Table menu item.
+func LiveeditDeleteCol() string { return In(i18n.Locale()).LiveeditDeleteCol() }
+
+// LiveeditDeleteCol says "Delete Column"
+// in the language of msgs.
+//
+// Table menu item.
+func (msgs Messages) LiveeditDeleteCol() string {
+	return Catalog.Format(msgs.locale, "liveedit_delete_col", nil)
+}
+
+// LiveeditAlignLeft says "Align Left"
+// in the language the app shows.
+//
+// Table menu item aligning the column.
+func LiveeditAlignLeft() string { return In(i18n.Locale()).LiveeditAlignLeft() }
+
+// LiveeditAlignLeft says "Align Left"
+// in the language of msgs.
+//
+// Table menu item aligning the column.
+func (msgs Messages) LiveeditAlignLeft() string {
+	return Catalog.Format(msgs.locale, "liveedit_align_left", nil)
+}
+
+// LiveeditAlignCenter says "Align Center"
+// in the language the app shows.
+//
+// Table menu item aligning the column.
+func LiveeditAlignCenter() string { return In(i18n.Locale()).LiveeditAlignCenter() }
+
+// LiveeditAlignCenter says "Align Center"
+// in the language of msgs.
+//
+// Table menu item aligning the column.
+func (msgs Messages) LiveeditAlignCenter() string {
+	return Catalog.Format(msgs.locale, "liveedit_align_center", nil)
+}
+
+// LiveeditAlignRight says "Align Right"
+// in the language the app shows.
+//
+// Table menu item aligning the column.
+func LiveeditAlignRight() string { return In(i18n.Locale()).LiveeditAlignRight() }
+
+// LiveeditAlignRight says "Align Right"
+// in the language of msgs.
+//
+// Table menu item aligning the column.
+func (msgs Messages) LiveeditAlignRight() string {
+	return Catalog.Format(msgs.locale, "liveedit_align_right", nil)
+}
+
+// LiveeditFormatTable says "Format Table"
+// in the language the app shows.
+//
+// Table toolbar button and menu item reflowing the table's source.
+func LiveeditFormatTable() string { return In(i18n.Locale()).LiveeditFormatTable() }
+
+// LiveeditFormatTable says "Format Table"
+// in the language of msgs.
+//
+// Table toolbar button and menu item reflowing the table's source.
+func (msgs Messages) LiveeditFormatTable() string {
+	return Catalog.Format(msgs.locale, "liveedit_format_table", nil)
+}

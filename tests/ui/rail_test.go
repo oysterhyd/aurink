@@ -9,6 +9,7 @@ import (
 	"aurink/internal/core/editing"
 	"aurink/internal/core/projection"
 	"aurink/internal/views/liveedit"
+	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -24,6 +25,7 @@ func openRail(t *testing.T, src string) *harness {
 		ui.Box(c).Fill().Children(func() {
 			e.View(c.Key("live"))
 			e.Rail(c.Key("rail"))
+			e.TableBar(c.Key("bar"))
 		})
 	}, 1000, 700)
 	tt.Frame()
@@ -57,7 +59,7 @@ func TestRailGoesToAHeading(t *testing.T) {
 			t.Fatalf("ticks out of order: %v", ticks)
 		}
 	}
-	r, ok := h.tt.Find("Structure")
+	r, ok := h.tt.Find(locales.LiveeditStructure())
 	if !ok {
 		t.Fatal("no rail")
 	}
@@ -92,7 +94,7 @@ func TestRailMarksFindHits(t *testing.T) {
 // TestRailHidesWithOneHeading: one heading is no structure.
 func TestRailHidesWithOneHeading(t *testing.T) {
 	h := openRail(t, sections(1))
-	if _, ok := h.tt.Find("Structure"); ok {
+	if _, ok := h.tt.Find(locales.LiveeditStructure()); ok {
 		t.Fatal("the rail shows for one heading")
 	}
 }

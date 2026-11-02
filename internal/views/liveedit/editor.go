@@ -153,6 +153,7 @@ type Editor struct {
 	tickBlock     contract.BlockID
 	tickStart     time.Time
 	hoverLink     string
+	hoverNote     string
 	hoverX        float32
 	hoverY        float32
 
@@ -265,7 +266,7 @@ func (e *Editor) CheckRows() error {
 func (e *Editor) View(c *ui.Context) ui.Element {
 	box := ui.Box(c).Fill().Focusable().Clip().Bind(&e.handle).Cursor(ui.CursorText).FocusRing(false).
 		Role(ui.RoleTextField).Label("Editor").
-		HandleTextInput(e).HandleInput(e.input).Draw(e.paint)
+		HandleTextInput(e).HandleInput(e.input).Draw(e.paint).PopoverMenu(e.tableMenu)
 	e.services, e.hasView = c.Services(), true
 	if e.focusReq {
 		e.focusReq = false

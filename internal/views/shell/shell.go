@@ -684,6 +684,7 @@ func (s *Shell) document(c *ui.Context, t *theme.Tokens, d *doc) {
 			if !d.live.FocusMode() {
 				d.live.Rail(c.Key("rail"))
 			}
+			d.live.TableBar(c.Key("tableBar"))
 		}
 	})
 }

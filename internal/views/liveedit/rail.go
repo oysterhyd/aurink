@@ -2,6 +2,7 @@ package liveedit
 
 import (
 	"aurink/internal/views/editorapi"
+	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -65,7 +66,7 @@ func (e *Editor) Rail(c *ui.Context) {
 	t := e.t
 	h := e.viewH * .7
 	const tickBox = 12
-	rail := ui.Box(c).Absolute().Right(16).Top(e.viewH * .15).Width(18).Height(h).Label("Structure")
+	rail := ui.Box(c).Absolute().Right(16).Top(e.viewH * .15).Width(18).Height(h).Label(locales.LiveeditStructure())
 	// The mark nearest the pointer, within half a mark's box, takes the hover.
 	near := -1
 	if _, py, ok := rail.PointerPosition(); ok {
@@ -83,10 +84,8 @@ func (e *Editor) Rail(c *ui.Context) {
 			e.Focus()
 		}
 	}
-	frac := e.ScrollFraction()
+	// The view's place is the slider paintRail draws at the edge.
 	rail.Draw(func(p *ui.Painter, r ui.Rect) {
-		thumb := r.H * .14
-		p.Fill(ui.Rect{X: r.X + r.W - 3, Y: r.Y + frac*(r.H-thumb), W: 3, H: thumb}, t.SurfaceHover, 1.5)
 		for i, k := range ticks {
 			w, col := k.w, t.Faint
 			if k.cur {

@@ -102,5 +102,19 @@
   "shell_trash_unsaved": "{name} 有未保存的修改，仍要移到回收站吗？",
   "shell_trashed": "已将 {name} 移到回收站",
   "shell_moved": "已将 {name} 移到 {dir}",
-  "shell_undo": "撤销"
+  "shell_undo": "撤销",
+  "liveedit_structure": "文档结构",
+  "liveedit_table_bar": "表格",
+  "liveedit_row": "行",
+  "liveedit_column": "列",
+  "liveedit_row_above": "在上方插入行",
+  "liveedit_row_below": "在下方插入行",
+  "liveedit_col_left": "在左侧插入列",
+  "liveedit_col_right": "在右侧插入列",
+  "liveedit_delete_row": "删除行",
+  "liveedit_delete_col": "删除列",
+  "liveedit_align_left": "左对齐",
+  "liveedit_align_center": "居中",
+  "liveedit_align_right": "右对齐",
+  "liveedit_format_table": "格式化表格"
 }

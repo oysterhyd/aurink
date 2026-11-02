@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/egoist/mygo"
@@ -231,6 +232,8 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	time.Sleep(800 * time.Millisecond)
 	shot("Search")
 	run(contract.CmdViewFiles)
+	on(w, func() { s.GoTo(strings.Index(demo, "| 项") + 2) })
+	shot("Table")
 	for _, size := range []int{200 << 10, 1 << 20} {
 		open(fmt.Sprintf("stress-%d.md", size), corpus.Generate(size, 1))
 		stress(w, s, size)

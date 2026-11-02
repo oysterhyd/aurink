@@ -467,5 +467,61 @@
   "shell_undo": "Undo",
   "@shell_undo": {
     "description": "The button undoing a move."
+  },
+  "liveedit_structure": "Document structure",
+  "@liveedit_structure": {
+    "description": "The structure rail of headings at the editor's edge."
+  },
+  "liveedit_table_bar": "Table",
+  "@liveedit_table_bar": {
+    "description": "The toolbar over the table holding the caret."
+  },
+  "liveedit_row": "Row",
+  "@liveedit_row": {
+    "description": "The table toolbar button adding a row (after \"+ \")."
+  },
+  "liveedit_column": "Column",
+  "@liveedit_column": {
+    "description": "The table toolbar button adding a column (after \"+ \")."
+  },
+  "liveedit_row_above": "Insert Row Above",
+  "@liveedit_row_above": {
+    "description": "Table menu item."
+  },
+  "liveedit_row_below": "Insert Row Below",
+  "@liveedit_row_below": {
+    "description": "Table menu item."
+  },
+  "liveedit_col_left": "Insert Column Left",
+  "@liveedit_col_left": {
+    "description": "Table menu item."
+  },
+  "liveedit_col_right": "Insert Column Right",
+  "@liveedit_col_right": {
+    "description": "Table menu item."
+  },
+  "liveedit_delete_row": "Delete Row",
+  "@liveedit_delete_row": {
+    "description": "Table menu item."
+  },
+  "liveedit_delete_col": "Delete Column",
+  "@liveedit_delete_col": {
+    "description": "Table menu item."
+  },
+  "liveedit_align_left": "Align Left",
+  "@liveedit_align_left": {
+    "description": "Table menu item aligning the column."
+  },
+  "liveedit_align_center": "Align Center",
+  "@liveedit_align_center": {
+    "description": "Table menu item aligning the column."
+  },
+  "liveedit_align_right": "Align Right",
+  "@liveedit_align_right": {
+    "description": "Table menu item aligning the column."
+  },
+  "liveedit_format_table": "Format Table",
+  "@liveedit_format_table": {
+    "description": "Table toolbar button and menu item reflowing the table's source."
   }
 }

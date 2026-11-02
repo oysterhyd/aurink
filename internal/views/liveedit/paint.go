@@ -60,6 +60,7 @@ func (e *Editor) paint(p *ui.Painter, r ui.Rect) {
 	e.layoutView(r.W, r.H)
 	e.paintRows(p, r)
 	e.paintLinkHint(p, r)
+	e.paintNotePreview(p, r)
 	e.paintRail(p, r)
 	e.Stats.Frames++
 	e.Stats.MaxFrameShapes = max(e.Stats.MaxFrameShapes, e.Stats.FrameShapes)
@@ -166,7 +167,7 @@ func (e *Editor) paintLinkHint(p *ui.Painter, r ui.Rect) {
 }
 
 // paintRail draws the slider of the structure rail (02 §3) from the Fenwick tree
-// alone, without shaping any row. The heading ticks come with FE-1.4 (06 §2.2).
+// alone, without shaping any row. The heading marks are Rail's.
 func (e *Editor) paintRail(p *ui.Painter, r ui.Rect) {
 	total := e.hs.top(len(e.rows)) + theme.PadTop + theme.PadBottom
 	if total <= float64(r.H) {

@@ -124,3 +124,11 @@ func (s *Shell) paletteView(c *ui.Context, t *theme.Tokens) {
 		s.focusNext = true
 	}
 }
+
+// GoTo puts the caret at a source offset of the active document and scrolls it
+// to the top, as a heading picked in the palette does.
+func (s *Shell) GoTo(off int) {
+	if s.active != nil {
+		s.goToOffset(s.active, off)
+	}
+}

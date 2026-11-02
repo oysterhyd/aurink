@@ -31,6 +31,10 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 	case ui.InputCommand:
 		return e.command(ev.Text)
 	case ui.InputPointerDown:
+		if ev.Button == 1 {
+			e.secondaryDown(ev)
+			return false // the context menu opens on it
+		}
 		if ev.Button != 0 {
 			return false
 		}
@@ -49,9 +53,9 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 			e.dragTowards(ev.X, ev.Y)
 			return true
 		}
-		link := e.linkAt(ev.X, ev.Y)
-		if link != e.hoverLink || (link != "" && (ev.X != e.hoverX || ev.Y != e.hoverY)) {
-			e.hoverLink, e.hoverX, e.hoverY = link, ev.X, ev.Y
+		link, note := e.linkAt(ev.X, ev.Y), e.noteAt(ev.X, ev.Y)
+		if link != e.hoverLink || note != e.hoverNote || ((link != "" || note != "") && (ev.X != e.hoverX || ev.Y != e.hoverY)) {
+			e.hoverLink, e.hoverNote, e.hoverX, e.hoverY = link, note, ev.X, ev.Y
 			return true
 		}
 	case ui.InputPointerUp:
@@ -165,6 +169,16 @@ func (e *Editor) cellByX(p int, x float32) int {
 	return min(p-v.col+col, len(e.rows)-1)
 }
 
+// secondaryDown moves the caret to a press with the secondary button outside the
+// selection, so the context menu acts where it was opened.
+func (e *Editor) secondaryDown(ev ui.InputEvent) {
+	off := e.hit(ev.X, ev.Y)
+	if from, to := min(e.anchor, e.head), max(e.anchor, e.head); from < to && off >= from && off <= to {
+		return
+	}
+	e.model.SetSelection(contract.Caret(off))
+}
+
 func (e *Editor) pointerDown(ev ui.InputEvent) {
 	e.UnmarkText()
 	if ev.Clicks <= 1 && ev.Mods&ui.Shift == 0 && e.rowCommand(ev) {
@@ -269,6 +283,12 @@ func (e *Editor) key(ev ui.InputEvent) bool {
 		case ui.KeyEnd:
 			e.moveTo(e.text.Len(), extend)
 			return true
+		case ui.KeyEnter:
+			// A row below the caret's, in a table (02 §5.8).
+			if !extend && e.inTable() && !e.readOnly() {
+				e.tableEdit(contract.EditCommand{ID: contract.CmdTableRowBelow})
+				return true
+			}
 		}
 		if !word {
 			switch ev.Key { // macOS

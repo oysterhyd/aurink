@@ -218,23 +218,98 @@ func (cellWidget) metrics(e *Editor, r int, _ *contract.Block, m *rowMetrics) {
 	m.x = float32(v.col)*col + cellPad
 	m.width = float32(v.col+1)*col - cellPad
 	m.above, m.below = 7, 7
+	top, bottom := e.tableGaps(r)
+	m.above += top
+	m.below += bottom
 	if v.header {
 		m.font.Weight = 600
 	}
 }
 
+// tableGap sets a table off from the blocks around it, outside its container.
+const tableGap = 10
+
+// tableGaps returns the space above and below row r's band that lies outside the
+// table: above its first row, below its last.
+func (e *Editor) tableGaps(r int) (top, bottom float32) {
+	first, last, ok := e.tableRows(r)
+	if !ok {
+		return 0, 0
+	}
+	band := r - e.rows[r].col
+	if band == first {
+		top = tableGap
+	}
+	if band == last {
+		bottom = tableGap
+	}
+	return top, bottom
+}
+
+// tableRadius rounds a table's container (02 §5.8).
+const tableRadius = 8
+
+// back fills the header band, rounded at the top as the container is.
 func (cellWidget) back(rc *rowContext) {
-	if v := &rc.e.rows[rc.row]; v.header {
-		rc.p.Fill(rc.cell(), rc.t.Surface, 0)
+	v := &rc.e.rows[rc.row]
+	if !v.header || v.col != 0 {
+		return
+	}
+	top, bottom := rc.e.tableGaps(rc.row)
+	band := ui.Rect{X: rc.ox, Y: rc.top + top, W: rc.e.width, H: rc.height - top - bottom}
+	rc.p.Fill(band, rc.t.Surface, tableRadius)
+	if band.H > tableRadius {
+		rc.p.Fill(ui.Rect{X: band.X, Y: band.Y + tableRadius, W: band.W, H: band.H - tableRadius}, rc.t.Surface, 0)
 	}
 }
 
-func (cellWidget) front(rc *rowContext) { rc.p.Stroke(rc.cell(), rc.t.Border, 0, 1) }
+// front draws the grid: a line left of each cell but the first, one under each
+// row but the last, the rounded container once per table and frame, and the
+// ring of the cell holding the caret.
+func (cellWidget) front(rc *rowContext) {
+	e, p, t := rc.e, rc.p, rc.t
+	v := &e.rows[rc.row]
+	cell := rc.cell()
+	if v.col > 0 {
+		p.Fill(ui.Rect{X: cell.X, Y: cell.Y, W: 1, H: cell.H}, t.Border, 0)
+	} else if first, last, ok := e.tableRows(rc.row); ok {
+		if rc.row != last {
+			p.Fill(ui.Rect{X: rc.ox, Y: cell.Y + cell.H - 1, W: e.width, H: 1}, t.Border, 0)
+		}
+		if rc.row == first || rc.row == e.first {
+			top := rc.top - float32(e.rowTop(rc.row)-e.rowTop(first)) + tableGap
+			h := float32(e.rowTop(last)-e.rowTop(first)) + e.rows[last].h - 2*tableGap
+			p.Stroke(ui.Rect{X: rc.ox, Y: top, W: e.width, H: h}, t.Border, tableRadius, 1)
+		}
+	}
+	if rc.row == e.caretRow && e.focused && !e.readOnly() {
+		p.Stroke(ui.Rect{X: cell.X + 1.5, Y: cell.Y + 1.5, W: cell.W - 3, H: cell.H - 3}, t.AccentRing, 5, 2)
+	}
+}
+
+// tableRows returns the first and last rows of the table holding row r, each
+// the first cell of its band.
+func (e *Editor) tableRows(r int) (first, last int, ok bool) {
+	b := e.block(r)
+	if b.Kind != contract.BlockTableCell || b.Parent < 0 {
+		return 0, 0, false
+	}
+	tr := e.ast.Block(b.Parent)
+	if tr == nil || tr.Parent < 0 {
+		return 0, 0, false
+	}
+	tbl := e.ast.Block(tr.Parent)
+	first, last = e.rowAt(tbl.Range.Start), e.rowAt(max(tbl.Range.Start, tbl.Range.End-1))
+	first -= e.rows[first].col
+	last -= e.rows[last].col
+	return first, last, first <= r && r <= last+e.rows[last].cols
+}
 
 func (rc *rowContext) cell() ui.Rect {
 	e, v := rc.e, &rc.e.rows[rc.row]
 	col := e.width / float32(max(v.cols, 1))
-	return ui.Rect{X: rc.ox + float32(v.col)*col, Y: rc.top, W: col, H: e.rows[rc.row-v.col].h}
+	top, bottom := e.tableGaps(rc.row)
+	return ui.Rect{X: rc.ox + float32(v.col)*col, Y: rc.top + top, W: col, H: e.rows[rc.row-v.col].h - top - bottom}
 }
 
 // paintContainers draws what a row's containers show: list markers, checkboxes,
@@ -484,6 +559,27 @@ func (e *Editor) styled(text string, seg *contract.Segment, m *rowMetrics) ui.Sp
 	}
 	if st&contract.StyleUnderline != 0 {
 		s.Underline = true
+	}
+	// The inline HTML that takes effect (02 §2.1): <mark>, <kbd>, <sup>, <sub>.
+	if st&contract.StyleHighlight != 0 {
+		s.Background, s.Radius = t.Mark, 3
+	}
+	if st&contract.StyleKbd != 0 {
+		s.Font = theme.Mono
+		s.Size = m.font.Size * .82
+		s.Background, s.Radius = t.Surface, 4
+	}
+	if st&(contract.StyleSup|contract.StyleSub) != 0 {
+		size := s.Size
+		if size == 0 {
+			size = m.font.Size
+		}
+		s.Size = size * noteScale
+		if st&contract.StyleSup != 0 {
+			s.BaselineShift = size * noteRaise
+		} else {
+			s.BaselineShift = -size * .2
+		}
 	}
 	if st&(contract.StyleHTML|contract.StyleFootnoteRef) != 0 {
 		s.Color = t.Muted

@@ -92,6 +92,8 @@ func (e *Editor) objectSpan(s *contract.Segment, m *rowMetrics) ui.Span {
 				}
 			}
 		}
+	} else if s.Object != nil && s.Object.Kind == contract.ObjFootnoteRef {
+		return noteSpan(s, m)
 	} else {
 		w, h = m.font.Size, m.font.Size
 	}
@@ -117,6 +119,10 @@ func (rc *rowContext) paintObjects() {
 		r := objs[k].Rect
 		k++
 		box := ui.Rect{X: x + r.X, Y: y + r.Y, W: r.W, H: r.H}
+		if s.Object != nil && s.Object.Kind == contract.ObjFootnoteRef {
+			rc.paintNote(box, s.Object.Source)
+			continue
+		}
 		if s.Object == nil || s.Object.Kind != contract.ObjImage {
 			continue
 		}
