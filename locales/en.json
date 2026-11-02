@@ -328,5 +328,79 @@
         "type": "int"
       }
     }
+  },
+  "shell_panel_files": "Files",
+  "@shell_panel_files": {
+    "description": "The sidebar's files panel."
+  },
+  "shell_panel_outline": "Outline",
+  "@shell_panel_outline": {
+    "description": "The sidebar's outline panel."
+  },
+  "shell_panel_search": "Search",
+  "@shell_panel_search": {
+    "description": "The sidebar's search panel."
+  },
+  "shell_no_folder": "No folder is open",
+  "@shell_no_folder": {
+    "description": "The files panel without a folder."
+  },
+  "shell_open_folder": "Open Folder…",
+  "@shell_open_folder": {
+    "description": "Opens a folder in the files panel."
+  },
+  "shell_new_file": "New File",
+  "@shell_new_file": {
+    "description": "Makes a file in the folder clicked."
+  },
+  "shell_new_folder": "New Folder",
+  "@shell_new_folder": {
+    "description": "Makes a folder in the folder clicked."
+  },
+  "shell_rename": "Rename",
+  "@shell_rename": {
+    "description": "Edits a file's name in its row."
+  },
+  "shell_trash": "Move to Trash",
+  "@shell_trash": {
+    "description": "Moves a file or folder to the trash."
+  },
+  "shell_name_exists": "A file with this name is already here",
+  "@shell_name_exists": {
+    "description": "A rename that would replace a file."
+  },
+  "shell_name_invalid": "This name cannot be used here",
+  "@shell_name_invalid": {
+    "description": "A rename to a name the system refuses."
+  },
+  "shell_untitled": "Untitled",
+  "@shell_untitled": {
+    "description": "The name of a new file or folder."
+  },
+  "shell_no_headings": "No headings",
+  "@shell_no_headings": {
+    "description": "The outline panel of a document without headings."
+  },
+  "shell_search_soon": "Search arrives with the next update",
+  "@shell_search_soon": {
+    "description": "The search panel before it is built."
+  },
+  "shell_trash_unsaved": "{name} has unsaved changes. Move it to the trash?",
+  "@shell_trash_unsaved": {
+    "description": "Asks before trashing a file with unsaved changes.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "shell_trashed": "Moved {name} to the trash",
+  "@shell_trashed": {
+    "description": "After a file went to the trash.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

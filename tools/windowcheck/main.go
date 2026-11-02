@@ -15,6 +15,8 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
+	"aurink/internal/adapters/trash"
+	"aurink/internal/adapters/watch"
 	"aurink/internal/contract"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
@@ -24,6 +26,7 @@ import (
 	"aurink/internal/core/projection"
 	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
+	"aurink/internal/core/workspace"
 	"aurink/internal/views/shell"
 	"aurink/resources"
 	"aurink/tests/corpus"
@@ -40,6 +43,8 @@ func (d *dispatcher) Post(fn func()) {
 type platform struct{ w *mygo.Window }
 
 func (platform) OpenFile(done func(string))                     { done("") }
+func (platform) OpenFolder(done func(string))                   { done("") }
+func (platform) ConfirmTrash(_ string, done func(bool))         { done(true) }
 func (platform) SavePath(_ string, done func(string))           { done("") }
 func (platform) ConfirmClose(_ string, done func(shell.Choice)) { done(shell.ChoiceDiscard) }
 func (p platform) Minimize()                                    { p.w.Minimize() }
@@ -118,7 +123,8 @@ func main() {
 		var s *shell.Shell
 		p := &platform{}
 		s = shell.New(shell.Options{Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy()})
+			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
+			Workspace: workspace.New(watch.New(), trash.New(), d, workspace.Options{})})
 		if err := reg.Register(s.Commands()...); err != nil {
 			log.Fatal(err)
 		}
@@ -202,6 +208,25 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 			log.Fatal(err)
 		}
 	})
+	// The sidebar over a folder, as in the baselines' sidebar (FE-2.3).
+	notes := filepath.Join(tmp, "aurink-notes")
+	for _, f := range []string{"docs/笔记.md", "docs/路线图.md", "docs/会议记录.md", "assets/logo.png", "README.md"} {
+		p := filepath.Join(notes, filepath.FromSlash(f))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			log.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(demo), 0o644); err != nil {
+			log.Fatal(err)
+		}
+	}
+	on(w, func() { s.OpenFolder(notes) })
+	time.Sleep(500 * time.Millisecond)
+	on(w, func() { s.ExpandFolder(filepath.Join(notes, "docs")) })
+	open("aurink-notes/README.md", demo)
+	shot("Files")
+	run(contract.CmdViewOutline)
+	shot("Outline")
+	run(contract.CmdViewFiles)
 	for _, size := range []int{200 << 10, 1 << 20} {
 		open(fmt.Sprintf("stress-%d.md", size), corpus.Generate(size, 1))
 		stress(w, s, size)

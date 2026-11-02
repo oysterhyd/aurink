@@ -64,6 +64,13 @@ func (s *Shell) Commands() []contract.Command {
 			}
 			return nil
 		}},
+		{ID: contract.CmdFileOpenFolder, Title: "openFolder", Enabled: func() bool { return s.o.Workspace != nil }, Run: func() error {
+			s.o.Platform.OpenFolder(s.OpenFolder)
+			return nil
+		}},
+		{ID: contract.CmdViewFiles, Title: "files", Run: func() error { s.showPanel(panelFiles); return nil }},
+		{ID: contract.CmdViewOutline, Title: "outline", Run: func() error { s.showPanel(panelOutline); return nil }},
+		{ID: contract.CmdViewSearch, Title: "search", Run: func() error { s.showPanel(panelSearch); return nil }},
 		{ID: contract.CmdNavQuickOpen, Title: "quickOpen", Run: func() error { s.openPalette(palette.ModeFiles); return nil }},
 		{ID: contract.CmdNavPalette, Title: "palette", Run: func() error { s.openPalette(palette.ModeCommands); return nil }},
 		{ID: contract.CmdNavGoToHeading, Title: "goToHeading", Enabled: hasDoc, Run: func() error { s.openPalette(palette.ModeHeadings); return nil }},
@@ -155,7 +162,14 @@ var editTitles = map[string]func() string{
 	"colLeft": locales.ShellColLeft, "colRight": locales.ShellColRight, "deleteRow": locales.ShellDeleteRow,
 	"deleteCol": locales.ShellDeleteCol, "tableFormat": locales.ShellTableFormat, "focus": locales.ShellFocus,
 	"typewriter": locales.ShellTypewriter, "quickOpen": locales.ShellQuickOpen, "palette": locales.ShellCommandPalette,
-	"goToHeading": locales.ShellGoToHeading,
+	"goToHeading": locales.ShellGoToHeading, "openFolder": locales.ShellOpenFolder, "files": locales.ShellPanelFiles,
+	"outline": locales.ShellPanelOutline, "search": locales.ShellPanelSearch,
+}
+
+// showPanel opens the sidebar on a panel.
+func (s *Shell) showPanel(p int) {
+	s.sidebar, s.panel = true, p
+	s.invalidate()
 }
 
 // Title says a command's title in the app's language.

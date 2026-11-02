@@ -11,6 +11,8 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
+	"aurink/internal/adapters/trash"
+	"aurink/internal/adapters/watch"
 	"aurink/internal/contract"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
@@ -20,6 +22,7 @@ import (
 	"aurink/internal/core/projection"
 	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
+	"aurink/internal/core/workspace"
 	"aurink/internal/views/shell"
 	"aurink/locales"
 	"aurink/resources"
@@ -102,6 +105,7 @@ func newApplication() (*application, error) {
 	a.shell = shell.New(shell.Options{
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
+		Workspace:     workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}),
 		WindowButtons: runtime.GOOS != "darwin",
 	})
 	if err := registry.Register(a.shell.Commands()...); err != nil {
@@ -235,6 +239,30 @@ func (a *application) ConfirmClose(name string, done func(shell.Choice)) {
 				done(shell.ChoiceCancel)
 			}
 		})
+	}()
+}
+
+func (a *application) OpenFolder(done func(string)) {
+	go func() {
+		paths, err := mygo.Dialog.Open(mygo.OpenDialogOptions{Parent: a.window, Directory: true})
+		a.window.Update(func() {
+			if err != nil {
+				a.shell.Notify(contract.Notice{Level: contract.NoticeError, Message: err.Error()})
+			}
+			if len(paths) > 0 {
+				done(paths[0])
+			} else {
+				done("")
+			}
+		})
+	}()
+}
+
+func (a *application) ConfirmTrash(name string, done func(bool)) {
+	go func() {
+		res, err := mygo.Dialog.Message(mygo.MessageOptions{Parent: a.window, Type: mygo.MessageWarning, Title: locales.AppName(),
+			Message: locales.ShellTrashUnsaved(name), Buttons: []string{locales.ShellTrash(), locales.ShellCancel()}, CancelButton: 1})
+		a.window.Update(func() { done(err == nil && res.Button == 0) })
 	}()
 }
 

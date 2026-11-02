@@ -38,6 +38,10 @@ type Platform interface {
 	OpenFile(done func(path string))
 	SavePath(name string, done func(path string))
 	ConfirmClose(name string, done func(Choice))
+	// OpenFolder asks for a folder; "" when canceled.
+	OpenFolder(done func(path string))
+	// ConfirmTrash asks before trashing what holds unsaved changes (D8).
+	ConfirmTrash(name string, done func(ok bool))
 	Minimize()
 	ToggleMaximize()
 	IsMaximized() bool
@@ -62,6 +66,8 @@ type Options struct {
 	Fuzzy contract.Fuzzy
 	// Files lists the workspace's files for quick open; nil lists open and closed tabs only.
 	Files func() []string
+	// Workspace backs the file tree; nil shows the open documents instead.
+	Workspace contract.Workspace
 }
 
 const maxNotices = 4
@@ -111,7 +117,17 @@ type Shell struct {
 	// reveal scrolls the active tab into view in the next frame.
 	reveal bool
 	pal    *palette.Palette
+	// panel is the sidebar's panel: files, outline or search.
+	panel   int
+	files   files
+	outline outline
 }
+
+const (
+	panelFiles = iota
+	panelOutline
+	panelSearch
+)
 
 // maxClosed is how many closed tabs file.reopenClosed remembers.
 const maxClosed = 20
@@ -123,6 +139,7 @@ const tabGap = 6
 func New(o Options) *Shell {
 	s := &Shell{o: o, tokens: map[theme.Options]*theme.Tokens{}, widths: map[*doc]float32{}}
 	s.pal = palette.New(o.Fuzzy, paletteSource{s})
+	s.watchWorkspace()
 	s.off = o.Sessions.Subscribe(s.sessionsChanged)
 	s.offSet = o.Settings.Subscribe(func(contract.Settings) { s.applyTheme() })
 	for _, x := range o.Sessions.All() {
@@ -133,6 +150,9 @@ func New(o Options) *Shell {
 
 // Dispose stops following the sessions and settings.
 func (s *Shell) Dispose() {
+	if s.files.off != nil {
+		s.files.off()
+	}
 	s.off()
 	s.offSet()
 	for _, d := range s.docs {
@@ -581,27 +601,47 @@ func (s *Shell) sideBar(c *ui.Context, t *theme.Tokens) {
 		return
 	}
 	box.Children(func() {
-		ui.Column(c).Width(theme.SidebarWidth).Padding(4, 8, 8, 12).Gap(2).Children(func() {
-			ui.Text(c, locales.ShellOpenDocuments()).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(8, 8, 6)
-			for _, d := range s.docs {
-				st := d.s.State()
-				row := ui.Row(c.Key(d.s.ID())).Padding(6, 8).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusRow).Role(ui.RoleButton).Label(st.Name)
-				if d == s.active {
-					row.Background(t.SurfaceHover)
-				} else if row.Hovered() {
-					row.Background(t.Hover)
-				}
-				row.Children(func() {
-					ui.Text(c, st.Name).FontSize(theme.UIText).Grow(1)
-					if st.Edited {
-						ui.Box(c).Size(6, 6).Radius(3).Background(t.Accent)
-					}
-				})
-				if row.Clicked() {
-					s.activate(d)
-				}
+		ui.Column(c).Width(theme.SidebarWidth).FillHeight().Padding(4, 8, 8, 12).Gap(6).Children(func() {
+			labels := []string{locales.ShellPanelFiles(), locales.ShellPanelOutline(), locales.ShellPanelSearch()}
+			if i := kit.Segmented(c.Key("panels"), t, "panels", labels, s.panel, s.live); i >= 0 {
+				s.panel = i
 			}
+			ui.Column(c.Key(s.panel)).Grow(1).MinHeight(0).Margin(0, -8, 0, -12).Children(func() {
+				switch s.panel {
+				case panelOutline:
+					s.outlinePanel(c, t)
+				case panelSearch:
+					s.searchPanel(c, t)
+				default:
+					s.filesPanel(c, t)
+				}
+			})
 		})
+	})
+}
+
+// openDocuments lists the open tabs, when no folder is open.
+func (s *Shell) openDocuments(c *ui.Context, t *theme.Tokens) {
+	ui.Column(c).Padding(0, 8, 0, 12).Gap(2).Children(func() {
+		ui.Text(c, locales.ShellOpenDocuments()).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(8, 8, 6)
+		for _, d := range s.docs {
+			st := d.s.State()
+			row := ui.Row(c.Key(d.s.ID())).Padding(6, 8).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusRow).Role(ui.RoleButton).Label(st.Name)
+			if d == s.active {
+				row.Background(t.SurfaceHover)
+			} else if row.Hovered() {
+				row.Background(t.Hover)
+			}
+			row.Children(func() {
+				ui.Text(c, st.Name).FontSize(theme.UIText).Grow(1)
+				if st.Edited {
+					ui.Box(c).Size(6, 6).Radius(3).Background(t.Accent)
+				}
+			})
+			if row.Clicked() {
+				s.activate(d)
+			}
+		}
 	})
 }
 

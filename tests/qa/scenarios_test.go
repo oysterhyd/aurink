@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"aurink/internal/contract"
+	"aurink/internal/contracttest"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
 	"aurink/internal/core/document"
@@ -21,6 +22,7 @@ import (
 	"aurink/internal/core/projection"
 	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
+	"aurink/internal/core/workspace"
 	"aurink/internal/views/editorapi"
 	"aurink/internal/views/palette"
 	"aurink/internal/views/shell"
@@ -48,6 +50,8 @@ func (t *timer) Stop() bool {
 
 type platform struct {
 	open, save string
+	folder     string
+	trashOK    bool
 	choice     shell.Choice
 	asked      []string
 	saves      int
@@ -55,7 +59,12 @@ type platform struct {
 	closes     int
 }
 
-func (p *platform) OpenFile(done func(string)) { done(p.open) }
+func (p *platform) OpenFile(done func(string))   { done(p.open) }
+func (p *platform) OpenFolder(done func(string)) { done(p.folder) }
+func (p *platform) ConfirmTrash(name string, done func(bool)) {
+	p.asked = append(p.asked, name)
+	done(p.trashOK)
+}
 func (p *platform) SavePath(_ string, done func(string)) {
 	p.saves++
 	done(p.save)
@@ -80,6 +89,8 @@ type app struct {
 	store    *settings.Store
 	sessions *docsession.Manager
 	files    []string
+	ws       *workspace.Workspace
+	trash    *contracttest.RecordingTrasher
 	reg      *commands.Registry
 	s        *shell.Shell
 	tt       *ui.Tester
@@ -115,11 +126,13 @@ func (a *app) boot() {
 			a.timers = append(a.timers, tm)
 			return tm
 		}})
+	a.trash = &contracttest.RecordingTrasher{}
+	a.ws = workspace.New(&contracttest.SnapshotWatcher{}, a.trash, a.q, workspace.Options{})
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
-		Files: func() []string { return a.files }})
+		Files: func() []string { return a.files }, Workspace: a.ws})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}
@@ -217,6 +230,63 @@ func (a *app) order() []string {
 		out = append(out, x.State().Name)
 	}
 	return out
+}
+
+// until settles until cond holds: the workspace lists and changes files on its
+// own goroutines and posts back.
+func (a *app) until(what string, cond func() bool) {
+	a.t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		a.settle()
+		a.tt.Advance(100 * time.Millisecond) // the sidebar slides open
+		a.tt.Frame()
+		if cond() {
+			return
+		}
+		if time.Now().After(deadline) {
+			a.t.Fatalf("never: %s", what)
+		}
+		time.Sleep(5 * time.Millisecond)
+	}
+}
+
+// folder makes files under a.dir/proj and opens it in the files panel.
+func (a *app) folder(files ...string) string {
+	a.t.Helper()
+	root := filepath.Join(a.dir, "proj")
+	for _, f := range files {
+		p := filepath.Join(root, filepath.FromSlash(f))
+		if strings.HasSuffix(f, "/") {
+			if err := os.MkdirAll(p, 0o755); err != nil {
+				a.t.Fatal(err)
+			}
+			continue
+		}
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			a.t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte("# "+filepath.Base(f)+"\n"), 0o644); err != nil {
+			a.t.Fatal(err)
+		}
+	}
+	a.p.folder = root
+	a.run(contract.CmdFileOpenFolder)
+	a.until("the folder lists", func() bool { _, ok := a.ws.List(root); return ok && a.tt.HasText(filepath.Base(files[0])) })
+	return root
+}
+
+// rightClickRow right-clicks the tree's row i (folders first, then files, by
+// name): a file's name also shows on its tab, which Find meets first.
+func (a *app) rightClickRow(i int) {
+	a.t.Helper()
+	r, ok := a.tt.Find("proj")
+	if !ok {
+		a.t.Fatal("no tree")
+	}
+	// Measured: rows begin 36 DIPs in and 36 apart (28 high plus the outline's spacing).
+	a.tt.RightClickAt(r.X+60, r.Y+r.H+float32(i)*36+18)
+	a.tt.Frame()
 }
 
 func (a *app) text() string { return a.s.ActiveSession().Model().Text().String() }
@@ -442,6 +512,127 @@ var scenarios = []scenario{
 		a.tt.Key(0, ui.KeyEnter)
 		a.settle()
 		a.want(a.s.ActiveSession().State().Name, "路线图.md")
+	}},
+	{"opening a folder shows its files, and a click opens one", func(a *app) {
+		root := a.folder("b.md", "a.md", "notes/")
+		if !a.s.SidebarOpen() {
+			a.t.Fatal("the sidebar stayed closed")
+		}
+		for _, name := range []string{"proj", "notes", "a.md", "b.md"} {
+			if !a.tt.HasText(name) {
+				a.t.Fatalf("no %q in the tree", name)
+			}
+		}
+		a.click("a.md")
+		a.tabs(1)
+		a.want(a.s.ActiveSession().State().Path, filepath.Join(root, "a.md"))
+	}},
+	{"a folder opens to show what is in it", func(a *app) {
+		a.folder("top.md", "notes/inner.md")
+		if a.tt.HasText("inner.md") {
+			a.t.Fatal("a closed folder shows its files")
+		}
+		a.click("notes")
+		a.until("the folder opens", func() bool { return a.tt.HasText("inner.md") })
+		a.click("notes")
+		a.until("the folder closes", func() bool { return !a.tt.HasText("inner.md") })
+	}},
+	{"new file from the menu makes it, opens it and edits its name", func(a *app) {
+		root := a.folder("a.md")
+		if err := a.tt.RightClick("a.md"); err != nil {
+			a.t.Fatal(err)
+		}
+		a.tt.Frame()
+		a.click(locales.ShellNewFile())
+		untitled := filepath.Join(root, locales.ShellUntitled()+".md")
+		a.until("the new file opens", func() bool { _, err := os.Stat(untitled); return err == nil && len(a.s.Sessions()) == 1 })
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.typed("plan.md")
+		a.tt.Key(0, ui.KeyEnter)
+		a.until("the file is renamed", func() bool { _, err := os.Stat(filepath.Join(root, "plan.md")); return err == nil })
+		a.until("its tab follows", func() bool { return a.s.ActiveSession().State().Name == "plan.md" })
+	}},
+	{"a rename onto an existing name says so and keeps editing", func(a *app) {
+		root := a.folder("a.md", "b.md")
+		a.tt.RightClick("a.md")
+		a.tt.Frame()
+		a.click(locales.ShellRename())
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.typed("b.md")
+		a.tt.Key(0, ui.KeyEnter)
+		a.until("the clash shows", func() bool { return a.tt.HasText(locales.ShellNameExists()) })
+		a.want(a.disk(filepath.Join(root, "b.md")), "# b.md\n")
+		a.tt.Key(0, ui.KeyEscape)
+		a.settle()
+		if a.tt.HasText(locales.ShellNameExists()) {
+			a.t.Fatal("Escape left the rename open")
+		}
+	}},
+	{"renaming an open file in the tree moves its tab with it", func(a *app) {
+		root := a.folder("a.md")
+		a.click("a.md")
+		a.typed("x")
+		a.rightClickRow(0)
+		a.click(locales.ShellRename())
+		a.tt.Key(ui.Cmd, ui.KeyA)
+		a.typed("renamed.md")
+		a.tt.Key(0, ui.KeyEnter)
+		a.until("the tab follows", func() bool { return a.s.ActiveSession().State().Path == filepath.Join(root, "renamed.md") })
+		st := a.s.ActiveSession().State()
+		if st.Deleted || st.Conflict {
+			a.t.Fatalf("an in-app rename marked the tab: %+v", st)
+		}
+	}},
+	{"trashing a file with unsaved changes asks first", func(a *app) {
+		root := a.folder("a.md", "b.md")
+		a.click("a.md")
+		a.typed("unsaved")
+		a.rightClickRow(0)
+		a.click(locales.ShellTrash())
+		a.settle()
+		a.want(fmt.Sprint(a.p.asked), "[a.md]")
+		if _, err := os.Stat(filepath.Join(root, "a.md")); err != nil {
+			a.t.Fatal("trashed though the answer was no")
+		}
+		a.p.trashOK = true
+		a.rightClickRow(0)
+		a.click(locales.ShellTrash())
+		a.until("it goes", func() bool { _, err := os.Stat(filepath.Join(root, "a.md")); return os.IsNotExist(err) })
+		a.until("its tab knows", func() bool { return a.s.ActiveSession().State().Deleted })
+		if !strings.Contains(a.text(), "unsaved") {
+			a.t.Fatal("the tab lost its text")
+		}
+		// A file without changes goes without asking.
+		a.rightClickRow(0)
+		a.click(locales.ShellTrash())
+		a.until("b goes", func() bool { _, err := os.Stat(filepath.Join(root, "b.md")); return os.IsNotExist(err) })
+		a.want(fmt.Sprint(a.p.asked), "[a.md a.md]")
+	}},
+	{"the outline lists the headings and a click goes to one", func(a *app) {
+		src := "# One\n\ntext\n\n## Two\n\n### Three\n"
+		a.open("a.md", src)
+		a.run(contract.CmdViewOutline)
+		a.tt.Advance(time.Second)
+		a.tt.Frame()
+		for _, h := range []string{"One", "Two", "Three"} {
+			if !a.tt.HasText(h) {
+				a.t.Fatalf("no %q in the outline", h)
+			}
+		}
+		a.click("Three")
+		a.caret(strings.Index(src, "### Three"))
+	}},
+	{"the outline follows edits", func(a *app) {
+		a.open("a.md", "# One\n")
+		a.run(contract.CmdViewOutline)
+		a.tt.Advance(time.Second)
+		a.tt.Key(ui.Cmd, ui.KeyEnd)
+		a.tt.Key(0, ui.KeyEnter)
+		a.typed("## Added")
+		a.settle()
+		if !a.tt.HasText("Added") {
+			a.t.Fatal("the outline did not pick up a new heading")
+		}
 	}},
 	{"format shortcuts do nothing in source mode", func(a *app) {
 		a.open("a.md", "hello\n")
@@ -1124,3 +1315,21 @@ type fixedSource struct{ cmds []palette.Item }
 func (f fixedSource) Files() []palette.Item    { return nil }
 func (f fixedSource) Commands() []palette.Item { return f.cmds }
 func (f fixedSource) Headings() []palette.Item { return nil }
+
+// TestFileTreeAtScale opens a folder of 10,000 files (05 FE-2.3): the tree
+// builds the rows in view only.
+func TestFileTreeAtScale(t *testing.T) {
+	a := newApp(t)
+	names := make([]string, 10000)
+	for i := range names {
+		names[i] = fmt.Sprintf("note-%05d.md", i)
+	}
+	a.folder(names...)
+	t0 := time.Now()
+	a.tt.Frame()
+	n := a.s.TreeRowsBuilt()
+	t.Logf("frame %v, %d rows built", time.Since(t0), n)
+	if n == 0 || n > 60 {
+		t.Fatalf("%d tree rows built for 10,000 files", n)
+	}
+}

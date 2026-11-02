@@ -75,5 +75,21 @@
   "shell_quick_open": "快速打开",
   "shell_command_palette": "命令面板",
   "shell_go_to_heading": "跳转到标题",
-  "shell_palette_count": "{n} 项"
+  "shell_palette_count": "{n} 项",
+  "shell_panel_files": "文件",
+  "shell_panel_outline": "大纲",
+  "shell_panel_search": "搜索",
+  "shell_no_folder": "没有打开文件夹",
+  "shell_open_folder": "打开文件夹…",
+  "shell_new_file": "新建文件",
+  "shell_new_folder": "新建文件夹",
+  "shell_rename": "重命名",
+  "shell_trash": "移到回收站",
+  "shell_name_exists": "这里已有同名文件",
+  "shell_name_invalid": "这个名字不能用",
+  "shell_untitled": "未命名",
+  "shell_no_headings": "没有标题",
+  "shell_search_soon": "搜索面板随下一次更新提供",
+  "shell_trash_unsaved": "{name} 有未保存的修改，仍要移到回收站吗？",
+  "shell_trashed": "已将 {name} 移到回收站"
 }

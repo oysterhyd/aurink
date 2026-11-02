@@ -1097,3 +1097,227 @@ func ShellPaletteCount(n int) string { return In(i18n.Locale()).ShellPaletteCoun
 func (msgs Messages) ShellPaletteCount(n int) string {
 	return Catalog.Format(msgs.locale, "shell_palette_count", map[string]any{"n": n})
 }
+
+// ShellPanelFiles says "Files"
+// in the language the app shows.
+//
+// The sidebar's files panel.
+func ShellPanelFiles() string { return In(i18n.Locale()).ShellPanelFiles() }
+
+// ShellPanelFiles says "Files"
+// in the language of msgs.
+//
+// The sidebar's files panel.
+func (msgs Messages) ShellPanelFiles() string {
+	return Catalog.Format(msgs.locale, "shell_panel_files", nil)
+}
+
+// ShellPanelOutline says "Outline"
+// in the language the app shows.
+//
+// The sidebar's outline panel.
+func ShellPanelOutline() string { return In(i18n.Locale()).ShellPanelOutline() }
+
+// ShellPanelOutline says "Outline"
+// in the language of msgs.
+//
+// The sidebar's outline panel.
+func (msgs Messages) ShellPanelOutline() string {
+	return Catalog.Format(msgs.locale, "shell_panel_outline", nil)
+}
+
+// ShellPanelSearch says "Search"
+// in the language the app shows.
+//
+// The sidebar's search panel.
+func ShellPanelSearch() string { return In(i18n.Locale()).ShellPanelSearch() }
+
+// ShellPanelSearch says "Search"
+// in the language of msgs.
+//
+// The sidebar's search panel.
+func (msgs Messages) ShellPanelSearch() string {
+	return Catalog.Format(msgs.locale, "shell_panel_search", nil)
+}
+
+// ShellNoFolder says "No folder is open"
+// in the language the app shows.
+//
+// The files panel without a folder.
+func ShellNoFolder() string { return In(i18n.Locale()).ShellNoFolder() }
+
+// ShellNoFolder says "No folder is open"
+// in the language of msgs.
+//
+// The files panel without a folder.
+func (msgs Messages) ShellNoFolder() string {
+	return Catalog.Format(msgs.locale, "shell_no_folder", nil)
+}
+
+// ShellOpenFolder says "Open Folder…"
+// in the language the app shows.
+//
+// Opens a folder in the files panel.
+func ShellOpenFolder() string { return In(i18n.Locale()).ShellOpenFolder() }
+
+// ShellOpenFolder says "Open Folder…"
+// in the language of msgs.
+//
+// Opens a folder in the files panel.
+func (msgs Messages) ShellOpenFolder() string {
+	return Catalog.Format(msgs.locale, "shell_open_folder", nil)
+}
+
+// ShellNewFile says "New File"
+// in the language the app shows.
+//
+// Makes a file in the folder clicked.
+func ShellNewFile() string { return In(i18n.Locale()).ShellNewFile() }
+
+// ShellNewFile says "New File"
+// in the language of msgs.
+//
+// Makes a file in the folder clicked.
+func (msgs Messages) ShellNewFile() string {
+	return Catalog.Format(msgs.locale, "shell_new_file", nil)
+}
+
+// ShellNewFolder says "New Folder"
+// in the language the app shows.
+//
+// Makes a folder in the folder clicked.
+func ShellNewFolder() string { return In(i18n.Locale()).ShellNewFolder() }
+
+// ShellNewFolder says "New Folder"
+// in the language of msgs.
+//
+// Makes a folder in the folder clicked.
+func (msgs Messages) ShellNewFolder() string {
+	return Catalog.Format(msgs.locale, "shell_new_folder", nil)
+}
+
+// ShellRename says "Rename"
+// in the language the app shows.
+//
+// Edits a file's name in its row.
+func ShellRename() string { return In(i18n.Locale()).ShellRename() }
+
+// ShellRename says "Rename"
+// in the language of msgs.
+//
+// Edits a file's name in its row.
+func (msgs Messages) ShellRename() string {
+	return Catalog.Format(msgs.locale, "shell_rename", nil)
+}
+
+// ShellTrash says "Move to Trash"
+// in the language the app shows.
+//
+// Moves a file or folder to the trash.
+func ShellTrash() string { return In(i18n.Locale()).ShellTrash() }
+
+// ShellTrash says "Move to Trash"
+// in the language of msgs.
+//
+// Moves a file or folder to the trash.
+func (msgs Messages) ShellTrash() string {
+	return Catalog.Format(msgs.locale, "shell_trash", nil)
+}
+
+// ShellNameExists says "A file with this name is already here"
+// in the language the app shows.
+//
+// A rename that would replace a file.
+func ShellNameExists() string { return In(i18n.Locale()).ShellNameExists() }
+
+// ShellNameExists says "A file with this name is already here"
+// in the language of msgs.
+//
+// A rename that would replace a file.
+func (msgs Messages) ShellNameExists() string {
+	return Catalog.Format(msgs.locale, "shell_name_exists", nil)
+}
+
+// ShellNameInvalid says "This name cannot be used here"
+// in the language the app shows.
+//
+// A rename to a name the system refuses.
+func ShellNameInvalid() string { return In(i18n.Locale()).ShellNameInvalid() }
+
+// ShellNameInvalid says "This name cannot be used here"
+// in the language of msgs.
+//
+// A rename to a name the system refuses.
+func (msgs Messages) ShellNameInvalid() string {
+	return Catalog.Format(msgs.locale, "shell_name_invalid", nil)
+}
+
+// ShellUntitled says "Untitled"
+// in the language the app shows.
+//
+// The name of a new file or folder.
+func ShellUntitled() string { return In(i18n.Locale()).ShellUntitled() }
+
+// ShellUntitled says "Untitled"
+// in the language of msgs.
+//
+// The name of a new file or folder.
+func (msgs Messages) ShellUntitled() string {
+	return Catalog.Format(msgs.locale, "shell_untitled", nil)
+}
+
+// ShellNoHeadings says "No headings"
+// in the language the app shows.
+//
+// The outline panel of a document without headings.
+func ShellNoHeadings() string { return In(i18n.Locale()).ShellNoHeadings() }
+
+// ShellNoHeadings says "No headings"
+// in the language of msgs.
+//
+// The outline panel of a document without headings.
+func (msgs Messages) ShellNoHeadings() string {
+	return Catalog.Format(msgs.locale, "shell_no_headings", nil)
+}
+
+// ShellSearchSoon says "Search arrives with the next update"
+// in the language the app shows.
+//
+// The search panel before it is built.
+func ShellSearchSoon() string { return In(i18n.Locale()).ShellSearchSoon() }
+
+// ShellSearchSoon says "Search arrives with the next update"
+// in the language of msgs.
+//
+// The search panel before it is built.
+func (msgs Messages) ShellSearchSoon() string {
+	return Catalog.Format(msgs.locale, "shell_search_soon", nil)
+}
+
+// ShellTrashUnsaved says "{name} has unsaved changes. Move it to the trash?"
+// in the language the app shows.
+//
+// Asks before trashing a file with unsaved changes.
+func ShellTrashUnsaved(name string) string { return In(i18n.Locale()).ShellTrashUnsaved(name) }
+
+// ShellTrashUnsaved says "{name} has unsaved changes. Move it to the trash?"
+// in the language of msgs.
+//
+// Asks before trashing a file with unsaved changes.
+func (msgs Messages) ShellTrashUnsaved(name string) string {
+	return Catalog.Format(msgs.locale, "shell_trash_unsaved", map[string]any{"name": name})
+}
+
+// ShellTrashed says "Moved {name} to the trash"
+// in the language the app shows.
+//
+// After a file went to the trash.
+func ShellTrashed(name string) string { return In(i18n.Locale()).ShellTrashed(name) }
+
+// ShellTrashed says "Moved {name} to the trash"
+// in the language of msgs.
+//
+// After a file went to the trash.
+func (msgs Messages) ShellTrashed(name string) string {
+	return Catalog.Format(msgs.locale, "shell_trashed", map[string]any{"name": name})
+}
