@@ -362,3 +362,10 @@ func (s *Shell) SetFind(q string) {
 		s.invalidate()
 	}
 }
+
+// CloseFind closes the live find bar of the active tab, as Escape does.
+func (s *Shell) CloseFind() {
+	if d := s.active; d != nil && d.find.open {
+		(&liveFinder{s: s, d: d}).Close()
+	}
+}

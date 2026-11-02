@@ -43,6 +43,10 @@ func (d *dispatcher) Post(fn func()) {
 
 type platform struct{ w *mygo.Window }
 
+// buildStart is when the window's last frame began building: a frame's work
+// runs from it to the end of the paint, without the wait for the display.
+var buildStart time.Time
+
 func (platform) OpenFile(done func(string))                     { done("") }
 func (platform) OpenFolder(done func(string))                   { done("") }
 func (platform) ConfirmTrash(_ string, done func(bool))         { done(true) }
@@ -133,7 +137,7 @@ func main() {
 			log.Fatal(err)
 		}
 		w = mygo.NewWindow(mygo.WindowOptions{Title: "Aurink", Width: 1280, Height: 800, TitleBarStyle: mygo.TitleBarHidden,
-			HideWindowButtons: true, Content: ui.View(s.View)})
+			HideWindowButtons: true, Content: ui.View(func(c *ui.Context) { buildStart = time.Now(); s.View(c) })})
 		d.w, p.w = w, w
 		go script(w, s, reg, store, tmp, *out)
 	})
@@ -193,13 +197,19 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	shot("PaletteQuery")
 	on(w, func() { s.Palette().Close() })
 	time.Sleep(300 * time.Millisecond)
+	var shown []contract.NoticeHandle
 	on(w, func() {
-		s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: "已保存到磁盘", Detail: "README.md", Sticky: true})
+		shown = append(shown, s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: "已保存到磁盘", Detail: "README.md", Sticky: true}))
 	})
 	on(w, func() {
-		s.Notify(contract.Notice{Level: contract.NoticeError, Message: "保存失败", Detail: "磁盘已满", Sticky: true})
+		shown = append(shown, s.Notify(contract.Notice{Level: contract.NoticeError, Message: "保存失败", Detail: "磁盘已满", Sticky: true}))
 	})
 	shot("Notify")
+	on(w, func() {
+		for _, h := range shown {
+			h.Dismiss()
+		}
+	})
 	on(w, func() {
 		if err := store.Update(func(v *contract.Settings) { v.Appearance.ReduceTransparency = true }); err != nil {
 			log.Fatal(err)
@@ -247,10 +257,12 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	run(contract.CmdEditReplace)
 	shot("SourceFind")
 	run(contract.CmdViewLive)
+	on(w, s.CloseFind)
 	// A conflict: an edit, a change on disk, a save.
 	on(w, func() {
 		m := s.ActiveSession().Model()
-		if _, err := m.Apply(contract.Transaction{Edits: []contract.TextEdit{{Range: contract.Range{Start: 0, End: 0}, Text: "x"}},
+		eol := strings.IndexByte(demo, '\n')
+		if _, err := m.Apply(contract.Transaction{Edits: []contract.TextEdit{{Range: contract.Range{Start: eol, End: eol}, Text: "（草稿）"}},
 			Origin: contract.OriginUser}); err != nil {
 			log.Fatal(err)
 		}
@@ -269,16 +281,18 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	on(w, func() { w.Destroy(); mygo.App.Quit() })
 }
 
-// stress times 500 keystrokes from the edit to the end of the frame that paints it.
+// stress times 500 keystrokes from the edit to the end of the frame that paints
+// it, and that frame's own work from its build to its paint (07 §7).
 func stress(w *mygo.Window, s *shell.Shell, size int) {
 	const n = 500
 	times := make([]time.Duration, 0, n)
-	painted := make(chan struct{}, 1)
+	works := make([]time.Duration, 0, n)
+	painted := make(chan time.Duration, 1)
 	on(w, func() {
 		e := s.ActiveLive()
 		e.OnPainted = func() {
 			select {
-			case painted <- struct{}{}:
+			case painted <- time.Since(buildStart):
 			default:
 			}
 		}
@@ -300,12 +314,15 @@ func stress(w *mygo.Window, s *shell.Shell, size int) {
 			}
 		})
 		select {
-		case <-painted:
+		case work := <-painted:
 			times = append(times, time.Since(t0))
+			works = append(works, work)
 		case <-time.After(2 * time.Second):
 			log.Fatal("no frame painted the edit")
 		}
 	}
 	slices.Sort(times)
-	fmt.Printf("window %d KB: p50 %v p95 %v max %v\n", size>>10, times[n/2], times[n*95/100], times[n-1])
+	slices.Sort(works)
+	fmt.Printf("window %d KB: edit to painted p50 %v p95 %v max %v; frame work p50 %v p95 %v max %v\n", size>>10,
+		times[n/2], times[n*95/100], times[n-1], works[n/2], works[n*95/100], works[n-1])
 }

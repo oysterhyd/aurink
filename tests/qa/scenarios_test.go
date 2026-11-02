@@ -1259,6 +1259,21 @@ var scenarios = []scenario{
 			a.t.Fatal("frames while idle")
 		}
 	}},
+	{"idle with a folder watched, each panel and the find bar open, no frames (07 §7)", func(a *app) {
+		root := a.folder("a.md", "sub/b.md")
+		a.s.Open(filepath.Join(root, "a.md"))
+		a.settle()
+		a.run(contract.CmdEditFind)
+		a.typed("a")
+		for _, id := range []contract.CommandID{contract.CmdViewFiles, contract.CmdViewOutline, contract.CmdViewSearch} {
+			a.run(id)
+			a.tt.Advance(time.Minute)
+			a.tt.Frame()
+			if a.tt.FramePending() {
+				a.t.Fatalf("frames while idle after %s", id)
+			}
+		}
+	}},
 	{"words count CJK by character", func(a *app) {
 		for text, want := range map[string]int{"": 0, "two words": 2, "中文 ok": 3, "don't-stop 1": 2, "# 标题\n": 2} {
 			if got := shell.CountWords(text); got != want {

@@ -208,6 +208,35 @@ Real window, `tools/windowcheck`, 500 keystrokes from the edit to the painted fr
 
 `tests/ui/perf_test.go`'s limit was raised from 8 ms to 16 ms in `ce57fb1`, because the Windows CI runner reached 11 ms. That test no longer guards the 8 ms budget.
 
+## QA-2.x performance (07 §7)
+
+Windows 11, one machine, 150% scaling (144 DPI). Integrated graphics, macOS and Linux are unverified.
+
+| Item | Budget | Result | Evidence |
+|---|---|---|---|
+| Typing, 200 KB | No worse than M1 | 1.22–1.30 ms/op; M1 code (`5b6bcc3~1`) on the same machine 1.22–1.31 ms/op | `BenchmarkTypeFrame200KB -benchtime 300x -count 3` |
+| Typing, 1 MB | No worse than M1 | 2.49–2.58 ms/op; M1 2.56–2.80 ms/op | `BenchmarkTypeFrame1MB`, same run |
+| Scrolling 10,000 blocks | No whole-screen relayout, rail open too | 1.08 ms/op, 7.5 shapes/frame; with 1,000 rail marks a frame lays out 0 rows, and a jump to the end at most 200 | `BenchmarkScroll10kBlocks`, `TestScrollShapesNoWholeScreen`, `TestRailDoesNotLayOutTheDocument` |
+| Find in 1 MB | < 5 ms | Literal 1.37 ms, regex 2.47 ms | `BenchmarkFind` |
+| Palette, 500 commands + 10,000 files | One frame | About 11 rows built per keystroke | `TestPaletteAtScale` |
+| File tree, 10,000 entries | Visible rows only | About 20–30 rows built per frame | `TestFileTreeAtScale`, `TestSearchAtScale` |
+| Idle | 0 frames with the panels and the watcher open | 0 | Scenario "idle with a folder watched, each panel and the find bar open" in `tests/qa` |
+
+`TypeFrame` must run with a fixed count. With `-benchtime 2s` it types several thousand characters into one paragraph, and that paragraph's layout raises the result to 2.7 ms on both the M1 and the current code.
+
+Real window, `tools/windowcheck`, 500 keystrokes, two runs. "Edit to painted" includes waiting for the display's refresh, as in M1. "Frame work" runs from the start of the frame's build to the end of its paint. This number is the one comparable with M1's 8 ms budget:
+
+| Size | Edit to painted p50 / p95 / max | Frame work p50 / p95 / max |
+|---|---|---|
+| 200 KB | 15.8 / 18.2 / 19.7 ms; 15.9 / 17.9 / 19.3 ms | 3.2 / 5.1 / 7.6 ms; 3.1 / 4.9 / 5.9 ms |
+| 1 MB | 15.3 / 22.5 / 33.9 ms; 15.4 / 22.3 / 32.0 ms | 8.1 / 15.4 / 22.5 ms; 8.0 / 15.1 / 22.0 ms |
+
+At 200 KB, frame work p95 is about 5 ms, inside 8 ms. At 1 MB it is about 15 ms, past 8 ms. M1's budget was for ≤200 KB. 1 MB stays recorded as it is, and on the user's instruction of 2026-11-01 the owner does not pursue it. "Edit to painted" waits for vertical sync here (60 Hz), so its p50 is about one refresh.
+
+## QA-2.2 real-window E2E
+
+`go test -tags e2e ./tests/e2e -run 'TestM2Flow|TestNativeDialogs' -v` [实测，Windows only, local, not in CI]: the real app driven through MyGo's automation plugin. It covers the remembered window size, a folder given as an argument, quick open, typing and autosave, an external change while edited then Keep Mine, closing, and a second start with the folder and tab back. The native dialogs are answered through UI Automation (`tests/e2e/dialog.ps1`): Save As of a new document, Open, Export HTML (which offers `other.html`), and the close confirmation, where Cancel keeps the tab and Don't Save closes it. Both tests passed twice in a row. A mutant that skips the session restore was caught. macOS and Linux dialogs are unverified.
+
 ## Not exercised
 
-Open, save and confirm dialogs in a real window. Installer file association. Microsoft Pinyin. `RevealInline` feel. Launching with a file argument and the second instance were checked on Windows [实测]; macOS and Linux real use was not.
+Installer file association. Microsoft Pinyin. `RevealInline` feel. Launching with a file argument and the second instance were checked on Windows [实测]; macOS and Linux real use was not.
