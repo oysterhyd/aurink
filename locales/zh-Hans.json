@@ -116,5 +116,8 @@
   "liveedit_align_left": "左对齐",
   "liveedit_align_center": "居中",
   "liveedit_align_right": "右对齐",
-  "liveedit_format_table": "格式化表格"
+  "liveedit_format_table": "格式化表格",
+  "liveedit_link": "链接",
+  "liveedit_edit_link": "编辑",
+  "liveedit_open_link": "打开"
 }

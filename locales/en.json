@@ -523,5 +523,17 @@
   "liveedit_format_table": "Format Table",
   "@liveedit_format_table": {
     "description": "Table toolbar button and menu item reflowing the table's source."
+  },
+  "liveedit_link": "Link",
+  "@liveedit_link": {
+    "description": "The popover of the link holding the caret."
+  },
+  "liveedit_edit_link": "Edit",
+  "@liveedit_edit_link": {
+    "description": "Selects the link's destination to type over it."
+  },
+  "liveedit_open_link": "Open",
+  "@liveedit_open_link": {
+    "description": "Follows the link."
   }
 }

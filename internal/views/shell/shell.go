@@ -212,7 +212,7 @@ func (s *Shell) attach(x contract.Session) *doc {
 				return filepath.Dir(p)
 			}
 			return ""
-		}})
+		}, KeyLabel: s.keyLabel, OpenFile: s.Open})
 	d.offs = append(d.offs, x.OnState(func(contract.DocState) { s.invalidate() }))
 	s.docs = append(s.docs, d)
 	if s.active == nil {
@@ -685,6 +685,7 @@ func (s *Shell) document(c *ui.Context, t *theme.Tokens, d *doc) {
 				d.live.Rail(c.Key("rail"))
 			}
 			d.live.TableBar(c.Key("tableBar"))
+			d.live.LinkBar(c.Key("linkBar"))
 		}
 	})
 }

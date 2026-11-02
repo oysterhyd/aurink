@@ -234,6 +234,8 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	run(contract.CmdViewFiles)
 	on(w, func() { s.GoTo(strings.Index(demo, "| 项") + 2) })
 	shot("Table")
+	on(w, func() { s.GoTo(strings.Index(demo, "可行性报告") + 3) })
+	shot("Link")
 	for _, size := range []int{200 << 10, 1 << 20} {
 		open(fmt.Sprintf("stress-%d.md", size), corpus.Generate(size, 1))
 		stress(w, s, size)

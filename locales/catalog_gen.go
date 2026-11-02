@@ -1673,3 +1673,45 @@ func LiveeditFormatTable() string { return In(i18n.Locale()).LiveeditFormatTable
 func (msgs Messages) LiveeditFormatTable() string {
 	return Catalog.Format(msgs.locale, "liveedit_format_table", nil)
 }
+
+// LiveeditLink says "Link"
+// in the language the app shows.
+//
+// The popover of the link holding the caret.
+func LiveeditLink() string { return In(i18n.Locale()).LiveeditLink() }
+
+// LiveeditLink says "Link"
+// in the language of msgs.
+//
+// The popover of the link holding the caret.
+func (msgs Messages) LiveeditLink() string {
+	return Catalog.Format(msgs.locale, "liveedit_link", nil)
+}
+
+// LiveeditEditLink says "Edit"
+// in the language the app shows.
+//
+// Selects the link's destination to type over it.
+func LiveeditEditLink() string { return In(i18n.Locale()).LiveeditEditLink() }
+
+// LiveeditEditLink says "Edit"
+// in the language of msgs.
+//
+// Selects the link's destination to type over it.
+func (msgs Messages) LiveeditEditLink() string {
+	return Catalog.Format(msgs.locale, "liveedit_edit_link", nil)
+}
+
+// LiveeditOpenLink says "Open"
+// in the language the app shows.
+//
+// Follows the link.
+func LiveeditOpenLink() string { return In(i18n.Locale()).LiveeditOpenLink() }
+
+// LiveeditOpenLink says "Open"
+// in the language of msgs.
+//
+// Follows the link.
+func (msgs Messages) LiveeditOpenLink() string {
+	return Catalog.Format(msgs.locale, "liveedit_open_link", nil)
+}

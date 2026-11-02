@@ -155,6 +155,10 @@ func (e *Editor) RunEdit(cmd contract.EditCommand) error {
 		return nil
 	}
 	e.UnmarkText()
+	// In a link, Primary+K edits its destination rather than unlinking it (02 §5).
+	if cmd.ID == contract.CmdFormatLink && e.editLink() {
+		return nil
+	}
 	tx, ok, err := e.opts.Editing.Run(e.editContext(), cmd)
 	if err != nil || !ok {
 		return err

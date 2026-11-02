@@ -40,6 +40,10 @@ type Options struct {
 	DocDir func() string
 	// Dispatcher brings loaded images back to the main thread.
 	Dispatcher contract.Dispatcher
+	// KeyLabel names a command's shortcut for the popovers; nil names none.
+	KeyLabel func(contract.CommandID) string
+	// OpenFile opens a file a link points to; nil leaves such links alone.
+	OpenFile func(path string)
 }
 
 // Stats counts what the engine did, for assertions by count (03 §10).
