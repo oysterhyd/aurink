@@ -152,9 +152,11 @@ func (m *Model) apply(tx contract.Transaction, kind contract.DocEventKind, repla
 	if err != nil {
 		return v, err
 	}
-	selection := mapSelection(m.selection, changes)
+	var selection contract.Selection
 	if tx.Selection != nil {
 		selection = cloneSelection(*tx.Selection)
+	} else {
+		selection = mapSelection(m.selection, changes)
 	}
 	if !validSelection(selection, next.Len()) {
 		return v, &contract.Error{Code: contract.CodeInvalid, Op: "document.Apply", Detail: "selection is out of bounds"}

@@ -175,32 +175,37 @@ type identityKey struct {
 	start, end int
 }
 
-func mapped(r contract.Range, cs []contract.Change) (contract.Range, bool) {
-	delta := 0
-	for _, c := range cs {
-		if r.End <= c.OldStart {
-			break
-		}
-		if r.Start >= c.OldEnd {
-			delta += (c.NewEnd - c.NewStart) - (c.OldEnd - c.OldStart)
-			continue
-		}
-		return contract.Range{}, false
-	}
-	return moveRange(r, delta), true
+// changeMapper indexes ordered, non-overlapping changes. Both starts and ends
+// are nondecreasing, so the last change before a boundary determines whether
+// any preceding change overlaps it. The prefix sums retain insertion order at
+// shared boundaries, including multiple insertions at one offset.
+type changeMapper struct {
+	changes []contract.Change
+	deltas  []int
 }
 
-func mappedStart(at int, cs []contract.Change) (int, bool) {
-	delta := 0
-	for _, c := range cs {
-		if at > c.OldStart && at < c.OldEnd {
-			return 0, false
-		}
-		if at >= c.OldEnd && at > c.OldStart {
-			delta += (c.NewEnd - c.NewStart) - (c.OldEnd - c.OldStart)
-		}
+func newChangeMapper(cs []contract.Change) changeMapper {
+	m := changeMapper{changes: cs, deltas: make([]int, len(cs)+1)}
+	for i, c := range cs {
+		m.deltas[i+1] = m.deltas[i] + (c.NewEnd - c.NewStart) - (c.OldEnd - c.OldStart)
 	}
-	return at + delta, true
+	return m
+}
+
+func (m changeMapper) mapped(r contract.Range) (contract.Range, bool) {
+	i := sort.Search(len(m.changes), func(i int) bool { return m.changes[i].OldStart >= r.End })
+	if i > 0 && m.changes[i-1].OldEnd > r.Start {
+		return contract.Range{}, false
+	}
+	return moveRange(r, m.deltas[i]), true
+}
+
+func (m changeMapper) mappedStart(at int) (int, bool) {
+	i := sort.Search(len(m.changes), func(i int) bool { return m.changes[i].OldStart >= at })
+	if i > 0 && m.changes[i-1].OldEnd > at {
+		return 0, false
+	}
+	return at + m.deltas[i], true
 }
 
 func (p *Parser) freeze(a *adapted, v contract.Version, exts contract.Extensions, cs []contract.Change) (*Snapshot, []contract.BlockID) {
@@ -214,6 +219,7 @@ func (p *Parser) freezeBlocks(source string, bodyAt int, blocks []contract.Block
 	old := p.current
 	var oldFor []int
 	if old != nil {
+		mapper := newChangeMapper(cs)
 		oldFor = make([]int, len(blocks))
 		for i := range oldFor {
 			oldFor[i] = -1
@@ -226,7 +232,7 @@ func (p *Parser) freezeBlocks(source string, bodyAt int, blocks []contract.Block
 		used := make([]bool, old.Len())
 		for i := range old.entries {
 			b := old.Block(i)
-			r, ok := mapped(b.Range, cs)
+			r, ok := mapper.mapped(b.Range)
 			if !ok {
 				continue
 			}
@@ -245,7 +251,7 @@ func (p *Parser) freezeBlocks(source string, bodyAt int, blocks []contract.Block
 				continue
 			}
 			b := old.Block(i)
-			at, ok := mappedStart(b.Range.Start, cs)
+			at, ok := mapper.mappedStart(b.Range.Start)
 			if !ok {
 				continue
 			}

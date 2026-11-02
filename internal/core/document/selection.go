@@ -2,6 +2,7 @@ package document
 
 import (
 	"slices"
+	"sort"
 	"unicode/utf8"
 
 	"aurink/internal/contract"
@@ -54,18 +55,21 @@ func keepSelection(s contract.Selection, source string) contract.Selection {
 }
 
 func mapPosition(off int, right bool, changes []contract.Change) int {
-	delta := 0
-	for _, c := range changes {
-		if off < c.OldStart || off == c.OldStart && !right {
-			break
-		}
-		if off < c.OldEnd {
-			if right {
-				return c.NewEnd
-			}
-			return c.NewStart
-		}
-		delta = c.NewEnd - c.OldEnd
+	// For right affinity, include all changes beginning at off; left affinity
+	// stops before them. A non-overlapping change containing off must be last
+	// in that prefix, even when insertions share its start.
+	i := sort.Search(len(changes), func(i int) bool {
+		return changes[i].OldStart > off || !right && changes[i].OldStart == off
+	})
+	if i == 0 {
+		return off
 	}
-	return off + delta
+	c := changes[i-1]
+	if off < c.OldEnd {
+		if right {
+			return c.NewEnd
+		}
+		return c.NewStart
+	}
+	return off + c.NewEnd - c.OldEnd
 }
