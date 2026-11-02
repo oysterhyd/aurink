@@ -198,4 +198,7 @@
 | `services.go` | `Fuzzy` 的命中与排序规则；`Assets` 的目录模板、命名、相对路径；`RecentMax` 与去重 | BE-2.5、BE-2.6 |
 | `render.go` | `ExportOptions.Highlight` 与 `CodeToken`；导出 HTML 的结构约定（id、TOC、代码、脚注、安全范围、内嵌图片） | D13、D17 |
 
-`Sessions` 的改动（`Recheck`、路径跟随）随 BE-2.7 的套件一起落地，那时才有实现能同步修改。
+| `services.go` | `Sessions.Recheck`、`Sessions.Moved`；外部变更的处理规则（修改、删除、同目录改名、重建、自己的保存） | D2–D6 |
+| `editing.go` | `PastePayload`：转换在视图里做，Editing 只选用哪种表示；代码块和表格单元格的规则 | D11、D12 |
+
+另加套件 `TestEditingV2` `TestPasteConverter` `TestSessionsV2` `TestSessionStore`。`docsession.Manager` 的 `Recheck`、`Moved` 暂为空实现，由 BE-2.7 完成。

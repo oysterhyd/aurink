@@ -99,7 +99,24 @@ type Sessions interface {
 	// Restore 启动时恢复崩溃副本与上次会话。
 	Restore(done func([]Session, error))
 	Subscribe(fn func(SessionsEvent)) (off func())
+	// Recheck 对所有打开的文件做 Stat，按外部变更处理（D4）。窗口获焦时调用；监听报告
+	// WatchOverflow 时会话自己调用。
+	Recheck()
+	// Moved 报告应用内的改名或移动（Workspace 的 WsRenamed，D5、D6）：路径等于 oldPath
+	// 或在其下的会话改用新路径，清除因此产生的 Deleted，不算外部修改。监听事件先到或后到
+	// 结果相同。
+	Moved(oldPath, newPath string)
 }
+
+// 外部变更（BE-2.7，docs/03 §5.2）：Sessions 通过 FileWatcher 监听每个打开文件所在的目录
+// （不递归，D3），并在 Recheck 时 Stat。
+//   - 修改：未编辑的会话用一个可撤销的 Replace 载入磁盘内容；已编辑的进入 Conflict。
+//   - 删除：进入 Deleted，内容保留；Save 会重建文件。
+//   - 同目录改名：同一批事件里同目录出现一个大小和修改时间都相同的新文件时跟随新路径；
+//     确认不了（或移到别的目录）按删除处理。
+//   - 删除后重建：清除 Deleted，再按修改处理。
+//   - 自己的保存不算外部修改：比较文件戳与上次写入的结果，不靠时间窗口（D2）。
+//   - Conflict 和 Deleted 时自动保存暂停，恢复副本继续更新。
 
 // Entry 是工作区中的一个文件或目录。
 type Entry struct {

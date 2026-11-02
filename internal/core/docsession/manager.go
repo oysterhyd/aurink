@@ -236,3 +236,9 @@ func (m *Manager) background(work func() func()) {
 		})
 	}()
 }
+
+// Recheck does nothing yet: external changes come with BE-2.7.
+func (m *Manager) Recheck() {}
+
+// Moved does nothing yet: following renames comes with BE-2.7.
+func (m *Manager) Moved(oldPath, newPath string) {}
