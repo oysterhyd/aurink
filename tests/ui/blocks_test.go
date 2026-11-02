@@ -52,7 +52,7 @@ func TestTaskToggleUndoes(t *testing.T) {
 	h := open(t, "- [ ] one\n")
 	h.clickBox(0)
 	h.wantSrc("- [x] one\n")
-	h.mod(wordKey(), ui.KeyZ)
+	h.mod(ui.Cmd, ui.KeyZ)
 	h.wantSrc("- [ ] one\n")
 }
 

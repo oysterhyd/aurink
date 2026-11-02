@@ -119,13 +119,13 @@ func TestSourceUndoIsTheDocuments(t *testing.T) {
 	if !h.m.CanUndo() {
 		t.Fatal("the document cannot undo a source edit")
 	}
-	h.tt.Key(wordKey(), ui.KeyZ)
+	h.tt.Key(ui.Cmd, ui.KeyZ)
 	h.tt.Frame()
 	h.want("a\r\nb\n")
 	if got := h.s.State().Buffer.String(); got != "a\nb\n" {
 		t.Fatalf("buffer %q", got)
 	}
-	h.tt.Key(wordKey()|ui.Shift, ui.KeyZ)
+	h.tt.Key(ui.Cmd|ui.Shift, ui.KeyZ)
 	h.tt.Frame()
 	h.want("a\r\nxb\n")
 }
