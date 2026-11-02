@@ -42,6 +42,8 @@ type Controller interface {
 
 	// RevealOffset 滚动使源码偏移可见并把光标放在那里（大纲跳转、搜索结果）。
 	RevealOffset(off int, align ScrollAlign)
+	// RevealRange 选中源码区间并滚动使其可见（查找）。
+	RevealRange(rg contract.Range, align ScrollAlign)
 	// SetFindHighlights 设置查找高亮；current 为当前项下标，-1 表示无。
 	SetFindHighlights(ranges []contract.Range, current int)
 	ClearFindHighlights()

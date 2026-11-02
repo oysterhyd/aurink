@@ -71,6 +71,17 @@ func (e *Editor) RevealOffset(off int, align editorapi.ScrollAlign) {
 	e.revealAlign = align
 }
 
+// RevealRange selects a source range, as the find bar does with a match, and
+// scrolls it into view.
+func (e *Editor) RevealRange(rg contract.Range, align editorapi.ScrollAlign) {
+	e.UnmarkText()
+	e.model.BreakCoalescing()
+	e.hasSticky = false
+	end := max(0, min(rg.End, e.text.Len()))
+	e.selectRaw(max(0, min(rg.Start, end)), end)
+	e.revealAlign = align
+}
+
 // SetFindHighlights sets the find ranges, in source order; current is -1 for none.
 func (e *Editor) SetFindHighlights(ranges []contract.Range, current int) {
 	e.find, e.findCur = ranges, current

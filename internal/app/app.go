@@ -107,7 +107,7 @@ func newApplication() (*application, error) {
 	a.shell = shell.New(shell.Options{
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
-		Workspace: workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}), Search: search.NewWorkspaceSearch(),
+		Workspace: workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{}), Search: search.NewWorkspaceSearch(), Finder: search.NewFinder(),
 		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages),
 		WindowButtons: runtime.GOOS != "darwin",
 	})

@@ -1757,3 +1757,423 @@ func ShellPastePlain() string { return In(i18n.Locale()).ShellPastePlain() }
 func (msgs Messages) ShellPastePlain() string {
 	return Catalog.Format(msgs.locale, "shell_paste_plain", nil)
 }
+
+// KitFind says "Find"
+// in the language the app shows.
+//
+// The find bar, and the placeholder of its query field.
+func KitFind() string { return In(i18n.Locale()).KitFind() }
+
+// KitFind says "Find"
+// in the language of msgs.
+//
+// The find bar, and the placeholder of its query field.
+func (msgs Messages) KitFind() string {
+	return Catalog.Format(msgs.locale, "kit_find", nil)
+}
+
+// KitReplaceWith says "Replace with"
+// in the language the app shows.
+//
+// The placeholder of the find bar's replacement field.
+func KitReplaceWith() string { return In(i18n.Locale()).KitReplaceWith() }
+
+// KitReplaceWith says "Replace with"
+// in the language of msgs.
+//
+// The placeholder of the find bar's replacement field.
+func (msgs Messages) KitReplaceWith() string {
+	return Catalog.Format(msgs.locale, "kit_replace_with", nil)
+}
+
+// KitReplace says "Replace"
+// in the language the app shows.
+//
+// Replaces the current match.
+func KitReplace() string { return In(i18n.Locale()).KitReplace() }
+
+// KitReplace says "Replace"
+// in the language of msgs.
+//
+// Replaces the current match.
+func (msgs Messages) KitReplace() string {
+	return Catalog.Format(msgs.locale, "kit_replace", nil)
+}
+
+// KitReplaceAll says "Replace All"
+// in the language the app shows.
+//
+// Replaces every match, as one step of undo.
+func KitReplaceAll() string { return In(i18n.Locale()).KitReplaceAll() }
+
+// KitReplaceAll says "Replace All"
+// in the language of msgs.
+//
+// Replaces every match, as one step of undo.
+func (msgs Messages) KitReplaceAll() string {
+	return Catalog.Format(msgs.locale, "kit_replace_all", nil)
+}
+
+// KitToggleReplace says "Toggle Replace"
+// in the language the app shows.
+//
+// Shows or hides the replacement row of the find bar.
+func KitToggleReplace() string { return In(i18n.Locale()).KitToggleReplace() }
+
+// KitToggleReplace says "Toggle Replace"
+// in the language of msgs.
+//
+// Shows or hides the replacement row of the find bar.
+func (msgs Messages) KitToggleReplace() string {
+	return Catalog.Format(msgs.locale, "kit_toggle_replace", nil)
+}
+
+// KitMatchCase says "Match Case"
+// in the language the app shows.
+//
+// A find option.
+func KitMatchCase() string { return In(i18n.Locale()).KitMatchCase() }
+
+// KitMatchCase says "Match Case"
+// in the language of msgs.
+//
+// A find option.
+func (msgs Messages) KitMatchCase() string {
+	return Catalog.Format(msgs.locale, "kit_match_case", nil)
+}
+
+// KitWholeWord says "Whole Word"
+// in the language the app shows.
+//
+// A find option.
+func KitWholeWord() string { return In(i18n.Locale()).KitWholeWord() }
+
+// KitWholeWord says "Whole Word"
+// in the language of msgs.
+//
+// A find option.
+func (msgs Messages) KitWholeWord() string {
+	return Catalog.Format(msgs.locale, "kit_whole_word", nil)
+}
+
+// KitRegex says "Regular Expression"
+// in the language the app shows.
+//
+// A find option.
+func KitRegex() string { return In(i18n.Locale()).KitRegex() }
+
+// KitRegex says "Regular Expression"
+// in the language of msgs.
+//
+// A find option.
+func (msgs Messages) KitRegex() string {
+	return Catalog.Format(msgs.locale, "kit_regex", nil)
+}
+
+// KitPrevious says "Previous Match"
+// in the language the app shows.
+//
+// Goes to the previous match.
+func KitPrevious() string { return In(i18n.Locale()).KitPrevious() }
+
+// KitPrevious says "Previous Match"
+// in the language of msgs.
+//
+// Goes to the previous match.
+func (msgs Messages) KitPrevious() string {
+	return Catalog.Format(msgs.locale, "kit_previous", nil)
+}
+
+// KitNext says "Next Match"
+// in the language the app shows.
+//
+// Goes to the next match.
+func KitNext() string { return In(i18n.Locale()).KitNext() }
+
+// KitNext says "Next Match"
+// in the language of msgs.
+//
+// Goes to the next match.
+func (msgs Messages) KitNext() string {
+	return Catalog.Format(msgs.locale, "kit_next", nil)
+}
+
+// KitCloseFind says "Close"
+// in the language the app shows.
+//
+// Closes the find bar.
+func KitCloseFind() string { return In(i18n.Locale()).KitCloseFind() }
+
+// KitCloseFind says "Close"
+// in the language of msgs.
+//
+// Closes the find bar.
+func (msgs Messages) KitCloseFind() string {
+	return Catalog.Format(msgs.locale, "kit_close_find", nil)
+}
+
+// KitNoResults says "No results"
+// in the language the app shows.
+//
+// The find bar found nothing.
+func KitNoResults() string { return In(i18n.Locale()).KitNoResults() }
+
+// KitNoResults says "No results"
+// in the language of msgs.
+//
+// The find bar found nothing.
+func (msgs Messages) KitNoResults() string {
+	return Catalog.Format(msgs.locale, "kit_no_results", nil)
+}
+
+// KitBadRegex says "Invalid"
+// in the language the app shows.
+//
+// The find bar's query is not a valid regular expression.
+func KitBadRegex() string { return In(i18n.Locale()).KitBadRegex() }
+
+// KitBadRegex says "Invalid"
+// in the language of msgs.
+//
+// The find bar's query is not a valid regular expression.
+func (msgs Messages) KitBadRegex() string {
+	return Catalog.Format(msgs.locale, "kit_bad_regex", nil)
+}
+
+// ShellFind says "Find"
+// in the language the app shows.
+//
+// Opens the find bar.
+func ShellFind() string { return In(i18n.Locale()).ShellFind() }
+
+// ShellFind says "Find"
+// in the language of msgs.
+//
+// Opens the find bar.
+func (msgs Messages) ShellFind() string {
+	return Catalog.Format(msgs.locale, "shell_find", nil)
+}
+
+// ShellReplace says "Replace"
+// in the language the app shows.
+//
+// Opens the find bar with replacing.
+func ShellReplace() string { return In(i18n.Locale()).ShellReplace() }
+
+// ShellReplace says "Replace"
+// in the language of msgs.
+//
+// Opens the find bar with replacing.
+func (msgs Messages) ShellReplace() string {
+	return Catalog.Format(msgs.locale, "shell_replace", nil)
+}
+
+// ShellFindNext says "Find Next"
+// in the language the app shows.
+//
+// Goes to the next match.
+func ShellFindNext() string { return In(i18n.Locale()).ShellFindNext() }
+
+// ShellFindNext says "Find Next"
+// in the language of msgs.
+//
+// Goes to the next match.
+func (msgs Messages) ShellFindNext() string {
+	return Catalog.Format(msgs.locale, "shell_find_next", nil)
+}
+
+// ShellFindPrev says "Find Previous"
+// in the language the app shows.
+//
+// Goes to the previous match.
+func ShellFindPrev() string { return In(i18n.Locale()).ShellFindPrev() }
+
+// ShellFindPrev says "Find Previous"
+// in the language of msgs.
+//
+// Goes to the previous match.
+func (msgs Messages) ShellFindPrev() string {
+	return Catalog.Format(msgs.locale, "shell_find_prev", nil)
+}
+
+// ShellBannerConflict says "Changed by another program."
+// in the language the app shows.
+//
+// The banner of a document changed on disk while it has unsaved changes.
+func ShellBannerConflict() string { return In(i18n.Locale()).ShellBannerConflict() }
+
+// ShellBannerConflict says "Changed by another program."
+// in the language of msgs.
+//
+// The banner of a document changed on disk while it has unsaved changes.
+func (msgs Messages) ShellBannerConflict() string {
+	return Catalog.Format(msgs.locale, "shell_banner_conflict", nil)
+}
+
+// ShellBannerConflictDetail says "Your unsaved changes are intact and not yet written."
+// in the language the app shows.
+//
+// Under the conflict banner's title.
+func ShellBannerConflictDetail() string { return In(i18n.Locale()).ShellBannerConflictDetail() }
+
+// ShellBannerConflictDetail says "Your unsaved changes are intact and not yet written."
+// in the language of msgs.
+//
+// Under the conflict banner's title.
+func (msgs Messages) ShellBannerConflictDetail() string {
+	return Catalog.Format(msgs.locale, "shell_banner_conflict_detail", nil)
+}
+
+// ShellKeepMine says "Keep Mine"
+// in the language the app shows.
+//
+// Writes the document over the file changed on disk.
+func ShellKeepMine() string { return In(i18n.Locale()).ShellKeepMine() }
+
+// ShellKeepMine says "Keep Mine"
+// in the language of msgs.
+//
+// Writes the document over the file changed on disk.
+func (msgs Messages) ShellKeepMine() string {
+	return Catalog.Format(msgs.locale, "shell_keep_mine", nil)
+}
+
+// ShellLoadTheirs says "Load Disk Version"
+// in the language the app shows.
+//
+// Replaces the document with the file on disk, as a step of undo.
+func ShellLoadTheirs() string { return In(i18n.Locale()).ShellLoadTheirs() }
+
+// ShellLoadTheirs says "Load Disk Version"
+// in the language of msgs.
+//
+// Replaces the document with the file on disk, as a step of undo.
+func (msgs Messages) ShellLoadTheirs() string {
+	return Catalog.Format(msgs.locale, "shell_load_theirs", nil)
+}
+
+// ShellBannerDeleted says "Deleted on disk."
+// in the language the app shows.
+//
+// The banner of a document whose file was deleted.
+func ShellBannerDeleted() string { return In(i18n.Locale()).ShellBannerDeleted() }
+
+// ShellBannerDeleted says "Deleted on disk."
+// in the language of msgs.
+//
+// The banner of a document whose file was deleted.
+func (msgs Messages) ShellBannerDeleted() string {
+	return Catalog.Format(msgs.locale, "shell_banner_deleted", nil)
+}
+
+// ShellBannerDeletedDetail says "The text is still here; saving creates the file again."
+// in the language the app shows.
+//
+// Under the deleted banner's title.
+func ShellBannerDeletedDetail() string { return In(i18n.Locale()).ShellBannerDeletedDetail() }
+
+// ShellBannerDeletedDetail says "The text is still here; saving creates the file again."
+// in the language of msgs.
+//
+// Under the deleted banner's title.
+func (msgs Messages) ShellBannerDeletedDetail() string {
+	return Catalog.Format(msgs.locale, "shell_banner_deleted_detail", nil)
+}
+
+// ShellSaveAgain says "Save Again"
+// in the language the app shows.
+//
+// Saves a deleted document, creating its file again.
+func ShellSaveAgain() string { return In(i18n.Locale()).ShellSaveAgain() }
+
+// ShellSaveAgain says "Save Again"
+// in the language of msgs.
+//
+// Saves a deleted document, creating its file again.
+func (msgs Messages) ShellSaveAgain() string {
+	return Catalog.Format(msgs.locale, "shell_save_again", nil)
+}
+
+// ShellCloseTab says "Close Tab"
+// in the language the app shows.
+//
+// Closes the document's tab.
+func ShellCloseTab() string { return In(i18n.Locale()).ShellCloseTab() }
+
+// ShellCloseTab says "Close Tab"
+// in the language of msgs.
+//
+// Closes the document's tab.
+func (msgs Messages) ShellCloseTab() string {
+	return Catalog.Format(msgs.locale, "shell_close_tab", nil)
+}
+
+// ShellBannerReadOnly says "This file is read-only."
+// in the language the app shows.
+//
+// The banner of a read-only document.
+func ShellBannerReadOnly() string { return In(i18n.Locale()).ShellBannerReadOnly() }
+
+// ShellBannerReadOnly says "This file is read-only."
+// in the language of msgs.
+//
+// The banner of a read-only document.
+func (msgs Messages) ShellBannerReadOnly() string {
+	return Catalog.Format(msgs.locale, "shell_banner_read_only", nil)
+}
+
+// ShellBannerReadOnlyDetail says "You can read it; save a copy to change it."
+// in the language the app shows.
+//
+// Under the read-only banner's title.
+func ShellBannerReadOnlyDetail() string { return In(i18n.Locale()).ShellBannerReadOnlyDetail() }
+
+// ShellBannerReadOnlyDetail says "You can read it; save a copy to change it."
+// in the language of msgs.
+//
+// Under the read-only banner's title.
+func (msgs Messages) ShellBannerReadOnlyDetail() string {
+	return Catalog.Format(msgs.locale, "shell_banner_read_only_detail", nil)
+}
+
+// ShellBannerLarge says "Large file mode."
+// in the language the app shows.
+//
+// The banner of a document opened in large file mode.
+func ShellBannerLarge() string { return In(i18n.Locale()).ShellBannerLarge() }
+
+// ShellBannerLarge says "Large file mode."
+// in the language of msgs.
+//
+// The banner of a document opened in large file mode.
+func (msgs Messages) ShellBannerLarge() string {
+	return Catalog.Format(msgs.locale, "shell_banner_large", nil)
+}
+
+// ShellBannerLargeDetail says "Some live rendering is off to keep it fast."
+// in the language the app shows.
+//
+// Under the large file banner's title.
+func ShellBannerLargeDetail() string { return In(i18n.Locale()).ShellBannerLargeDetail() }
+
+// ShellBannerLargeDetail says "Some live rendering is off to keep it fast."
+// in the language of msgs.
+//
+// Under the large file banner's title.
+func (msgs Messages) ShellBannerLargeDetail() string {
+	return Catalog.Format(msgs.locale, "shell_banner_large_detail", nil)
+}
+
+// ShellDeletedStatus says "Deleted, not written"
+// in the language the app shows.
+//
+// The status capsule of a document whose file was deleted.
+func ShellDeletedStatus() string { return In(i18n.Locale()).ShellDeletedStatus() }
+
+// ShellDeletedStatus says "Deleted, not written"
+// in the language of msgs.
+//
+// The status capsule of a document whose file was deleted.
+func (msgs Messages) ShellDeletedStatus() string {
+	return Catalog.Format(msgs.locale, "shell_deleted_status", nil)
+}

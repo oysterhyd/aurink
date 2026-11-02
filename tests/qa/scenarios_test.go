@@ -130,7 +130,7 @@ func (a *app) boot() {
 	a.ws = workspace.New(&contracttest.SnapshotWatcher{}, a.trash, a.q, workspace.Options{})
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
-	a.s = shell.New(shell.Options{Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
+	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
 		Files: func() []string { return a.files }, Workspace: a.ws, Search: search.NewWorkspaceSearch()})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {

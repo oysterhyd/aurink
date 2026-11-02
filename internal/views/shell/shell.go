@@ -68,6 +68,9 @@ type Options struct {
 	Files func() []string
 	// Workspace backs the file tree; nil shows the open documents instead.
 	Workspace contract.Workspace
+	// Finder finds in the active document (the find bar); nil leaves the live
+	// view's find bar without matches.
+	Finder contract.Finder
 	// Search searches the workspace folder; nil leaves the search panel empty.
 	Search contract.WorkspaceSearch
 	// Clip, Converter and Assets serve the clipboard and dropped images; see
@@ -87,6 +90,7 @@ type doc struct {
 	mode   editorapi.Mode
 	offs   []func()
 	// The word count, recounted at most this often while typing.
+	find      lfind
 	counted   contract.Version
 	countedAt time.Time
 	words     int
@@ -667,40 +671,49 @@ func (s *Shell) sheet(c *ui.Context, t *theme.Tokens) {
 		if s.active == nil {
 			s.welcome(c, t)
 		} else {
-			s.document(c.Key(s.active.s.ID()), t, s.active)
-			s.capsule(c, t, s.active)
+			d := s.active
+			s.document(c.Key(d.s.ID()), t, d)
+			// A banner's button can close the tab as it builds.
+			if s.active == d {
+				s.capsule(c, t, d)
+			}
 		}
 		s.noticeStack(c, t)
 	})
 }
 
 func (s *Shell) document(c *ui.Context, t *theme.Tokens, d *doc) {
-	host := ui.Box(c).Absolute().Fill()
-	host.Children(func() {
-		switch {
-		case !s.live && d.mode == editorapi.ModeSource:
-			// One code editor state cannot build twice; the sheet stands in for it.
-		case !s.live:
-			d.live.Ghost(c, t)
-		case d.mode == editorapi.ModeSource:
-			e := d.source.View(c.Key("source"))
-			if s.focusNext {
-				s.focusNext = false
-				e.Focus()
-			}
-		default:
-			if s.focusNext {
-				s.focusNext = false
-				d.live.Focus()
-			}
-			d.live.View(c.Key("live"))
-			if !d.live.FocusMode() {
-				d.live.Rail(c.Key("rail"))
-			}
-			d.live.TableBar(c.Key("tableBar"))
-			d.live.LinkBar(c.Key("linkBar"))
-		}
+	ui.Column(c).Absolute().Fill().Children(func() {
+		s.banner(c, t, d)
+		ui.Box(c.Key("editor")).Grow(1).Children(func() { s.editor(c, t, d) })
 	})
+}
+
+func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
+	switch {
+	case !s.live && d.mode == editorapi.ModeSource:
+		// One code editor state cannot build twice; the sheet stands in for it.
+	case !s.live:
+		d.live.Ghost(c, t)
+	case d.mode == editorapi.ModeSource:
+		e := d.source.View(c.Key("source"))
+		if s.focusNext {
+			s.focusNext = false
+			e.Focus()
+		}
+	default:
+		if s.focusNext {
+			s.focusNext = false
+			d.live.Focus()
+		}
+		d.live.View(c.Key("live"))
+		if !d.live.FocusMode() {
+			d.live.Rail(c.Key("rail"))
+		}
+		d.live.TableBar(c.Key("tableBar"))
+		d.live.LinkBar(c.Key("linkBar"))
+		s.findBar(c, t, d)
+	}
 }
 
 func (s *Shell) capsule(c *ui.Context, t *theme.Tokens, d *doc) {
@@ -717,7 +730,9 @@ func (s *Shell) status(d *doc, t *theme.Tokens) (string, ui.Color) {
 	st := d.s.State()
 	switch {
 	case st.Conflict:
-		return locales.ShellConflict(), t.Danger
+		return locales.ShellConflict(), t.Warning
+	case st.Deleted:
+		return locales.ShellDeletedStatus(), t.Danger
 	case st.Err != nil:
 		return locales.ShellSaveFailed(), t.Danger
 	case st.Saving:
@@ -834,7 +849,8 @@ func (s *Shell) save(d *doc, done func(error)) {
 	}
 	if done == nil {
 		done = func(err error) {
-			if err != nil {
+			// A conflict has its banner, with what to do about it.
+			if err != nil && contract.CodeOf(err) != contract.CodeConflict {
 				s.fail(err)
 			}
 		}
@@ -919,6 +935,7 @@ func (s *Shell) setMode(d *doc, m editorapi.Mode) {
 	case editorapi.ModeSource:
 		if d.source == nil {
 			d.source = source.New(d.s.Model(), s.palette(s.dark))
+			d.source.SetMotion(s.live)
 		}
 		d.source.Enter(d.live.TopOffset())
 	default:

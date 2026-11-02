@@ -134,6 +134,7 @@ func (s *Shell) editCommands() []contract.Command {
 		{"deleteCol", contract.EditCommand{ID: contract.CmdTableDeleteCol}},
 		{"tableFormat", contract.EditCommand{ID: contract.CmdTableFormat}},
 	}
+	hasDoc := func() bool { return s.active != nil }
 	var out []contract.Command
 	for _, e := range edits {
 		out = append(out, contract.Command{ID: e.cmd.ID, Title: e.title, Enabled: live, Run: func() error {
@@ -150,6 +151,10 @@ func (s *Shell) editCommands() []contract.Command {
 		contract.Command{ID: contract.CmdViewTypewriter, Title: "typewriter", Enabled: live,
 			Checked: func() bool { return live() && s.active.live.Typewriter() },
 			Run:     func() error { s.active.live.SetTypewriter(!s.active.live.Typewriter()); s.invalidate(); return nil }},
+		contract.Command{ID: contract.CmdEditFind, Title: "find", Enabled: hasDoc, Run: func() error { s.find(false, 0); return nil }},
+		contract.Command{ID: contract.CmdEditReplace, Title: "replace", Enabled: hasDoc, Run: func() error { s.find(true, 0); return nil }},
+		contract.Command{ID: contract.CmdEditFindNext, Title: "findNext", Enabled: hasDoc, Run: func() error { s.find(false, 1); return nil }},
+		contract.Command{ID: contract.CmdEditFindPrev, Title: "findPrev", Enabled: hasDoc, Run: func() error { s.find(false, -1); return nil }},
 		contract.Command{ID: contract.CmdEditCopyMarkdown, Title: "copyMarkdown", Enabled: live,
 			Run: func() error { s.active.live.CopyMarkdown(); return nil }},
 		contract.Command{ID: contract.CmdEditCopyHTML, Title: "copyHTML", Enabled: live,
@@ -174,6 +179,8 @@ var editTitles = map[string]func() string{
 	"outline": locales.ShellPanelOutline, "search": locales.ShellPanelSearch,
 	"searchWorkspace": locales.ShellSearchInFolder, "rename": locales.ShellRename,
 	"copyMarkdown": locales.ShellCopyMarkdown, "copyHTML": locales.ShellCopyHtml, "pastePlain": locales.ShellPastePlain,
+	"find": locales.ShellFind, "replace": locales.ShellReplace, "findNext": locales.ShellFindNext,
+	"findPrev": locales.ShellFindPrev,
 }
 
 // showPanel opens the sidebar on a panel.
@@ -273,4 +280,21 @@ func init() {
 func keyOf(name string) (ui.Key, bool) {
 	k, ok := namedKeys[name]
 	return k, ok
+}
+
+// find opens the find bar of the active tab, or steps through its matches
+// (dir ±1); the source view's is MyGo's own.
+func (s *Shell) find(replace bool, dir int) {
+	d := s.active
+	switch {
+	case d.mode == editorapi.ModeSource && dir != 0:
+		d.source.FindStep(dir)
+	case d.mode == editorapi.ModeSource:
+		d.source.Find(replace)
+	case dir != 0:
+		s.findStep(d, dir)
+	default:
+		s.openFind(d, replace)
+	}
+	s.invalidate()
 }

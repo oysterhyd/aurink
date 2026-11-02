@@ -55,11 +55,11 @@ func (p platform) Close()                                       { p.w.Close() }
 
 const demo = `# Aurink 是什么
 
-轻量、即开即写的 Markdown 编辑器。**Markdown 文件就是你的文件**：打开、编辑、保存，都不会改动你没碰过的任何一个字节。规划细节见 [可行性报告](https://example.com)。
+轻量、即开即写的 Markdown 编辑器。**Markdown 文件就是你的文件**：打开、编辑、保存，都不会改动你没碰过的任何一个字节。规划细节见 [可行性报告](https://example.com)。[^1]
 
 ## 写作时的感受
 
-光标进入一段文字时，它的 ` + "`标记`" + ` 才淡淡地出现；*离开之后*，页面又回到干净的排版。这只是显示上的变化，源码本身从未被改写。
+光标进入一段文字时，它的 ` + "`标记`" + ` 才淡淡地出现；*离开之后*，页面又回到<mark>干净的排版</mark>。这只是显示上的变化，源码本身从未被改写；按 <kbd>Ctrl</kbd> <kbd>/</kbd> 可以看源码。
 
 > 内容优先：编辑区之外的一切默认安静，需要时才出现。
 
@@ -78,6 +78,8 @@ const demo = `# Aurink 是什么
 | 项 | 值 |
 |---|---|
 | 行距 | 1.75 |
+
+[^1]: 见 docs/01-feasibility.md。
 `
 
 func main() {
@@ -123,7 +125,7 @@ func main() {
 		var w *mygo.Window
 		var s *shell.Shell
 		p := &platform{}
-		s = shell.New(shell.Options{Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
+		s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
 			Workspace: workspace.New(watch.New(), trash.New(), d, workspace.Options{}), Search: search.NewWorkspaceSearch()})
 		if err := reg.Register(s.Commands()...); err != nil {
@@ -236,6 +238,29 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	shot("Table")
 	on(w, func() { s.GoTo(strings.Index(demo, "可行性报告") + 3) })
 	shot("Link")
+	on(w, func() { s.GoTo(0) })
+	run(contract.CmdEditReplace)
+	on(w, func() { s.SetFind("Markdown") })
+	shot("Find")
+	run(contract.CmdViewSource)
+	run(contract.CmdEditReplace)
+	shot("SourceFind")
+	run(contract.CmdViewLive)
+	// A conflict: an edit, a change on disk, a save.
+	on(w, func() {
+		m := s.ActiveSession().Model()
+		if _, err := m.Apply(contract.Transaction{Edits: []contract.TextEdit{{Range: contract.Range{Start: 0, End: 0}, Text: "x"}},
+			Origin: contract.OriginUser}); err != nil {
+			log.Fatal(err)
+		}
+	})
+	if err := os.WriteFile(s.ActiveSession().State().Path, []byte(demo+"\n改动\n"), 0o644); err != nil {
+		log.Fatal(err)
+	}
+	time.Sleep(200 * time.Millisecond)
+	run(contract.CmdFileSave)
+	time.Sleep(500 * time.Millisecond)
+	shot("Conflict")
 	for _, size := range []int{200 << 10, 1 << 20} {
 		open(fmt.Sprintf("stress-%d.md", size), corpus.Generate(size, 1))
 		stress(w, s, size)

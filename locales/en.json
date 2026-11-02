@@ -547,5 +547,125 @@
   "shell_paste_plain": "Paste as Plain Text",
   "@shell_paste_plain": {
     "description": "Command pasting the clipboard text without converting it."
+  },
+  "kit_find": "Find",
+  "@kit_find": {
+    "description": "The find bar, and the placeholder of its query field."
+  },
+  "kit_replace_with": "Replace with",
+  "@kit_replace_with": {
+    "description": "The placeholder of the find bar's replacement field."
+  },
+  "kit_replace": "Replace",
+  "@kit_replace": {
+    "description": "Replaces the current match."
+  },
+  "kit_replace_all": "Replace All",
+  "@kit_replace_all": {
+    "description": "Replaces every match, as one step of undo."
+  },
+  "kit_toggle_replace": "Toggle Replace",
+  "@kit_toggle_replace": {
+    "description": "Shows or hides the replacement row of the find bar."
+  },
+  "kit_match_case": "Match Case",
+  "@kit_match_case": {
+    "description": "A find option."
+  },
+  "kit_whole_word": "Whole Word",
+  "@kit_whole_word": {
+    "description": "A find option."
+  },
+  "kit_regex": "Regular Expression",
+  "@kit_regex": {
+    "description": "A find option."
+  },
+  "kit_previous": "Previous Match",
+  "@kit_previous": {
+    "description": "Goes to the previous match."
+  },
+  "kit_next": "Next Match",
+  "@kit_next": {
+    "description": "Goes to the next match."
+  },
+  "kit_close_find": "Close",
+  "@kit_close_find": {
+    "description": "Closes the find bar."
+  },
+  "kit_no_results": "No results",
+  "@kit_no_results": {
+    "description": "The find bar found nothing."
+  },
+  "kit_bad_regex": "Invalid",
+  "@kit_bad_regex": {
+    "description": "The find bar's query is not a valid regular expression."
+  },
+  "shell_find": "Find",
+  "@shell_find": {
+    "description": "Opens the find bar."
+  },
+  "shell_replace": "Replace",
+  "@shell_replace": {
+    "description": "Opens the find bar with replacing."
+  },
+  "shell_find_next": "Find Next",
+  "@shell_find_next": {
+    "description": "Goes to the next match."
+  },
+  "shell_find_prev": "Find Previous",
+  "@shell_find_prev": {
+    "description": "Goes to the previous match."
+  },
+  "shell_banner_conflict": "Changed by another program.",
+  "@shell_banner_conflict": {
+    "description": "The banner of a document changed on disk while it has unsaved changes."
+  },
+  "shell_banner_conflict_detail": "Your unsaved changes are intact and not yet written.",
+  "@shell_banner_conflict_detail": {
+    "description": "Under the conflict banner's title."
+  },
+  "shell_keep_mine": "Keep Mine",
+  "@shell_keep_mine": {
+    "description": "Writes the document over the file changed on disk."
+  },
+  "shell_load_theirs": "Load Disk Version",
+  "@shell_load_theirs": {
+    "description": "Replaces the document with the file on disk, as a step of undo."
+  },
+  "shell_banner_deleted": "Deleted on disk.",
+  "@shell_banner_deleted": {
+    "description": "The banner of a document whose file was deleted."
+  },
+  "shell_banner_deleted_detail": "The text is still here; saving creates the file again.",
+  "@shell_banner_deleted_detail": {
+    "description": "Under the deleted banner's title."
+  },
+  "shell_save_again": "Save Again",
+  "@shell_save_again": {
+    "description": "Saves a deleted document, creating its file again."
+  },
+  "shell_close_tab": "Close Tab",
+  "@shell_close_tab": {
+    "description": "Closes the document's tab."
+  },
+  "shell_banner_read_only": "This file is read-only.",
+  "@shell_banner_read_only": {
+    "description": "The banner of a read-only document."
+  },
+  "shell_banner_read_only_detail": "You can read it; save a copy to change it.",
+  "@shell_banner_read_only_detail": {
+    "description": "Under the read-only banner's title."
+  },
+  "shell_banner_large": "Large file mode.",
+  "@shell_banner_large": {
+    "description": "The banner of a document opened in large file mode."
+  },
+  "shell_banner_large_detail": "Some live rendering is off to keep it fast.",
+  "@shell_banner_large_detail": {
+    "description": "Under the large file banner's title."
+  },
+  "shell_deleted_status": "Deleted, not written",
+  "@shell_deleted_status": {
+    "description": "The status capsule of a document whose file was deleted."
   }
 }

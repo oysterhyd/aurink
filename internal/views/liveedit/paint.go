@@ -86,7 +86,7 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		w := widgetOf(b)
 		w.back(&rc)
 		x, y := rc.textX(), rc.textY()
-		e.paintFind(p, l, b, x, y)
+		e.paintFind(p, l, b, x, y, r.Y, r.Y+r.H)
 		if selFrom != selTo && selFrom < b.Trailer.End && selTo > b.Lead.Start {
 			e.fillRange(p, l, b, x, y, selFrom, selTo, t.Selection)
 		}
@@ -118,9 +118,23 @@ func marginTag(b *contract.Block) string {
 	return "¶"
 }
 
-func (e *Editor) paintFind(p *ui.Painter, l *laid, b *contract.Block, x, y float32) {
-	start := sort.Search(len(e.find), func(k int) bool { return e.find[k].End > b.Lead.Start })
-	for k := start; k < len(e.find) && e.find[k].Start < b.Trailer.End; k++ {
+func (e *Editor) paintFind(p *ui.Painter, l *laid, b *contract.Block, x, y, top, bottom float32) {
+	lo := sort.Search(len(e.find), func(k int) bool { return e.find[k].End > b.Lead.Start })
+	hi := sort.Search(len(e.find), func(k int) bool { return e.find[k].Start >= b.Trailer.End })
+	if hi-lo > 64 {
+		// A long block with many matches, as a large code block: matches go
+		// down the block in order, so only those in view are looked for.
+		span := contract.Range{Start: b.Lead.Start, End: b.Trailer.End}
+		at := func(off int, aff contract.Affinity) ui.Rect {
+			idx := e.opts.Projector.ToDisplay(&l.proj, clampTo(off, span), aff)
+			return l.layout.CaretAt(ui.TextCaretPosition{Index: idx})
+		}
+		n := hi - lo
+		first := lo + sort.Search(n, func(j int) bool { c := at(e.find[lo+j].End, contract.Downstream); return y+c.Y+c.H >= top })
+		hi = lo + sort.Search(n, func(j int) bool { return y+at(e.find[lo+j].Start, contract.Upstream).Y > bottom })
+		lo = first
+	}
+	for k := lo; k < hi; k++ {
 		c := e.t.Mark
 		if k == e.findCur {
 			c = e.t.Warning.Alpha(.6)

@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"aurink/internal/contract"
+	"aurink/internal/views/kit"
 	"aurink/internal/views/theme"
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/editor"
@@ -31,6 +32,8 @@ type Editor struct {
 	dominant string
 	writing  bool
 	off      func()
+	t        *theme.Tokens
+	motion   bool
 }
 
 // New returns the source view of a document.
@@ -45,6 +48,12 @@ func New(m contract.DocumentModel, t *theme.Tokens) *Editor {
 		Font: ui.Font{Family: theme.Mono, Size: 13}, LineHeight: 1.6, OnInput: e.input}
 	e.dominant = m.Meta().Dominant
 	e.SetTheme(t)
+	// MyGo's finder with Aurink's bar (02 §5.14, D16): its matches are drawn in
+	// the text by the editor itself.
+	e.st.RenderFindBar = func(c *ui.Context, bar ui.Element, f *editor.FindBar) {
+		bar.Top(12).Right(20)
+		kit.FindBar(c, e.t, bar, f, e.motion)
+	}
 	e.off = m.Subscribe(func(ev contract.DocEvent) {
 		if ev.Kind != contract.DocSelectionChanged && !e.writing {
 			e.pull()
@@ -59,8 +68,30 @@ func (e *Editor) Close() { e.off() }
 // State returns the editor's state, for tests and the find bar.
 func (e *Editor) State() *editor.State { return e.st }
 
+// SetMotion lets the find bar animate; off while motion is reduced.
+func (e *Editor) SetMotion(on bool) { e.motion = on }
+
+// Find opens the find bar, with the replacement row when replace is set.
+func (e *Editor) Find(replace bool) {
+	if replace {
+		e.st.Run(editor.FindReplace)
+	} else {
+		e.st.Run(editor.Find)
+	}
+}
+
+// FindStep goes to the next match, or the previous for a negative dir.
+func (e *Editor) FindStep(dir int) {
+	if dir < 0 {
+		e.st.Run(editor.FindPrevious)
+	} else {
+		e.st.Run(editor.FindNext)
+	}
+}
+
 // SetTheme colors the editor from the tokens.
 func (e *Editor) SetTheme(t *theme.Tokens) {
+	e.t = t
 	th := &editor.Theme{Background: t.Sheet, Text: t.Text, LineNumber: t.Faint, ActiveLineNumber: t.Muted,
 		ActiveLine: t.Surface, Selection: t.Selection, InactiveSelection: t.Selection.Alpha(.5), Cursor: t.Accent,
 		MatchingBracket: t.Border, Match: t.Mark, CurrentMatch: t.Warning.Alpha(.6), Occurrence: t.Surface,
