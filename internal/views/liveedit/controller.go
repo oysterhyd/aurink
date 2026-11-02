@@ -85,7 +85,10 @@ func (e *Editor) VisibleHeading() (contract.BlockID, bool) {
 	if len(e.rows) == 0 {
 		return 0, false
 	}
-	off := e.block(min(e.first, len(e.rows)-1)).Range.Start
+	// The row under the top margin, where a jump to a heading puts it: the rows
+	// above show in the margin but belong to the section before.
+	r := max(0, min(e.hs.at(e.scroll+padTop+2), len(e.rows)-1))
+	off := e.block(r).Range.Start
 	o := e.ast.Outline()
 	i := sort.Search(len(o), func(k int) bool { return o[k].Range.Start > off })
 	if i == 0 {

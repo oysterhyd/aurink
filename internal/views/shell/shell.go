@@ -681,6 +681,9 @@ func (s *Shell) document(c *ui.Context, t *theme.Tokens, d *doc) {
 				d.live.Focus()
 			}
 			d.live.View(c.Key("live"))
+			if !d.live.FocusMode() {
+				d.live.Rail(c.Key("rail"))
+			}
 		}
 	})
 }

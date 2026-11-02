@@ -52,6 +52,8 @@ type Stats struct {
 	// RowRebuilds counts walks over all rows, which ordinary typing must not do.
 	RowRebuilds int
 	Edits       int
+	// RailMarks counts the marks the structure rail placed in the last frame.
+	RailMarks int
 }
 
 // revealKey says what a row's projection depends on in the selection, relative to
