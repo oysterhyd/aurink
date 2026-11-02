@@ -149,6 +149,17 @@ func (e *Editor) SelectionRect() (editorapi.Rect, bool) {
 	return out, found
 }
 
+// CopyMarkdown copies the selection as Markdown only; CopyHTML as an HTML
+// fragment, its source as the text; PastePlain pastes the clipboard's text as
+// it is (02 §2.1).
+func (e *Editor) CopyMarkdown() { e.copySelection(copyMarkdown) }
+
+// CopyHTML copies the selection as HTML.
+func (e *Editor) CopyHTML() { e.copySelection(copyHTML) }
+
+// PastePlain pastes the clipboard's plain text, without converting it.
+func (e *Editor) PastePlain() { e.paste(true) }
+
 // RunEdit runs a command on the selection.
 func (e *Editor) RunEdit(cmd contract.EditCommand) error {
 	if e.readOnly() {

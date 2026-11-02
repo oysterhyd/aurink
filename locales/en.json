@@ -535,5 +535,17 @@
   "liveedit_open_link": "Open",
   "@liveedit_open_link": {
     "description": "Follows the link."
+  },
+  "shell_copy_markdown": "Copy as Markdown",
+  "@shell_copy_markdown": {
+    "description": "Command copying the selection as Markdown only."
+  },
+  "shell_copy_html": "Copy as HTML",
+  "@shell_copy_html": {
+    "description": "Command copying the selection as HTML."
+  },
+  "shell_paste_plain": "Paste as Plain Text",
+  "@shell_paste_plain": {
+    "description": "Command pasting the clipboard text without converting it."
   }
 }

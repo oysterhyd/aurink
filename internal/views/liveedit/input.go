@@ -669,18 +669,11 @@ func (e *Editor) command(name string) bool {
 		e.selectRaw(0, e.text.Len())
 		e.revealPending = false
 	case "copy", "cut":
-		rg := contract.SelRange{Anchor: e.anchor, Head: e.head}.Range()
-		if rg.Start == rg.End {
-			return true
-		}
-		e.services.WriteClipboard(e.text.Slice(rg))
-		if name == "cut" {
+		if e.copySelection(copyAll) && name == "cut" {
 			e.deleteSelection()
 		}
 	case "paste":
-		if s := e.services.ReadClipboard(); s != "" {
-			e.intent(contract.Intent{Kind: contract.IntentPaste, Paste: &contract.PastePayload{Plain: s}})
-		}
+		e.paste(false)
 	case "delete":
 		e.deleteSelection()
 	default:

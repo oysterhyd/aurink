@@ -193,6 +193,10 @@ M1 通过需要用户确认三项真机验收，并接受这项性能差异；�
 
 - 多格式写入用 `Clipboard.Write(transfer.Data)` [源码]，由 `adapters/clipboard` 包一层，测试用 `tt.Clipboard`。
 - 粘贴图片时文档还未保存：先要求另存，或暂存到恢复目录，保存时再导入。负责人在这张卡开始时定，写入本文。
+  - **已定（批次 10）：先要求另存。** 另存取消就不导入。理由：暂存要在保存时改写文档里的图片路径，等于保存流程多一步改写，与“不改动没碰过的字节”冲突。
+  - 拖入图片插在光标处，不在落点：MyGo 的 `DroppedFiles` 不给落点坐标，拖动时也收不到指针位置 [源码 `ui/drop.go`]。拖入 `.md` `.markdown` `.txt` 打开文件。
+  - 没有另写 `adapters/clipboard`：视图直接用 `ui.Services` 的 `ReadClipboardData` / `WriteClipboardData`，测试用 `Tester.SetClipboardData`，多包一层没有用处。
+  - 复制的纯文本是 Markdown 源码（与 Typora 一致），另放 `text/markdown` 和 HTML 片段；“复制为 HTML”的纯文本是 HTML 源码。
 - 大段粘贴是一次撤销。
 
 ### FE-2.5 查找与横幅（批次 11）

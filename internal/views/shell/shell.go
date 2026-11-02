@@ -70,6 +70,11 @@ type Options struct {
 	Workspace contract.Workspace
 	// Search searches the workspace folder; nil leaves the search panel empty.
 	Search contract.WorkspaceSearch
+	// Clip, Converter and Assets serve the clipboard and dropped images; see
+	// liveedit.Options.
+	Clip      func(markdown string) string
+	Converter contract.PasteConverter
+	Assets    contract.Assets
 }
 
 const maxNotices = 4
@@ -212,7 +217,14 @@ func (s *Shell) attach(x contract.Session) *doc {
 				return filepath.Dir(p)
 			}
 			return ""
-		}, KeyLabel: s.keyLabel, OpenFile: s.Open})
+		}, KeyLabel: s.keyLabel, OpenFile: s.Open, Clip: s.o.Clip, Converter: s.o.Converter, Assets: s.o.Assets,
+		DocPath: func() string { return x.State().Path },
+		SaveFirst: func(done func(bool)) {
+			if d := s.docOf(x); d != nil {
+				s.saveAs(d, func(err error) { done(err == nil) })
+			}
+		},
+		OnError: s.fail})
 	d.offs = append(d.offs, x.OnState(func(contract.DocState) { s.invalidate() }))
 	s.docs = append(s.docs, d)
 	if s.active == nil {

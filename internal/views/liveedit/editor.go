@@ -42,8 +42,24 @@ type Options struct {
 	Dispatcher contract.Dispatcher
 	// KeyLabel names a command's shortcut for the popovers; nil names none.
 	KeyLabel func(contract.CommandID) string
-	// OpenFile opens a file a link points to; nil leaves such links alone.
+	// OpenFile opens a file a link points to, or one dropped on the document; nil
+	// leaves them alone.
 	OpenFile func(path string)
+	// Clip turns copied Markdown into the HTML fragment copied with it; nil
+	// copies the Markdown only.
+	Clip func(markdown string) (html string)
+	// Converter turns pasted HTML and RTF into Markdown; nil pastes their text.
+	Converter contract.PasteConverter
+	// Assets imports pasted and dropped images next to the document; nil inserts
+	// dropped images by their own path and ignores pasted pictures.
+	Assets contract.Assets
+	// DocPath returns the document's file, "" while it has none.
+	DocPath func() string
+	// SaveFirst saves a document without a file before images are imported next
+	// to it; done reports whether it has one now.
+	SaveFirst func(done func(ok bool))
+	// OnError reports what failed in the background, as an image import.
+	OnError func(error)
 }
 
 // Stats counts what the engine did, for assertions by count (03 §10).
@@ -272,6 +288,11 @@ func (e *Editor) View(c *ui.Context) ui.Element {
 		Role(ui.RoleTextField).Label("Editor").
 		HandleTextInput(e).HandleInput(e.input).Draw(e.paint).PopoverMenu(e.tableMenu)
 	e.services, e.hasView = c.Services(), true
+	// MyGo does not say where files were dropped, and the pointer's last place
+	// may be from before the drag: dropped images go in at the caret.
+	if files := box.DroppedFiles(); len(files) > 0 {
+		e.dropFiles(files, e.head)
+	}
 	if e.focusReq {
 		e.focusReq = false
 		e.handle.Focus(c)

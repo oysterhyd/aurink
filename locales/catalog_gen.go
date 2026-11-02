@@ -1715,3 +1715,45 @@ func LiveeditOpenLink() string { return In(i18n.Locale()).LiveeditOpenLink() }
 func (msgs Messages) LiveeditOpenLink() string {
 	return Catalog.Format(msgs.locale, "liveedit_open_link", nil)
 }
+
+// ShellCopyMarkdown says "Copy as Markdown"
+// in the language the app shows.
+//
+// Command copying the selection as Markdown only.
+func ShellCopyMarkdown() string { return In(i18n.Locale()).ShellCopyMarkdown() }
+
+// ShellCopyMarkdown says "Copy as Markdown"
+// in the language of msgs.
+//
+// Command copying the selection as Markdown only.
+func (msgs Messages) ShellCopyMarkdown() string {
+	return Catalog.Format(msgs.locale, "shell_copy_markdown", nil)
+}
+
+// ShellCopyHtml says "Copy as HTML"
+// in the language the app shows.
+//
+// Command copying the selection as HTML.
+func ShellCopyHtml() string { return In(i18n.Locale()).ShellCopyHtml() }
+
+// ShellCopyHtml says "Copy as HTML"
+// in the language of msgs.
+//
+// Command copying the selection as HTML.
+func (msgs Messages) ShellCopyHtml() string {
+	return Catalog.Format(msgs.locale, "shell_copy_html", nil)
+}
+
+// ShellPastePlain says "Paste as Plain Text"
+// in the language the app shows.
+//
+// Command pasting the clipboard text without converting it.
+func ShellPastePlain() string { return In(i18n.Locale()).ShellPastePlain() }
+
+// ShellPastePlain says "Paste as Plain Text"
+// in the language of msgs.
+//
+// Command pasting the clipboard text without converting it.
+func (msgs Messages) ShellPastePlain() string {
+	return Catalog.Format(msgs.locale, "shell_paste_plain", nil)
+}

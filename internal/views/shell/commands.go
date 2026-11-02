@@ -150,6 +150,12 @@ func (s *Shell) editCommands() []contract.Command {
 		contract.Command{ID: contract.CmdViewTypewriter, Title: "typewriter", Enabled: live,
 			Checked: func() bool { return live() && s.active.live.Typewriter() },
 			Run:     func() error { s.active.live.SetTypewriter(!s.active.live.Typewriter()); s.invalidate(); return nil }},
+		contract.Command{ID: contract.CmdEditCopyMarkdown, Title: "copyMarkdown", Enabled: live,
+			Run: func() error { s.active.live.CopyMarkdown(); return nil }},
+		contract.Command{ID: contract.CmdEditCopyHTML, Title: "copyHTML", Enabled: live,
+			Run: func() error { s.active.live.CopyHTML(); return nil }},
+		contract.Command{ID: contract.CmdEditPastePlain, Title: "pastePlain", Enabled: live,
+			Run: func() error { s.active.live.PastePlain(); return nil }},
 	)
 }
 
@@ -167,6 +173,7 @@ var editTitles = map[string]func() string{
 	"goToHeading": locales.ShellGoToHeading, "openFolder": locales.ShellOpenFolder, "files": locales.ShellPanelFiles,
 	"outline": locales.ShellPanelOutline, "search": locales.ShellPanelSearch,
 	"searchWorkspace": locales.ShellSearchInFolder, "rename": locales.ShellRename,
+	"copyMarkdown": locales.ShellCopyMarkdown, "copyHTML": locales.ShellCopyHtml, "pastePlain": locales.ShellPastePlain,
 }
 
 // showPanel opens the sidebar on a panel.

@@ -402,3 +402,13 @@ func (s *Shell) canRenameActive() bool {
 
 // FileDropLit is the folder the tree lit under a drag in the last frame, "" for none.
 func (s *Shell) FileDropLit() string { return s.files.lit }
+
+// docOf returns the tab of a session.
+func (s *Shell) docOf(x contract.Session) *doc {
+	for _, d := range s.docs {
+		if d.s.ID() == x.ID() {
+			return d
+		}
+	}
+	return nil
+}

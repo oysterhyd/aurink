@@ -119,5 +119,8 @@
   "liveedit_format_table": "格式化表格",
   "liveedit_link": "链接",
   "liveedit_edit_link": "编辑",
-  "liveedit_open_link": "打开"
+  "liveedit_open_link": "打开",
+  "shell_copy_markdown": "复制为 Markdown",
+  "shell_copy_html": "复制为 HTML",
+  "shell_paste_plain": "粘贴为纯文本"
 }
