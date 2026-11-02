@@ -417,8 +417,10 @@ func TestQuoteIsABar(t *testing.T) {
 			t.Fatalf("the bar breaks at y=%d (from %d to %d)", y, top, bottom)
 		}
 	}
+	// Just above a line's text, clear of its glyphs whatever the font: the
+	// bar stops at the quote's last line and does not reach "after".
 	for _, r := range []int{plain, after} {
-		if y := int(h.e.RowText(r).Y) + 10; img.RGBAAt(x, y) != bg {
+		if y := int(h.e.RowText(r).Y) - 3; img.RGBAAt(x, y) != bg {
 			t.Fatalf("a bar beside %q", h.e.Display(r))
 		}
 	}
