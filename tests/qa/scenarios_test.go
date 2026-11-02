@@ -3,6 +3,7 @@
 package qa
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -200,6 +201,15 @@ func (a *app) typed(s string) {
 	a.t.Helper()
 	a.tt.Type(s)
 	a.tt.Frame()
+}
+
+// order lists the tabs' names, left to right.
+func (a *app) order() []string {
+	var out []string
+	for _, x := range a.s.Sessions() {
+		out = append(out, x.State().Name)
+	}
+	return out
 }
 
 func (a *app) text() string { return a.s.ActiveSession().Model().Text().String() }
@@ -731,6 +741,85 @@ var scenarios = []scenario{
 		if a.tt.FramePending() {
 			a.t.Fatal("frames after two dissolves")
 		}
+	}},
+	{"dragging a tab past its neighbor reorders the tabs", func(a *app) {
+		for _, n := range []string{"a.md", "b.md", "c.md"} {
+			a.open(n, n+"\n")
+		}
+		from, ok := a.tt.Find("a.md")
+		to, ok2 := a.tt.Find("b.md")
+		if !ok || !ok2 {
+			a.t.Fatal("tabs not found")
+		}
+		y := from.Y + from.H/2
+		a.tt.Press(from.X+from.W/2, y)
+		for x := from.X + from.W/2; x <= to.X+to.W*0.8; x += 4 {
+			a.tt.Move(x, y)
+			a.tt.Frame()
+		}
+		a.tt.Release(to.X+to.W*0.8, y)
+		a.settle()
+		a.want(strings.Join(a.order(), " "), "b.md a.md c.md")
+		a.want(a.s.ActiveSession().State().Name, "c.md")
+	}},
+	{"dragging a tab back and forth keeps the order", func(a *app) {
+		for _, n := range []string{"a.md", "b.md"} {
+			a.open(n, n+"\n")
+		}
+		from, _ := a.tt.Find("a.md")
+		y := from.Y + from.H/2
+		a.tt.Press(from.X+from.W/2, y)
+		for _, dx := range []float32{8, 16, 8, 0, -8, 0} {
+			a.tt.Move(from.X+from.W/2+dx, y)
+			a.tt.Frame()
+		}
+		a.tt.Release(from.X+from.W/2, y)
+		a.settle()
+		a.want(strings.Join(a.order(), " "), "a.md b.md")
+	}},
+	{"a closed tab reopens", func(a *app) {
+		a.open("a.md", "a\n")
+		a.open("b.md", "b\n")
+		a.run(contract.CmdFileClose)
+		a.tabs(1)
+		a.tt.Key(ui.Cmd|ui.Shift, ui.KeyT)
+		a.settle()
+		a.tabs(2)
+		a.want(a.s.ActiveSession().State().Name, "b.md")
+		a.want(strings.Join(a.order(), " "), "a.md b.md")
+	}},
+	{"next and previous tab wrap around", func(a *app) {
+		for _, n := range []string{"a.md", "b.md", "c.md"} {
+			a.open(n, n+"\n")
+		}
+		a.tt.Key(ui.Cmd, ui.KeyTab)
+		a.settle()
+		a.want(a.s.ActiveSession().State().Name, "a.md")
+		a.run(contract.CmdNavPrevTab)
+		a.want(a.s.ActiveSession().State().Name, "c.md")
+		a.run(contract.CmdNavGoToTab2)
+		a.want(a.s.ActiveSession().State().Name, "b.md")
+	}},
+	{"many tabs scroll, and the active one shows", func(a *app) {
+		var names []string
+		for i := range 24 {
+			names = append(names, fmt.Sprintf("a rather long document name %02d.md", i))
+			a.open(names[i], "x\n")
+		}
+		visible := func(name string) {
+			a.t.Helper()
+			r, ok := a.tt.Find(name)
+			if !ok || r.X < 0 || r.X+r.W > 1280 {
+				a.t.Fatalf("%s is at %+v (found %v)", name, r, ok)
+			}
+		}
+		visible(names[23])
+		if r, ok := a.tt.Find(locales.ShellNew()); !ok || r.X+r.W > 1280 {
+			a.t.Fatalf("the new button is at %+v", r)
+		}
+		a.run(contract.CmdNavGoToTab1)
+		a.tt.Frame()
+		visible(names[0])
 	}},
 }
 

@@ -481,3 +481,59 @@ func ShellWords(count int) string { return In(i18n.Locale()).ShellWords(count) }
 func (msgs Messages) ShellWords(count int) string {
 	return Catalog.Format(msgs.locale, "shell_words", map[string]any{"count": count})
 }
+
+// ShellReopenClosed says "Reopen Closed Tab"
+// in the language the app shows.
+//
+// Opens the tab closed last again.
+func ShellReopenClosed() string { return In(i18n.Locale()).ShellReopenClosed() }
+
+// ShellReopenClosed says "Reopen Closed Tab"
+// in the language of msgs.
+//
+// Opens the tab closed last again.
+func (msgs Messages) ShellReopenClosed() string {
+	return Catalog.Format(msgs.locale, "shell_reopen_closed", nil)
+}
+
+// ShellNextTab says "Next Tab"
+// in the language the app shows.
+//
+// Activates the tab to the right, wrapping around.
+func ShellNextTab() string { return In(i18n.Locale()).ShellNextTab() }
+
+// ShellNextTab says "Next Tab"
+// in the language of msgs.
+//
+// Activates the tab to the right, wrapping around.
+func (msgs Messages) ShellNextTab() string {
+	return Catalog.Format(msgs.locale, "shell_next_tab", nil)
+}
+
+// ShellPrevTab says "Previous Tab"
+// in the language the app shows.
+//
+// Activates the tab to the left, wrapping around.
+func ShellPrevTab() string { return In(i18n.Locale()).ShellPrevTab() }
+
+// ShellPrevTab says "Previous Tab"
+// in the language of msgs.
+//
+// Activates the tab to the left, wrapping around.
+func (msgs Messages) ShellPrevTab() string {
+	return Catalog.Format(msgs.locale, "shell_prev_tab", nil)
+}
+
+// ShellGoToTab says "Go to Tab {n}"
+// in the language the app shows.
+//
+// Activates the tab at a position, counted from 1.
+func ShellGoToTab(n int) string { return In(i18n.Locale()).ShellGoToTab(n) }
+
+// ShellGoToTab says "Go to Tab {n}"
+// in the language of msgs.
+//
+// Activates the tab at a position, counted from 1.
+func (msgs Messages) ShellGoToTab(n int) string {
+	return Catalog.Format(msgs.locale, "shell_go_to_tab", map[string]any{"n": n})
+}

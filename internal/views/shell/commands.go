@@ -1,6 +1,9 @@
 package shell
 
 import (
+	"strconv"
+	"strings"
+
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
 	"aurink/locales"
@@ -11,7 +14,7 @@ import (
 // from these alone. Title holds a key of Title.
 func (s *Shell) Commands() []contract.Command {
 	hasDoc := func() bool { return s.active != nil }
-	return []contract.Command{
+	cmds := []contract.Command{
 		{ID: contract.CmdFileNew, Title: "new", Run: func() error { s.o.Sessions.New(); return nil }},
 		{ID: contract.CmdFileOpen, Title: "open", Run: func() error {
 			s.o.Platform.OpenFile(func(path string) {
@@ -60,7 +63,20 @@ func (s *Shell) Commands() []contract.Command {
 			}
 			return nil
 		}},
+		{ID: contract.CmdFileReopenClosed, Title: "reopenClosed", Enabled: func() bool { return len(s.closed) > 0 },
+			Run: func() error { s.reopenClosed(); return nil }},
+		{ID: contract.CmdNavNextTab, Title: "nextTab", Enabled: func() bool { return len(s.docs) > 1 },
+			Run: func() error { s.step(1); return nil }},
+		{ID: contract.CmdNavPrevTab, Title: "prevTab", Enabled: func() bool { return len(s.docs) > 1 },
+			Run: func() error { s.step(-1); return nil }},
 	}
+	for i, id := range []contract.CommandID{contract.CmdNavGoToTab1, contract.CmdNavGoToTab2, contract.CmdNavGoToTab3,
+		contract.CmdNavGoToTab4, contract.CmdNavGoToTab5, contract.CmdNavGoToTab6, contract.CmdNavGoToTab7,
+		contract.CmdNavGoToTab8, contract.CmdNavGoToTab9} {
+		cmds = append(cmds, contract.Command{ID: id, Title: "goToTab" + strconv.Itoa(i+1),
+			Enabled: func() bool { return i < len(s.docs) }, Run: func() error { s.activateAt(i); return nil }})
+	}
+	return cmds
 }
 
 // Title says a command's title in the app's language.
@@ -86,6 +102,15 @@ func Title(key string) string {
 		return locales.ShellThemeLight()
 	case "dark":
 		return locales.ShellThemeDark()
+	case "reopenClosed":
+		return locales.ShellReopenClosed()
+	case "nextTab":
+		return locales.ShellNextTab()
+	case "prevTab":
+		return locales.ShellPrevTab()
+	}
+	if n, err := strconv.Atoi(strings.TrimPrefix(key, "goToTab")); err == nil && strings.HasPrefix(key, "goToTab") {
+		return locales.ShellGoToTab(n)
 	}
 	return key
 }
@@ -123,6 +148,13 @@ var namedKeys = map[string]ui.Key{
 	"H": ui.KeyH, "I": ui.KeyI, "J": ui.KeyJ, "K": ui.KeyK, "L": ui.KeyL, "M": ui.KeyM, "N": ui.KeyN,
 	"O": ui.KeyO, "P": ui.KeyP, "Q": ui.KeyQ, "R": ui.KeyR, "S": ui.KeyS, "T": ui.KeyT, "U": ui.KeyU,
 	"V": ui.KeyV, "W": ui.KeyW, "X": ui.KeyX, "Y": ui.KeyY, "Z": ui.KeyZ, "/": ui.KeySlash,
+	"Tab": ui.KeyTab,
+}
+
+func init() {
+	for i := range 10 {
+		namedKeys[strconv.Itoa(i)] = ui.Key0 + ui.Key(i)
+	}
 }
 
 func keyOf(name string) (ui.Key, bool) {

@@ -93,11 +93,29 @@ type Shell struct {
 	services  ui.Services
 	hasServ   bool
 	focusNext bool
+
+	// drag is the tab the pointer drags, and how far it is from its slot.
+	drag struct {
+		d *doc
+		x float32
+	}
+	// widths are the tabs' widths in the last frame, for reordering.
+	widths map[*doc]float32
+	// closed are the paths of closed tabs, the latest last (file.reopenClosed).
+	closed []string
+	// reveal scrolls the active tab into view in the next frame.
+	reveal bool
 }
+
+// maxClosed is how many closed tabs file.reopenClosed remembers.
+const maxClosed = 20
+
+// tabGap is the gap between tabs in the title bar.
+const tabGap = 6
 
 // New returns a shell over the sessions, with a tab for each already open.
 func New(o Options) *Shell {
-	s := &Shell{o: o, tokens: map[theme.Options]*theme.Tokens{}}
+	s := &Shell{o: o, tokens: map[theme.Options]*theme.Tokens{}, widths: map[*doc]float32{}}
 	s.off = o.Sessions.Subscribe(s.sessionsChanged)
 	s.offSet = o.Settings.Subscribe(func(contract.Settings) { s.applyTheme() })
 	for _, x := range o.Sessions.All() {
@@ -128,6 +146,16 @@ func (s *Shell) sessionsChanged(ev contract.SessionsEvent) {
 		}
 		d := s.docs[i]
 		s.docs = slices.Delete(s.docs, i, i+1)
+		if p := d.s.State().Path; p != "" {
+			s.closed = append(slices.DeleteFunc(s.closed, func(q string) bool { return q == p }), p)
+			if len(s.closed) > maxClosed {
+				s.closed = s.closed[1:]
+			}
+		}
+		delete(s.widths, d)
+		if s.drag.d == d {
+			s.drag.d = nil
+		}
 		s.detach(d)
 		if s.active == d {
 			s.active = nil
@@ -175,7 +203,56 @@ func (s *Shell) detach(d *doc) {
 func (s *Shell) activate(d *doc) {
 	s.active = d
 	s.focusNext = true
+	s.reveal = true
 	s.invalidate()
+}
+
+// activateAt activates the tab at index i, if there is one.
+func (s *Shell) activateAt(i int) {
+	if i >= 0 && i < len(s.docs) {
+		s.activate(s.docs[i])
+	}
+}
+
+// step activates the tab by of the active one, wrapping around.
+func (s *Shell) step(by int) {
+	if n := len(s.docs); n > 0 {
+		s.activateAt((slices.Index(s.docs, s.active) + by + n) % n)
+	}
+}
+
+// reopenClosed opens the latest closed tab whose file is not open again.
+func (s *Shell) reopenClosed() {
+	for len(s.closed) > 0 {
+		p := s.closed[len(s.closed)-1]
+		s.closed = s.closed[:len(s.closed)-1]
+		if _, open := s.o.Sessions.FindByPath(p); !open {
+			s.Open(p)
+			return
+		}
+	}
+}
+
+// dragTab moves the dragged tab by dx, and past a neighbor once it is over half of it.
+func (s *Shell) dragTab(d *doc, dx float32) {
+	if s.drag.d != d {
+		s.drag.d, s.drag.x = d, 0
+	}
+	s.drag.x += dx
+	// Only in the direction of this move, so that a tab never swaps back and forth.
+	for {
+		i := slices.Index(s.docs, d)
+		switch {
+		case dx > 0 && i+1 < len(s.docs) && s.widths[s.docs[i+1]] > 0 && s.drag.x > s.widths[s.docs[i+1]]/2:
+			s.drag.x -= s.widths[s.docs[i+1]] + tabGap
+			s.docs[i], s.docs[i+1] = s.docs[i+1], s.docs[i]
+		case dx < 0 && i > 0 && s.widths[s.docs[i-1]] > 0 && -s.drag.x > s.widths[s.docs[i-1]]/2:
+			s.drag.x += s.widths[s.docs[i-1]] + tabGap
+			s.docs[i], s.docs[i-1] = s.docs[i-1], s.docs[i]
+		default:
+			return
+		}
+	}
 }
 
 func (s *Shell) invalidate() {
@@ -313,6 +390,8 @@ func (s *Shell) window(c *ui.Context, t *theme.Tokens) {
 
 type pillMatch struct{}
 
+type tabMatch struct{ d *doc }
+
 func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 	bar := c.TitleBar()
 	right := bar.Right + 6
@@ -324,9 +403,14 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 		if kit.IconButton(c.Key("toggleSidebar"), t, kit.IconSidebar, locales.ShellToggleSidebar(), 30, 16).Clicked() {
 			s.sidebar = !s.sidebar
 		}
-		for _, d := range s.docs {
-			s.tab(c.Key(d.s.ID()), t, d)
-		}
+		// The tabs scroll when they do not fit; the new button stays beside them.
+		ui.ScrollHorizontal(c.Key("tabs")).Shrink(1).MinWidth(0).Gap(tabGap).AlignItems(ui.Center).Children(func() {
+			// A copy: dragging reorders s.docs while the tabs are built.
+			for _, d := range slices.Clone(s.docs) {
+				s.tab(c.Key(d.s.ID()), t, d)
+			}
+		})
+		s.reveal = false
 		if kit.IconButton(c.Key("new"), t, kit.IconPlus, locales.ShellNew(), 26, 14).Clicked() {
 			s.run(contract.CmdFileNew)
 		}
@@ -353,6 +437,25 @@ func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
 	tab := ui.Box(c).Height(30).Role(ui.RoleTab).Label(st.Name)
 	clicked := tab.Clicked()
 	hover := tab.Hovered()
+	if dx, _, ok := tab.Dragged(); ok && dx != 0 {
+		s.dragTab(d, dx)
+	}
+	if _, _, ended := tab.DragEnded(); ended && s.drag.d == d {
+		s.drag.d = nil
+		clicked = false
+	}
+	if s.drag.d == d {
+		tab.Translate(s.drag.x, 0)
+	} else {
+		// The others glide aside as the dragged tab passes them.
+		tab.Transition(s.matched(&motion.Smooth, tabMatch{d}))
+	}
+	if r := tab.Bounds(); r.W > 0 {
+		s.widths[d] = r.W
+	}
+	if active && s.reveal {
+		tab.ScrollIntoView()
+	}
 	tab.Children(func() {
 		if active {
 			ui.Box(c.Key("pill")).Absolute().Fill().Radius(theme.RadiusButton).Background(t.Sheet).

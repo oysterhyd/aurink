@@ -31,5 +31,9 @@
   "shell_discard": "不保存",
   "shell_cancel": "取消",
   "shell_markdown_files": "Markdown 文档",
-  "shell_words": "{count} 字"
+  "shell_words": "{count} 字",
+  "shell_reopen_closed": "重新打开关闭的标签",
+  "shell_next_tab": "下一个标签",
+  "shell_prev_tab": "上一个标签",
+  "shell_go_to_tab": "切换到第 {n} 个标签"
 }

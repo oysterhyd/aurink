@@ -137,5 +137,26 @@
         "type": "int"
       }
     }
+  },
+  "shell_reopen_closed": "Reopen Closed Tab",
+  "@shell_reopen_closed": {
+    "description": "Opens the tab closed last again."
+  },
+  "shell_next_tab": "Next Tab",
+  "@shell_next_tab": {
+    "description": "Activates the tab to the right, wrapping around."
+  },
+  "shell_prev_tab": "Previous Tab",
+  "@shell_prev_tab": {
+    "description": "Activates the tab to the left, wrapping around."
+  },
+  "shell_go_to_tab": "Go to Tab {n}",
+  "@shell_go_to_tab": {
+    "description": "Activates the tab at a position, counted from 1.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
   }
 }
