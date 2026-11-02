@@ -52,8 +52,8 @@ func TestOwnerIntentGoldens(t *testing.T) {
 	indent := contract.Intent{Kind: contract.IntentIndent}
 	insert := func(s string) contract.Intent { return contract.Intent{Kind: contract.IntentInsertText, Text: s} }
 	checkRegressions(t, []regression{
-		{name: "table Enter", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c¦|d|\n", in: enter, noEdits: true},
-		{name: "table hard break", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c¦|d|\n", in: contract.Intent{Kind: contract.IntentLineBreak}, noEdits: true},
+		{name: "table Enter", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c|d|\n| ¦ |  |\n", in: enter},
+		{name: "table hard break", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c<br>¦|d|\n", in: contract.Intent{Kind: contract.IntentLineBreak}},
 		{name: "HTML Enter", before: "<div>¦\n</div>\n", after: "<div>\n¦\n</div>\n", in: enter},
 		{name: "front matter Enter", before: "---\nt: 1¦\n---\n", after: "---\nt: 1\n¦\n---\n", in: enter},
 		{name: "soft break before", before: "a\n¦b", after: "a\n\n¦b", in: enter},

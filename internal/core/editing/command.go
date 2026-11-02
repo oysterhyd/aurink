@@ -13,11 +13,23 @@ func (Editor) Run(ctx contract.EditContext, cmd contract.EditCommand) (contract.
 		return contract.Transaction{}, false, &contract.Error{Code: contract.CodeInvalid, Op: "editing.Run", Detail: "invalid context or selection"}
 	}
 	if strings.HasPrefix(string(cmd.ID), "table.") {
-		// TODO(BE-1.6): Table navigation and structure commands.
-		return contract.Transaction{}, false, nil
+		return tableCommand(ctx, cmd)
+	}
+	if cmd.ID == contract.CmdInsertFootnote || cmd.ID == contract.CmdInsertImages {
+		return insertCommand(ctx, cmd)
 	}
 	if strings.HasPrefix(string(cmd.ID), "format.") || cmd.ID == contract.CmdInsertLink {
-		return inlineCommand(ctx, cmd)
+		inTable := selectionHas(ctx, contract.BlockTable)
+		if inTable && ctx.Selection.Primary().Empty() {
+			if _, ok := findTable(ctx); !ok {
+				return contract.Transaction{}, false, nil
+			}
+		}
+		tx, ok, err := inlineCommand(ctx, cmd)
+		if ok && inTable && !preservesTables(ctx, tx.Edits) {
+			return contract.Transaction{}, false, nil
+		}
+		return tx, ok, err
 	}
 	if strings.HasPrefix(string(cmd.ID), string(contract.CmdBlockHeading)) && cmd.ID != contract.CmdBlockHeading {
 		level, err := strconv.Atoi(strings.TrimPrefix(string(cmd.ID), string(contract.CmdBlockHeading)))

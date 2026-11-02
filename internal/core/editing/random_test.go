@@ -78,6 +78,7 @@ func TestRandomTransactions(t *testing.T) {
 		contract.CmdBlockBulletList, contract.CmdBlockOrderedList, contract.CmdBlockTaskList, contract.CmdBlockToggleTask,
 		contract.CmdBlockIndent, contract.CmdBlockOutdent, contract.CmdBlockCode, contract.CmdBlockHR,
 		contract.CmdBlockMoveUp, contract.CmdBlockMoveDown,
+		contract.CmdTableNextCell, contract.CmdTableDeleteRow,
 	}
 	intents := []contract.Intent{
 		{Kind: contract.IntentInsertText, Text: "文"}, {Kind: contract.IntentInsertText, Text: "("},
@@ -131,12 +132,13 @@ func TestRandomTransactions(t *testing.T) {
 					var tx contract.Transaction
 					var ok bool
 					var intent contract.Intent
+					var command contract.EditCommand
 					if rng.Intn(2) == 0 {
 						intent = intents[rng.Intn(len(intents))]
 						tx, ok = New().HandleIntent(ctx, intent)
 					} else {
-						cmd := contract.EditCommand{ID: commands[rng.Intn(len(commands))], Text: "go", URL: "https://example.com/a"}
-						tx, ok, err = New().Run(ctx, cmd)
+						command = contract.EditCommand{ID: commands[rng.Intn(len(commands))], Text: "go", URL: "https://example.com/a"}
+						tx, ok, err = New().Run(ctx, command)
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -145,8 +147,8 @@ func TestRandomTransactions(t *testing.T) {
 						next := verifyTransaction(t, ctx, tx)
 						row := ancestor(ctx, a, contract.BlockTableRow)
 						plainTyping := intent.Kind == contract.IntentInsertText && row != nil && b <= row.Range.End && !strings.ContainsAny(intent.Text, "\r\n")
-						if intent.Kind != 0 && !plainTyping {
-							tableChecks += checkTableRows(t, ctx, next, tx)
+						if !plainTyping && command.ID != contract.CmdBlockMoveUp && command.ID != contract.CmdBlockMoveDown {
+							tableChecks += checkTableRows(t, ctx, next, tx, intent, command)
 						}
 						ctx = next
 						count++
@@ -175,6 +177,23 @@ func TestRandomTransactions(t *testing.T) {
 
 func checkIndentRoundTrip(t *testing.T, ctx contract.EditContext) bool {
 	t.Helper()
+	if table, inTable := findTable(ctx); inTable {
+		indent, ok := New().HandleIntent(ctx, contract.Intent{Kind: contract.IntentIndent})
+		if !ok {
+			return false
+		}
+		next := verifyTransaction(t, ctx, indent)
+		checkTableRows(t, ctx, next, indent, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{})
+		// Tab at the final cell adds a row; Shift+Tab navigates but does not undo it.
+		if table.row == len(table.rows)-1 && table.col == len(table.rows[0].cells)-1 || len(indent.Edits) != 0 {
+			return true
+		}
+		outdent, ok := New().HandleIntent(next, contract.Intent{Kind: contract.IntentOutdent})
+		if !ok || verifyTransaction(t, next, outdent).Text.String() != ctx.Text.String() {
+			t.Fatal("table Tab/Shift+Tab changed text")
+		}
+		return true
+	}
 	indent, ok := New().HandleIntent(ctx, contract.Intent{Kind: contract.IntentIndent})
 	if !ok {
 		return false
@@ -216,8 +235,9 @@ func withoutOrderedNumber(ctx contract.EditContext, at int) string {
 	return s[:l.start+a] + s[l.start+b:]
 }
 
-func checkTableRows(t *testing.T, before, after contract.EditContext, tx contract.Transaction) int {
+func checkTableRows(t *testing.T, before, after contract.EditContext, tx contract.Transaction, intent contract.Intent, command contract.EditCommand) int {
 	t.Helper()
+	active, inTable := findTable(before)
 	checked := 0
 	for i := 0; i < before.AST.Len(); i++ {
 		b := before.AST.Block(i)
@@ -234,7 +254,7 @@ func checkTableRows(t *testing.T, before, after contract.EditContext, tx contrac
 		table := ancestor(after, at, contract.BlockTable)
 		if table == nil {
 			a, z := max(0, b.Range.Start-70), min(before.Text.Len(), b.Range.End+30)
-			t.Fatalf("intent destroyed a table near %q: at %d, edits %+v", before.Text.String()[a:z], at, tx.Edits)
+			t.Fatalf("intent destroyed a table near %q: at %d, intent %+v command %+v selection %+v edits %+v", before.Text.String()[a:z], at, intent, command, before.Selection, tx.Edits)
 		}
 		index, _ := after.AST.Index(table.ID)
 		nextRows := 0
@@ -243,8 +263,17 @@ func checkTableRows(t *testing.T, before, after contract.EditContext, tx contrac
 				nextRows++
 			}
 		}
-		if rows != nextRows {
-			t.Fatalf("intent changed table rows %d => %d, edits %+v", rows, nextRows, tx.Edits)
+		delta := 0
+		if inTable && active.block.ID == b.ID {
+			last := active.row == len(active.rows)-1 && active.col == len(active.rows[0].cells)-1
+			if intent.Kind == contract.IntentNewline || last && (intent.Kind == contract.IntentIndent || command.ID == contract.CmdTableNextCell) {
+				delta = 1
+			} else if command.ID == contract.CmdTableDeleteRow && active.row > 0 {
+				delta = -1
+			}
+		}
+		if rows+delta != nextRows {
+			t.Fatalf("table rows %d => %d, want change %+d, intent %+v command %+v edits %+v", rows, nextRows, delta, intent, command, tx.Edits)
 		}
 		checked++
 	}

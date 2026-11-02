@@ -1,0 +1,4 @@
+| Name | Count |
+| --- | --- |
+| Alpha | 12 |
+| Beta | 7 |

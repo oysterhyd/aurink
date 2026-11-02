@@ -1,6 +1,7 @@
 package editing
 
 import (
+	"net/url"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -108,6 +109,11 @@ func normalizeNewlines(s, ending string) string {
 
 // HandleIntent handles text, deletion, newline, indentation, and text paste.
 func (Editor) HandleIntent(ctx contract.EditContext, in contract.Intent) (contract.Transaction, bool) {
+	if valid(ctx) {
+		if tx, ok := tableIntent(ctx, in); ok {
+			return tx, true
+		}
+	}
 	tx, ok := handleIntent(ctx, in)
 	if !ok {
 		return tx, false
@@ -174,13 +180,23 @@ func handleIntent(ctx contract.EditContext, in contract.Intent) (contract.Transa
 			return contract.Transaction{}, false
 		}
 		s := in.Paste.Plain
-		if !in.Paste.AsPlain && in.Paste.Markdown != "" {
+		if !in.Paste.AsPlain && !selectionHas(ctx, contract.BlockCode) && in.Paste.Markdown != "" {
 			s = in.Paste.Markdown
 		}
-		// TODO(BE-1.6): Convert HTML and RTF before dispatching the paste.
+		if !in.Paste.AsPlain && !r.Empty() && !selectionHas(ctx, contract.BlockCode) && s == in.Paste.Plain && singleURL(s) {
+			return replace(r, "["+ctx.Text.Slice(r)+"]("+linkDestination(s)+")", contract.OriginPaste, "paste"), true
+		}
 		return replace(r, normalizeNewlines(s, eol(ctx)), contract.OriginPaste, "paste"), true
 	}
 	return contract.Transaction{}, false
+}
+
+func singleURL(s string) bool {
+	if strings.TrimSpace(s) != s || strings.ContainsAny(s, " \t\r\n") {
+		return false
+	}
+	u, err := url.Parse(s)
+	return err == nil && (u.Scheme == "http" || u.Scheme == "https") && u.Host != ""
 }
 
 func pair(ctx contract.EditContext, s string) (contract.Transaction, bool) {
