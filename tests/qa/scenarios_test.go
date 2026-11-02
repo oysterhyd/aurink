@@ -16,6 +16,7 @@ import (
 	"aurink/internal/core/document"
 	"aurink/internal/core/editing"
 	"aurink/internal/core/fsstore"
+	"aurink/internal/core/markdown"
 	"aurink/internal/core/projection"
 	"aurink/internal/core/settings"
 	"aurink/internal/views/editorapi"
@@ -296,6 +297,25 @@ var scenarios = []scenario{
 		a.tt.Key(ui.Cmd|ui.Shift, ui.KeyQ)
 		a.settle()
 		a.want(a.text(), "> hello\n")
+	}},
+	{"primary+T inserts a table and the table commands edit it", func(a *app) {
+		a.open("a.md", "")
+		a.tt.Key(ui.Cmd, ui.KeyT)
+		a.settle()
+		doc, _ := markdown.New(a.text(), 1, contract.ExtDefault)
+		if !strings.Contains(a.text(), "|") || tableRows(doc.Snapshot()) != 3 {
+			a.t.Fatalf("no 3-row table after primary+T: %q", a.text())
+		}
+		a.run(contract.CmdTableRowBelow)
+		doc, _ = markdown.New(a.text(), 1, contract.ExtDefault)
+		if tableRows(doc.Snapshot()) != 4 {
+			a.t.Fatalf("row below did not add a row: %q", a.text())
+		}
+		a.run(contract.CmdTableDeleteRow)
+		doc, _ = markdown.New(a.text(), 1, contract.ExtDefault)
+		if tableRows(doc.Snapshot()) != 3 {
+			a.t.Fatalf("delete row did not remove a row: %q", a.text())
+		}
 	}},
 	{"format shortcuts do nothing in source mode", func(a *app) {
 		a.open("a.md", "hello\n")
@@ -881,6 +901,17 @@ var scenarios = []scenario{
 		a.tt.Frame()
 		visible(names[0])
 	}},
+}
+
+// tableRows counts the rows of the first table, header included.
+func tableRows(ast contract.AST) int {
+	n := 0
+	for i := range ast.Len() {
+		if ast.Block(i).Kind == contract.BlockTableRow {
+			n++
+		}
+	}
+	return n
 }
 
 func sameTree(a, b contract.AST) string {

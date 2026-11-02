@@ -111,7 +111,8 @@ func (s *Shell) editCommands() []contract.Command {
 		{"outdent", contract.EditCommand{ID: contract.CmdBlockOutdent}},
 		{"moveUp", contract.EditCommand{ID: contract.CmdBlockMoveUp}},
 		{"moveDown", contract.EditCommand{ID: contract.CmdBlockMoveDown}},
-		{"tableInsert", contract.EditCommand{ID: contract.CmdTableInsert, Rows: 3, Cols: 3}},
+		// Rows counts body rows: with the header the table is 3 by 3.
+		{"tableInsert", contract.EditCommand{ID: contract.CmdTableInsert, Rows: 2, Cols: 3}},
 		{"rowAbove", contract.EditCommand{ID: contract.CmdTableRowAbove}},
 		{"rowBelow", contract.EditCommand{ID: contract.CmdTableRowBelow}},
 		{"colLeft", contract.EditCommand{ID: contract.CmdTableColLeft}},
