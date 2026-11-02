@@ -387,14 +387,10 @@ func expandTabs(spans []ui.Span, m *rowMetrics) []ui.Span {
 	if first < 0 {
 		return spans
 	}
-	font := m.font
-	if f := spans[first].Font; f != "" {
-		font.Family = f
-	}
-	if z := spans[first].Size; z > 0 {
-		font.Size = z
-	}
-	w, _ := ui.ShapeText("0", font, 0).Size()
+	// A column is measured as the row is shaped, so it is the width the text gets.
+	digit := spans[first]
+	digit.Text = "0"
+	w, _ := ui.ShapeRichTextWith([]ui.Span{digit}, m.font, ui.TextShape{}).Size()
 	out := make([]ui.Span, 0, len(spans)+2)
 	col := 0
 	for _, sp := range spans {
