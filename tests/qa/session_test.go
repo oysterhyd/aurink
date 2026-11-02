@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -109,15 +110,23 @@ func TestRestoreSkipsMissingFiles(t *testing.T) {
 	a.want(strings.Join(a.s.Notices(), ","), locales.ShellSessionMissing(1))
 }
 
+// restoreOff turns session restore off, written to disk before a restart reads it.
+func (a *app) restoreOff() {
+	a.t.Helper()
+	if err := a.store.Update(func(v *contract.Settings) { v.Files.RestoreSession = false }); err != nil {
+		a.t.Fatal(err)
+	}
+	if err := a.store.Flush(); err != nil {
+		a.t.Fatal(err)
+	}
+}
+
 // TestRestoreSessionOff starts empty when the setting is off.
 func TestRestoreSessionOff(t *testing.T) {
 	a := newApp(t)
 	a.open("a.md", "a\n")
 	a.idle()
-	if err := a.store.Update(func(v *contract.Settings) { v.Files.RestoreSession = false }); err != nil {
-		t.Fatal(err)
-	}
-	a.settle()
+	a.restoreOff()
 	a.boot()
 	a.tabs(0)
 }
@@ -170,10 +179,7 @@ func TestRecentOnTheWelcomePage(t *testing.T) {
 	a.s.CloseAll(func(bool) {})
 	a.settle()
 	a.idle()
-	if err := a.store.Update(func(v *contract.Settings) { v.Files.RestoreSession = false }); err != nil {
-		t.Fatal(err)
-	}
-	a.settle()
+	a.restoreOff()
 	a.boot()
 	a.tabs(0)
 	for _, want := range []string{locales.ShellRecent(), "recent-one.md", "proj"} {
@@ -187,7 +193,7 @@ func TestRecentOnTheWelcomePage(t *testing.T) {
 }
 
 // TestNewDefaultShortcuts: F2 renames the active file in the tree, F3 and
-// Shift+F3 step through matches (02 §7; macOS has ⌘G).
+// Shift+F3 step through matches (02 §7; macOS has ⌘G and ⇧⌘G).
 func TestNewDefaultShortcuts(t *testing.T) {
 	a := newApp(t)
 	root := a.folder("c.md")
@@ -206,9 +212,13 @@ func TestNewDefaultShortcuts(t *testing.T) {
 	a.run(contract.CmdEditFind)
 	a.typed("alpha")
 	a.wantStatus("1 / 4")
-	a.key(0, ui.KeyF3)
+	next, prev := func() { a.key(0, ui.KeyF3) }, func() { a.key(ui.Shift, ui.KeyF3) }
+	if runtime.GOOS == "darwin" {
+		next, prev = func() { a.key(ui.Cmd, ui.KeyG) }, func() { a.key(ui.Cmd|ui.Shift, ui.KeyG) }
+	}
+	next()
 	a.wantStatus("2 / 4")
-	a.key(ui.Shift, ui.KeyF3)
+	prev()
 	a.wantStatus("1 / 4")
 }
 
