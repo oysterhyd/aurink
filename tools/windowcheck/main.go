@@ -76,7 +76,11 @@ const demo = `# Aurink 是什么
 func main() {
 	out := flag.String("out", "reports/parity/screens", "where the screens go")
 	design := flag.Bool("design", false, "save only the design system screen")
+	locale := flag.String("locale", "", "show the interface in this language, such as zh-Hans")
 	flag.Parse()
+	if *locale != "" {
+		mygo.App.SetLocale(*locale)
+	}
 	if err := os.MkdirAll(*out, 0o755); err != nil {
 		log.Fatal(err)
 	}
