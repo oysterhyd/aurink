@@ -11,7 +11,7 @@ type heights struct {
 	est      float64
 }
 
-// reset sums hs, where 0 means not measured.
+// reset sums hs, where 0 means not measured and below 0 measured at nothing.
 func (h *heights) reset(hs []float32) {
 	n := len(hs)
 	h.measured = append(h.measured[:0], make([]float64, n+1)...)
@@ -19,7 +19,7 @@ func (h *heights) reset(hs []float32) {
 	for i, x := range hs {
 		if x > 0 {
 			h.measured[i+1] = float64(x)
-		} else {
+		} else if x == 0 {
 			h.unknown[i+1] = 1
 		}
 	}

@@ -131,7 +131,7 @@ func (e *Editor) SelectionRect() (editorapi.Rect, bool) {
 		l := e.current(i)
 		a := pr.ToDisplay(&l.proj, clampTo(from, b.Range), contract.Upstream)
 		z := pr.ToDisplay(&l.proj, clampTo(to, b.Range), contract.Downstream)
-		x0, y0 := e.orgX+e.contentX(), e.orgY+e.rowTextY(i)
+		x0, y0 := e.orgX+e.contentX()+l.m.x, e.orgY+e.rowTextY(i)
 		for _, s := range l.layout.SelectionRects(ui.TextInputRange{Start: a, End: z}) {
 			r := editorapi.Rect{X: x0 + s.X, Y: y0 + s.Y, W: s.W, H: s.H}
 			if !found {

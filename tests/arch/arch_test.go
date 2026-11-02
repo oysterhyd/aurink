@@ -34,6 +34,7 @@ var rules = []rule{
 	{mod + "internal/contracttest", []string{contract, mod + "internal/mock", mod + "tests/corpus"}},
 	{mod + "internal/app", []string{mod, mygo, "golang.org/x/"}},
 	{mod + "locales", []string{mygo + "/i18n", mygo + "/locales"}},
+	{mod + "resources", []string{mygo + "/ui"}},
 }
 
 // unrestricted packages do not take part in the layering.

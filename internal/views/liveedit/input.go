@@ -1,6 +1,7 @@
 package liveedit
 
 import (
+	"strings"
 	"time"
 
 	"aurink/internal/contract"
@@ -48,6 +49,11 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 			e.dragTowards(ev.X, ev.Y)
 			return true
 		}
+		link := e.linkAt(ev.X, ev.Y)
+		if link != e.hoverLink || (link != "" && (ev.X != e.hoverX || ev.Y != e.hoverY)) {
+			e.hoverLink, e.hoverX, e.hoverY = link, ev.X, ev.Y
+			return true
+		}
 	case ui.InputPointerUp:
 		was := e.dragging
 		e.dragging = false
@@ -61,8 +67,110 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 	return false
 }
 
+// linkAt returns the target of the link at a point of the element.
+func (e *Editor) linkAt(x, y float32) string {
+	r := e.rowAtPoint(x, y)
+	if r < 0 {
+		return ""
+	}
+	l := e.current(r)
+	pos := l.layout.PositionAt(ui.Point{X: x - e.contentX() - l.m.x, Y: y - e.rowTextY(r)})
+	src := e.opts.Projector.ToSource(&l.proj, pos.Index, contract.Downstream)
+	for i := range l.proj.Segments {
+		if s := &l.proj.Segments[i]; s.Link != "" && src >= s.Src.Start && src < s.Src.End {
+			return s.Link
+		}
+	}
+	return ""
+}
+
+func openable(link string) bool {
+	return strings.HasPrefix(link, "https://") || strings.HasPrefix(link, "http://") || strings.HasPrefix(link, "mailto:")
+}
+
+// rowCommand handles a press on what a row draws around its text. It reports whether
+// the press is used up: a checkbox toggles one byte, a code card's button copies, a
+// modified click follows a link.
+func (e *Editor) rowCommand(ev ui.InputEvent) bool {
+	r := e.rowAtPoint(ev.X, ev.Y)
+	if r < 0 {
+		return false
+	}
+	if c := e.taskBoxAt(r, ev.X, ev.Y); c != nil {
+		e.toggleTask(c)
+		return true
+	}
+	b := e.block(r)
+	if b.Kind == contract.BlockCode {
+		top := float32(e.hs.top(r) - e.scroll)
+		right := e.contentX() + e.width
+		if ev.Y >= top && ev.Y < top+codeHeader && ev.X >= right-90 && ev.X <= right {
+			if e.hasView {
+				e.services.WriteClipboard(e.codeText(b))
+			}
+			e.copiedBlock, e.copiedAt = b.ID, ev.Time
+			return true
+		}
+	}
+	if ev.Mods&ui.Cmd != 0 {
+		if link := e.linkAt(ev.X, ev.Y); openable(link) {
+			if e.hasView {
+				e.services.OpenURL(link)
+			}
+			return true
+		}
+	}
+	return false
+}
+
+// codeText returns a code block's content, without its fences.
+func (e *Editor) codeText(b *contract.Block) string { return e.text.Slice(b.Content) }
+
+// toggleTask flips the one byte between the brackets of a task marker.
+func (e *Editor) toggleTask(c *contract.ContainerDecor) {
+	if e.readOnly() || c.TaskSrc.End-c.TaskSrc.Start != 3 {
+		return
+	}
+	at := c.TaskSrc.Start + 1
+	ch := " "
+	if c.Task == contract.TaskOpen {
+		ch = "x"
+		e.tickBlock, e.tickStart = c.Block, time.Now()
+	}
+	e.apply(contract.Transaction{Edits: []contract.TextEdit{{Range: contract.Range{Start: at, End: at + 1}, Text: ch}}, Origin: contract.OriginCommand, Label: "editing_undo_task"})
+}
+
+// rowAtPoint returns the row under a point of the element, the cell of a table's
+// band by x, or -1 past the document's ends.
+func (e *Editor) rowAtPoint(x, y float32) int {
+	if len(e.rows) == 0 || e.width <= 0 {
+		return -1
+	}
+	yc := float64(y) + e.scroll
+	if yc < 0 || yc >= e.hs.top(len(e.rows)) {
+		return -1
+	}
+	p := e.hs.at(yc)
+	return e.cellByX(p, x)
+}
+
+// cellByX moves a row found by height, the last cell of a band, to the column at x.
+func (e *Editor) cellByX(p int, x float32) int {
+	v := &e.rows[p]
+	if v.cols == 0 {
+		return p
+	}
+	col := int((x - e.contentX()) / (e.width / float32(v.cols)))
+	col = max(0, min(col, v.cols-1))
+	return min(p-v.col+col, len(e.rows)-1)
+}
+
 func (e *Editor) pointerDown(ev ui.InputEvent) {
 	e.UnmarkText()
+	if ev.Clicks <= 1 && ev.Mods&ui.Shift == 0 && e.rowCommand(ev) {
+		e.blinkStart = ev.Time
+		return
+	}
 	e.model.BreakCoalescing()
 	e.hasSticky = false
 	e.dragging = true
@@ -365,7 +473,7 @@ func (e *Editor) moveLine(dir int, extend bool) {
 	lines := l.layout.Lines()
 	k := lineIndex(lines, c.Y+c.H/2) + dir
 	if k < 0 || k >= len(lines) {
-		r += dir
+		r = e.rowAcross(r, dir)
 		if r < 0 {
 			e.moveKeepSticky(0, extend)
 			return
@@ -388,6 +496,34 @@ func (e *Editor) moveLine(dir int, extend bool) {
 	pos := l.layout.PositionAt(ui.Point{X: e.stickyX, Y: y})
 	e.aff = pos.Affinity
 	e.moveKeepSticky(pr.ToSource(&l.proj, pos.Index, contract.Downstream), extend)
+}
+
+// rowAcross returns the row above or below r: past a table cell, the same column of
+// the next table row. It may return a row outside the document.
+func (e *Editor) rowAcross(r, dir int) int {
+	v := e.rows[r]
+	if v.cols == 0 {
+		return r + dir
+	}
+	first := r - v.col
+	if dir < 0 {
+		if first == 0 {
+			return -1
+		}
+		up := first - 1
+		if w := e.rows[up]; w.cols > 0 {
+			return up - w.col + min(v.col, w.cols-1)
+		}
+		return up
+	}
+	down := first + v.cols
+	if down >= len(e.rows) {
+		return down
+	}
+	if w := e.rows[down]; w.cols > 0 {
+		return down + min(v.col, w.cols-1)
+	}
+	return down
 }
 
 func lineIndex(lines []ui.TextLine, y float32) int {
@@ -420,11 +556,11 @@ func (e *Editor) moveEdge(dir int, extend bool) {
 func (e *Editor) movePage(dir int, extend bool) {
 	x, y, _ := e.caretRect()
 	if !e.hasSticky {
-		e.stickyX, e.hasSticky = x-e.contentX(), true
+		e.stickyX, e.hasSticky = x-e.contentX()-e.form(e.caretRow).m.x, true
 	}
 	e.setScroll(e.scroll + float64(float32(dir)*e.viewH))
 	e.place()
-	e.moveKeepSticky(e.hit(e.stickyX+e.contentX(), y), extend)
+	e.moveKeepSticky(e.hit(e.stickyX+e.contentX()+e.form(e.caretRow).m.x, y), extend)
 }
 
 // hit returns the source offset at a point of the element.
@@ -443,8 +579,11 @@ func (e *Editor) hit(x, y float32) int {
 		case yc >= e.hs.top(p+1) && p < len(e.rows)-1:
 			p++
 		default:
-			above, _ := blockSpace(e.block(p))
-			pos := l.layout.PositionAt(ui.Point{X: x - e.contentX(), Y: float32(yc-top) - above})
+			if q := e.cellByX(p, x); q != p {
+				p = q
+				l = e.current(p)
+			}
+			pos := l.layout.PositionAt(ui.Point{X: x - e.contentX() - l.m.x, Y: float32(yc-top) - l.m.above})
 			e.aff = pos.Affinity
 			if p == e.caretRow && e.preedit != "" {
 				return e.head

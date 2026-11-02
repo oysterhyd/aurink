@@ -3,5 +3,13 @@
   "app_name": "Aurink",
   "@app_name": {
     "description": "The name of the app, wherever it names itself."
+  },
+  "liveedit_copy": "Copy",
+  "@liveedit_copy": {
+    "description": "The button of a code block that copies its text."
+  },
+  "liveedit_copied": "Copied",
+  "@liveedit_copied": {
+    "description": "What the copy button of a code block says just after copying."
   }
 }

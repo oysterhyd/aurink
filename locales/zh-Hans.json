@@ -1,4 +1,6 @@
 {
   "@@locale": "zh-Hans",
-  "app_name": "Aurink"
+  "app_name": "Aurink",
+  "liveedit_copy": "复制",
+  "liveedit_copied": "已复制"
 }

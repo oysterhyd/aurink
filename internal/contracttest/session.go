@@ -386,6 +386,7 @@ func TestSessions(t *testing.T, newFixture func(t *testing.T) SessionFixture) {
 		if u.Close(true) != contract.CloseDone {
 			t.Fatal("close")
 		}
+		f.Settle() // Close removes the copy in the background.
 		if got := restore(t, f, f.New()); len(got) != 0 {
 			t.Errorf("%d sessions restored", len(got))
 		}

@@ -7,15 +7,16 @@ import (
 
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
+	"aurink/internal/views/theme"
 	"github.com/egoist/mygo/ui"
 )
 
 // Page geometry and how far layouts reach, from 02 §3.
 const (
-	maxColumn      = 720
-	sidePad        = 28
-	padTop         = 72
-	padBottom      = 360
+	maxColumn      = theme.MaxColumn
+	sidePad        = theme.PadSide
+	padTop         = theme.PadTop
+	padBottom      = theme.PadBottom
 	overscanBudget = 6   // rows shaped ahead of the viewport per frame
 	maxLaid        = 512 // layouts kept before far ones are dropped
 	maxForms       = 4   // display forms kept per row
@@ -33,6 +34,12 @@ type Options struct {
 	Prefs       func() contract.EditPrefs
 	Exts        contract.Extensions
 	ObjectLangs []string
+	// Theme is the first palette; nil uses Paper.
+	Theme *theme.Tokens
+	// DocDir returns the folder relative images resolve against, "" for none.
+	DocDir func() string
+	// Dispatcher brings loaded images back to the main thread.
+	Dispatcher contract.Dispatcher
 }
 
 // Stats counts what the engine did, for assertions by count (03 §10).
@@ -49,13 +56,18 @@ type Stats struct {
 
 // revealKey says what a row's projection depends on in the selection, relative to
 // the row's start so that it survives the row moving. caret is -1 without a caret.
-type revealKey struct{ caret, from, to int }
+type revealKey struct {
+	caret, from, to int
+	// A layout bakes in span colors and the lead paragraph's font.
+	dark, lead bool
+}
 
-var hiddenKey = revealKey{caret: -1}
+func (k revealKey) hidden() bool { return k.caret < 0 && k.from == k.to }
 
 // laid is a row's projection and layout in one display form.
 type laid struct {
 	key     revealKey
+	m       rowMetrics
 	proj    contract.BlockProjection
 	base    int // the row start that the projection's offsets are at
 	display string
@@ -72,6 +84,10 @@ type row struct {
 	forms []*laid
 	cur   *laid
 	h     float32
+	// A table cell's place: its column, how many columns its row has, and whether
+	// that is a header row, all fixed between rebuilds.
+	col, cols int
+	header    bool
 }
 
 type headingMark struct {
@@ -125,7 +141,18 @@ type Editor struct {
 	tocRows       []int
 	linkDefs      map[string]contract.LinkDef
 	footnotes     map[string]int
-	labels        map[string]*ui.TextLayout
+	labels        map[labelKey]*ui.TextLayout
+	quoteMark     *ui.TextLayout
+	t             *theme.Tokens
+	images        map[string]*imageState
+	codeState     uint64
+	copiedBlock   contract.BlockID
+	copiedAt      time.Time
+	tickBlock     contract.BlockID
+	tickStart     time.Time
+	hoverLink     string
+	hoverX        float32
+	hoverY        float32
 
 	mode       editorapi.Mode
 	focusMode  bool
@@ -161,7 +188,10 @@ func New(o Options) *Editor {
 			return contract.EditPrefs{BulletMarker: '-', StrongDelim: "**", EmphasisDelim: "*", FenceDelim: "```", AutoPair: true, TabSize: 2, Exts: o.Exts}
 		}
 	}
-	e := &Editor{model: o.Model, opts: o, scroll: -padTop, anchorOff: -padTop, labels: map[string]*ui.TextLayout{}, findCur: -1}
+	e := &Editor{model: o.Model, opts: o, scroll: -padTop, anchorOff: -padTop, labels: map[labelKey]*ui.TextLayout{}, findCur: -1, t: o.Theme}
+	if e.t == nil {
+		e.t = theme.For(theme.Options{})
+	}
 	e.text, e.ast = o.Model.Text(), o.Model.AST()
 	e.rebuildRows(nil)
 	e.linkDefs, e.footnotes = e.ast.LinkDefs(), e.ast.Footnotes()
@@ -258,7 +288,37 @@ func (e *Editor) View(c *ui.Context) ui.Element {
 		e.autoscroll(c.Now())
 		c.After(16 * time.Millisecond)
 	}
+	if !e.copiedAt.IsZero() {
+		const shown = 1500 * time.Millisecond
+		if left := shown - c.Now().Sub(e.copiedAt); left > 0 {
+			c.After(left)
+		} else {
+			e.copiedAt, e.copiedBlock = time.Time{}, 0
+		}
+	}
 	return box
+}
+
+// Ghost paints the document in another theme and takes no input: the old theme's
+// copy during a dissolve (ADR-004). It keeps its own forms, by the key's dark bit.
+func (e *Editor) Ghost(c *ui.Context, t *theme.Tokens) ui.Element {
+	return ui.Box(c).Fill().Clip().Draw(func(p *ui.Painter, r ui.Rect) {
+		live := e.t
+		e.t = t
+		e.layoutView(r.W, r.H)
+		e.paintRows(p, r)
+		e.t = live
+	})
+}
+
+// SetTheme changes the palette. A change other than light and dark drops the forms,
+// whose keys do not tell them apart.
+func (e *Editor) SetTheme(t *theme.Tokens) {
+	if e.t.Dark == t.Dark && *e.t != *t {
+		e.dropAllForms()
+	}
+	e.t = t
+	e.invalidate()
 }
 
 func (e *Editor) invalidate() {
@@ -412,6 +472,16 @@ func (e *Editor) rebuildRows(dirty []contract.BlockID) {
 		if b.Kind == contract.BlockTOC {
 			e.tocRows = append(e.tocRows, len(rows))
 		}
+		if b.Kind == contract.BlockTableCell {
+			parent := e.ast.Block(b.Parent)
+			v.cols, v.header = 0, parent.Header
+			for range e.ast.Children(b.Parent) {
+				v.cols++
+			}
+			if n := len(rows); n > 0 && rows[n-1].cols > 0 && e.ast.Block(rows[n-1].leaf).Parent == b.Parent {
+				v.col = rows[n-1].col + 1
+			}
+		}
 		of[b.ID] = len(rows)
 		rows = append(rows, v)
 	}
@@ -449,10 +519,10 @@ func (e *Editor) refreshSelection() {
 
 // keyFor returns what row r's projection depends on now.
 func (e *Editor) keyFor(r int, b *contract.Block) revealKey {
+	k := revealKey{caret: -1, dark: e.t.Dark, lead: e.isLead(r, b)}
 	if e.mode == editorapi.ModeRead {
-		return hiddenKey
+		return k
 	}
-	k := hiddenKey
 	base := b.Lead.Start
 	if r == e.caretRow {
 		k.caret = clampTo(e.head, b.Range) - base
@@ -462,6 +532,19 @@ func (e *Editor) keyFor(r int, b *contract.Block) revealKey {
 		k.from, k.to = from-base, to-base
 	}
 	return k
+}
+
+// isLead reports the document's first paragraph, or the one right after its opening
+// H1: it sets in the lead's larger size (§4.2).
+func (e *Editor) isLead(r int, b *contract.Block) bool {
+	if b.Kind != contract.BlockParagraph || r > 1 || e.rows[r].col != 0 {
+		return false
+	}
+	if r == 0 {
+		return e.ast.Block(b.Parent).Kind == contract.BlockRoot
+	}
+	prev := e.block(0)
+	return prev.Kind == contract.BlockHeading && prev.Level == 1 && e.ast.Block(b.Parent).Kind == contract.BlockRoot
 }
 
 func (e *Editor) project(b *contract.Block, leaf int, k revealKey) contract.BlockProjection {
@@ -516,18 +599,19 @@ func (e *Editor) form(r int) *laid {
 	}
 	p := e.project(b, v.leaf, k)
 	for _, l := range v.forms {
-		if l.proj.Sig == p.Sig {
+		if l.proj.Sig == p.Sig && l.key.dark == k.dark && l.key.lead == k.lead {
 			l.proj, l.key, l.base = p, k, b.Lead.Start
 			v.cur = l
 			return l
 		}
 	}
 	l := &laid{key: k, proj: p, base: b.Lead.Start, display: e.opts.Projector.DisplayText(&p)}
+	l.m = e.metricsFor(r, b, &l.proj, k.lead)
 	e.shape(l, b, "", 0)
 	if len(v.forms) >= maxForms {
 		victim := 0
 		for i, f := range v.forms {
-			if f.key != hiddenKey && f != v.cur {
+			if !f.key.hidden() && f != v.cur {
 				victim = i
 				break
 			}
@@ -543,8 +627,8 @@ func (e *Editor) form(r int) *laid {
 
 // shape lays out l's segments, with a preedit at display index at.
 func (e *Editor) shape(l *laid, b *contract.Block, preedit string, at int) {
-	font := blockFont(b)
-	l.layout = ui.ShapeRichTextWith(spansOf(&l.proj, font, preedit, at), font, ui.TextShape{Width: max(e.width, 1)})
+	font := l.m.font
+	l.layout = ui.ShapeRichTextWith(e.spansOf(l, b, preedit, at), font, ui.TextShape{Width: l.m.width})
 	e.Stats.Shapes++
 	e.Stats.FrameShapes++
 	_, l.h = l.layout.Size()
@@ -561,18 +645,43 @@ func (e *Editor) current(r int) *laid {
 	} else {
 		l = e.form(r)
 	}
-	above, below := blockSpace(e.block(r))
-	h := above + l.h + below
+	v := &e.rows[r]
+	if v.cols > 0 {
+		e.measureCells(r - v.col)
+		return l
+	}
+	e.setHeight(r, l.m.above+l.h+l.m.below)
+	return l
+}
+
+func (e *Editor) setHeight(r int, h float32) {
 	v := &e.rows[r]
 	if v.h != h {
-		if v.h > 0 {
-			e.hs.add(r, float64(h-v.h), 0)
-		} else {
-			e.hs.add(r, float64(h), -1)
+		var du int32
+		if v.h == 0 {
+			du = -1
 		}
+		e.hs.add(r, float64(max(h, 0)-max(v.h, 0)), du)
 		v.h = h
 	}
-	return l
+}
+
+// measureCells gives a table row's band to its first cell. The others are measured
+// at nothing, which -1 says, since 0 means not measured.
+func (e *Editor) measureCells(first int) {
+	var band float32
+	n := e.rows[first].cols
+	for k := first; k < first+n && k < len(e.rows); k++ {
+		l := e.form(k)
+		if k == e.caretRow && e.preLaid != nil {
+			l = e.preLaid
+		}
+		band = max(band, l.m.above+l.h+l.m.below)
+		if k > first {
+			e.setHeight(k, -1)
+		}
+	}
+	e.setHeight(first, band)
 }
 
 // composed returns the caret's row with the preedit spliced in. It has its own
@@ -584,7 +693,7 @@ func (e *Editor) composed() *laid {
 	base := e.form(e.caretRow)
 	b := e.block(e.caretRow)
 	at := e.opts.Projector.ToDisplay(&base.proj, clampTo(e.head, b.Range), contract.Downstream)
-	l := &laid{key: base.key, proj: base.proj, base: base.base}
+	l := &laid{key: base.key, m: base.m, proj: base.proj, base: base.base}
 	u := utf16ByteOffset(base.display, at)
 	l.display = base.display[:u] + e.preedit + base.display[u:]
 	e.shape(l, b, e.preedit, at)
@@ -703,6 +812,7 @@ func (e *Editor) place() {
 		e.first--
 		e.current(e.first)
 	}
+	e.first -= e.rows[e.first].col
 	e.scroll = max(-padTop, e.hs.top(e.anchorIdx)+e.anchorOff)
 	p := e.first
 	for ; p < n; p++ {
@@ -712,6 +822,21 @@ func (e *Editor) place() {
 		}
 	}
 	e.last = min(p, n-1)
+	// A table row shows whole: its cells share one band.
+	if v := e.rows[e.last]; v.cols > 0 {
+		for k := e.last + 1; k < min(e.last-v.col+v.cols, n); k++ {
+			e.current(k)
+			e.last = k
+		}
+	}
+}
+
+// rowTop returns a row's top in the document: a cell sits in its table row's band.
+func (e *Editor) rowTop(r int) float64 { return e.hs.top(r - e.rows[r].col) }
+
+// RowText returns where a row's text starts in the element, for tests.
+func (e *Editor) RowText(r int) ui.Point {
+	return ui.Point{X: e.contentX() + e.form(r).m.x, Y: e.rowTextY(r)}
 }
 
 // overscan shapes a few rows a screen around the view ahead of need, within a
@@ -780,16 +905,29 @@ func (e *Editor) caretRect() (x, y, h float32) {
 func (e *Editor) boundsAt(i int, l *laid, idx int) (x, y, h float32) {
 	r := l.layout.CaretAt(ui.TextCaretPosition{Index: idx, Affinity: e.aff})
 	if l.display == "" {
-		font := blockFont(e.block(i))
-		r.H = font.Size * font.LineHeight
+		r.H = l.m.font.Size * l.m.font.LineHeight
 	}
-	return e.contentX() + r.X, e.rowTextY(i) + r.Y, r.H
+	return e.contentX() + l.m.x + r.X, e.rowTextY(i) + r.Y, r.H
 }
 
 func (e *Editor) contentX() float32 { return (e.viewW - e.width) / 2 }
 
 // rowTextY returns the element y of row i's first line.
 func (e *Editor) rowTextY(i int) float32 {
-	above, _ := blockSpace(e.block(i))
-	return float32(e.hs.top(i)-e.scroll) + above
+	return float32(e.rowTop(i)-e.scroll) + e.form(i).m.above
+}
+
+// RowHeight returns a row's measured height, for tests.
+func (e *Editor) RowHeight(r int) float32 { return e.rows[r].h }
+
+// ColumnWidth returns the text column's width, for tests.
+func (e *Editor) ColumnWidth() float32 { return e.width }
+
+// LinkHint returns the link target shown under the pointer, for tests.
+func (e *Editor) LinkHint() string { return e.hoverLink }
+
+// ImageFailed reports an image known not to load, for tests.
+func (e *Editor) ImageFailed(source string) bool {
+	st := e.images[source]
+	return st != nil && st.failed
 }

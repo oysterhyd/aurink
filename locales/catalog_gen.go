@@ -47,3 +47,31 @@ func AppName() string { return In(i18n.Locale()).AppName() }
 func (msgs Messages) AppName() string {
 	return Catalog.Format(msgs.locale, "app_name", nil)
 }
+
+// LiveeditCopy says "Copy"
+// in the language the app shows.
+//
+// The button of a code block that copies its text.
+func LiveeditCopy() string { return In(i18n.Locale()).LiveeditCopy() }
+
+// LiveeditCopy says "Copy"
+// in the language of msgs.
+//
+// The button of a code block that copies its text.
+func (msgs Messages) LiveeditCopy() string {
+	return Catalog.Format(msgs.locale, "liveedit_copy", nil)
+}
+
+// LiveeditCopied says "Copied"
+// in the language the app shows.
+//
+// What the copy button of a code block says just after copying.
+func LiveeditCopied() string { return In(i18n.Locale()).LiveeditCopied() }
+
+// LiveeditCopied says "Copied"
+// in the language of msgs.
+//
+// What the copy button of a code block says just after copying.
+func (msgs Messages) LiveeditCopied() string {
+	return Catalog.Format(msgs.locale, "liveedit_copied", nil)
+}

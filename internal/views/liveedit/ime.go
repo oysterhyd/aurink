@@ -182,5 +182,5 @@ func (e *Editor) IndexForPoint(p ui.Point) (int, bool) {
 		return 0, false
 	}
 	l := e.current(e.caretRow)
-	return l.layout.PositionAt(ui.Point{X: p.X - e.contentX(), Y: p.Y - e.rowTextY(e.caretRow)}).Index, true
+	return l.layout.PositionAt(ui.Point{X: p.X - e.contentX() - l.m.x, Y: p.Y - e.rowTextY(e.caretRow)}).Index, true
 }
