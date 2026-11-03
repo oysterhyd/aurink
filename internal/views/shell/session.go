@@ -163,13 +163,17 @@ func (s *Shell) RestoreSession(done func()) {
 	}()
 }
 
+// applySession brings back the folder, then the tabs. The folder comes first:
+// the session is saved once the tabs are back, and a save before the folder
+// was set would lose it.
 func (s *Shell) applySession(st contract.SessionState, done func()) {
-	if st.Root != "" && s.o.Workspace != nil {
-		root, expanded := st.Root, st.Expanded
-		s.o.Workspace.SetRoot(root, func(err error) {
-			if err != nil {
-				return // The folder is gone or out of reach: start without it.
-			}
+	if st.Root == "" || s.o.Workspace == nil {
+		s.applyTabs(st, done)
+		return
+	}
+	root, expanded := st.Root, st.Expanded
+	s.o.Workspace.SetRoot(root, func(err error) {
+		if err == nil { // Otherwise the folder is gone or out of reach: start without it.
 			s.sidebar, s.panel = true, panelFiles
 			for _, p := range expanded {
 				if rel, err := filepath.Rel(root, p); err == nil && !strings.HasPrefix(rel, "..") {
@@ -177,9 +181,14 @@ func (s *Shell) applySession(st contract.SessionState, done func()) {
 				}
 			}
 			s.sess.expanded = s.files.tree.Open.Len()
-			s.sessionChanged()
-		})
-	}
+		}
+		s.applyTabs(st, done)
+	})
+}
+
+// applyTabs opens the session's tabs one after another and restores each
+// one's caret and scroll, then marks the session loaded and saves it.
+func (s *Shell) applyTabs(st contract.SessionState, done func()) {
 	opened := make([]*doc, len(st.Tabs))
 	missing := 0
 	var next func(i int)

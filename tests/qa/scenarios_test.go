@@ -97,6 +97,20 @@ type app struct {
 	reg      *commands.Registry
 	s        *shell.Shell
 	tt       *ui.Tester
+	// holdRoot makes the next boot keep Workspace.SetRoot's answer in heldRoot
+	// until the test calls it, and skip the automatic restore.
+	holdRoot bool
+	heldRoot func()
+}
+
+// heldWorkspace keeps SetRoot's answer until the test lets it through.
+type heldWorkspace struct {
+	*workspace.Workspace
+	a *app
+}
+
+func (w heldWorkspace) SetRoot(path string, done func(error)) {
+	w.Workspace.SetRoot(path, func(err error) { w.a.heldRoot = func() { done(err) } })
 }
 
 func newApp(t *testing.T) *app {
@@ -168,11 +182,15 @@ func (a *app) boot() {
 		}})
 	a.trash = &contracttest.RecordingTrasher{}
 	a.ws = workspace.New(&contracttest.SnapshotWatcher{}, a.trash, a.q, workspace.Options{})
+	var ws contract.Workspace = a.ws
+	if a.holdRoot {
+		ws = heldWorkspace{a.ws, a}
+	}
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
-		Files: func() []string { return a.files }, Workspace: a.ws, Search: search.NewWorkspaceSearch(),
+		Files: func() []string { return a.files }, Workspace: ws, Search: search.NewWorkspaceSearch(),
 		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
 		Recent:       workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q),
 		ExportHTML:   aurinkapp.ExportHTML(files, a.q, contract.ExtFrontMatter)})
@@ -181,7 +199,9 @@ func (a *app) boot() {
 	}
 	a.tt = ui.NewTester(a.s.View, 1280, 800)
 	a.tt.Frame()
-	a.restore() // As the app does once its recovered copies are back.
+	if !a.holdRoot {
+		a.restore() // As the app does once its recovered copies are back.
+	}
 }
 
 // settle runs what is posted until the sessions are idle: Restore is queued behind

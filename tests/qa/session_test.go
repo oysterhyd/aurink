@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"aurink/internal/contract"
+	"aurink/internal/core/docsession"
+	"aurink/internal/core/fsstore"
 	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 )
@@ -240,4 +242,44 @@ func TestRecoveredTabKeepsItsPlace(t *testing.T) {
 	a.want(a.s.ActiveSession().State().Name, "a.md")
 	a.run(contract.CmdNavGoToTab3)
 	a.want(a.text(), "c!\n")
+}
+
+// TestRestoreSetsTheFolderBeforeSaving: restoring saves the session once the
+// tabs are back, so it must wait for the folder too. Saving before the folder
+// was set lost it from the session (seen on Linux CI, 2026-11-02).
+func TestRestoreSetsTheFolderBeforeSaving(t *testing.T) {
+	a := newApp(t)
+	root := a.folder("a.md")
+	a.s.Open(filepath.Join(root, "a.md"))
+	a.settle()
+
+	a.idle()
+	a.holdRoot = true
+	a.boot()
+	done := false
+	a.s.RestoreSession(func() { done = true })
+	held := false
+	for !held {
+		select {
+		case f := <-a.q:
+			f()
+			held = a.heldRoot != nil
+		case <-time.After(30 * time.Second):
+			t.Fatal("the folder was never asked for")
+		}
+	}
+	a.settle() // The tabs open meanwhile.
+	if done {
+		t.Fatal("the session counted as restored before its folder was set")
+	}
+	a.heldRoot()
+	a.pumpUntil("the session restored", &done)
+	a.idle()
+	if got := a.s.SessionState().Root; got != root {
+		t.Fatalf("root %q, want %q", got, root)
+	}
+	st, err := docsession.NewSessionStore(filepath.Join(a.data, "session.json"), fsstore.New()).Load()
+	if err != nil || st.Root != root || len(st.Tabs) != 1 {
+		t.Fatalf("saved %+v, %v", st, err)
+	}
 }
