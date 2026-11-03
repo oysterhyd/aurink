@@ -91,9 +91,10 @@ const (
 
 // metricsFor sizes a row: its containers first, then the block's own widget.
 func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjection, lead bool) rowMetrics {
-	m := rowMetrics{font: theme.BodyFont(), below: theme.Body * .85, width: e.width}
+	ty := e.ty
+	m := rowMetrics{font: ty.BodyFont(), below: ty.Body * .85, width: e.width}
 	if lead {
-		m.font = theme.LeadFont()
+		m.font = ty.LeadFont()
 	}
 	for i := range p.Containers {
 		switch c := &p.Containers[i]; c.Kind {
@@ -104,7 +105,7 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 			m.muted = true
 		case contract.BlockItem:
 			m.x += listIndent
-			m.below = theme.Body * .4
+			m.below = ty.Body * .4
 			if c.Task == contract.TaskDone {
 				m.struck = true
 			}
@@ -119,15 +120,15 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 
 type headingWidget struct{ plainWidget }
 
-func (headingWidget) metrics(_ *Editor, _ int, b *contract.Block, m *rowMetrics) {
-	m.font = theme.HeadingFont(b.Level)
-	switch b.Level {
+func (headingWidget) metrics(e *Editor, _ int, b *contract.Block, m *rowMetrics) {
+	m.font = e.ty.HeadingFont(b.Level)
+	switch body := e.ty.Body; b.Level {
 	case 1:
-		m.above, m.below = 8, 12
+		m.above, m.below = body*.5, body*.75
 	case 2:
-		m.above, m.below = theme.Body*1.9, theme.Body*.5
+		m.above, m.below = body*1.9, body*.5
 	default:
-		m.above, m.below = theme.Body*1.5, theme.Body*.4
+		m.above, m.below = body*1.5, body*.4
 	}
 	m.muted = b.Level == 6
 }
@@ -139,16 +140,16 @@ func (blankWidget) metrics(_ *Editor, _ int, _ *contract.Block, m *rowMetrics) {
 // sourceWidget shows syntax M1 does not render as pale source (06 §2.1).
 type sourceWidget struct{ plainWidget }
 
-func (sourceWidget) metrics(_ *Editor, _ int, _ *contract.Block, m *rowMetrics) {
-	m.font = theme.CodeFont()
+func (sourceWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) {
+	m.font = e.ty.CodeFont()
 	m.muted = true
 }
 
 // breakWidget is the section break "···"; its source shows with the caret on it.
 type breakWidget struct{ plainWidget }
 
-func (breakWidget) metrics(_ *Editor, _ int, _ *contract.Block, m *rowMetrics) {
-	m.above, m.below = theme.Body, theme.Body*1.5
+func (breakWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) {
+	m.above, m.below = e.ty.Body, e.ty.Body*1.5
 }
 
 func (breakWidget) front(rc *rowContext) {
@@ -166,16 +167,16 @@ func (breakWidget) front(rc *rowContext) {
 // line numbers. Highlighting goes through the spans (spansOf).
 type codeWidget struct{ plainWidget }
 
-func (codeWidget) metrics(_ *Editor, _ int, _ *contract.Block, m *rowMetrics) {
-	m.font = theme.CodeFont()
-	m.above, m.below = codeHeader, theme.Body*1.4
+func (codeWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) {
+	m.font = e.ty.CodeFont()
+	m.above, m.below = codeHeader, e.ty.Body*1.4
 	m.x = codePadX + codeGutter
 	m.width -= codePadX
 }
 
 func (codeWidget) back(rc *rowContext) {
-	rc.p.Fill(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: rc.height - theme.Body + 12}, rc.t.CodeBg, 10)
-	rc.p.Stroke(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: rc.height - theme.Body + 12}, rc.t.Border, 10, 1)
+	rc.p.Fill(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: rc.height - rc.e.ty.Body + 12}, rc.t.CodeBg, 10)
+	rc.p.Stroke(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: rc.height - rc.e.ty.Body + 12}, rc.t.Border, 10, 1)
 }
 
 func (codeWidget) front(rc *rowContext) {

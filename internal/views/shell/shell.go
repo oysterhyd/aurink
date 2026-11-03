@@ -105,6 +105,8 @@ type doc struct {
 	counted   contract.Version
 	countedAt time.Time
 	words     int
+	// readFrom is the view the tab had before reading mode (D17).
+	readFrom editorapi.Mode
 }
 
 // Shell is one window's interface.
@@ -127,6 +129,10 @@ type Shell struct {
 	services  ui.Services
 	hasServ   bool
 	focusNext bool
+	// reading is reading mode, for the window (D17); zoom is the document's
+	// zoom in steps of zoomStep.
+	reading bool
+	zoom    int
 
 	// drag is the tab the pointer drags, and how far it is from its slot.
 	drag struct {
@@ -408,6 +414,7 @@ func (s *Shell) View(c *ui.Context) {
 		c.SetTheme(base)
 	}
 	s.bindCommands(c)
+	s.escapeReading(c)
 	s.live = true
 	root := ui.Box(c).Fill().Clip()
 	v := root.Animate("theme", float32(s.themeGen), 400*time.Millisecond)
@@ -441,13 +448,32 @@ func (s *Shell) matched(a *ui.Animation, id any) ui.ElementTransition {
 }
 
 func (s *Shell) window(c *ui.Context, t *theme.Tokens) {
-	ui.Column(c).Fill().Font(theme.Sans).TextColor(t.Text).Draw(func(p *ui.Painter, r ui.Rect) {
+	col := ui.Column(c).Fill().Font(theme.Sans).TextColor(t.Text).Draw(func(p *ui.Painter, r ui.Rect) {
 		s.cpu = !effects.PaintWindow(p, r, t)
-	}).Children(func() {
-		s.titleBar(c, t)
+	})
+	if s.reading && s.active == nil {
+		s.reading = false
+	}
+	// Reading mode folds the title bar away; focus mode fades it (02 §5.10).
+	var read, dim float32
+	if s.reading {
+		read = 1
+	}
+	if s.focused() {
+		dim = 1
+	}
+	read = col.AnimateTo("reading", read, motion.Smooth)
+	dim = col.AnimateTo("focus", dim, motion.Smooth)
+	col.Children(func() {
+		if read < 0.999 {
+			h := max(c.TitleBar().Height, theme.TitleBar)
+			ui.Column(c.Key("titleBar")).Height(h * (1 - read)).Clip().Opacity((1 - read) * (1 - dim*(1-focusBar))).Children(func() {
+				s.titleBar(c, t)
+			})
+		}
 		ui.Row(c).Grow(1).AlignItems(ui.Stretch).Children(func() {
-			s.sideBar(c, t)
-			s.sheet(c, t)
+			s.sideBar(c, t, s.sidebar && !s.reading && !s.focused())
+			s.sheet(c, t, read, dim)
 		})
 		s.paletteView(c, t)
 	})
@@ -596,6 +622,31 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 		if m.Item(locales.ShellViewSource()).Checked(s.active.mode == editorapi.ModeSource).Chosen() {
 			s.setMode(s.active, editorapi.ModeSource)
 		}
+		// The writing modes and the zoom, as Typora's View menu has them.
+		m.Separator()
+		writing := s.active.mode == editorapi.ModeLive
+		if m.Item(locales.ShellReading()).Checked(s.reading).Chosen() {
+			s.run(contract.CmdViewRead)
+		}
+		if m.Item(locales.ShellFocus()).Checked(writing && s.active.live.FocusMode()).Disabled(!writing).Chosen() {
+			s.run(contract.CmdViewFocus)
+		}
+		if m.Item(locales.ShellTypewriter()).Checked(writing && s.active.live.Typewriter()).Disabled(!writing).Chosen() {
+			s.run(contract.CmdViewTypewriter)
+		}
+		m.Separator()
+		for _, z := range []struct {
+			label string
+			id    contract.CommandID
+		}{
+			{locales.ShellZoomIn(), contract.CmdViewZoomIn},
+			{locales.ShellZoomOut(), contract.CmdViewZoomOut},
+			{locales.ShellZoomReset(), contract.CmdViewZoomReset},
+		} {
+			if m.Item(z.label).Chosen() {
+				s.run(z.id)
+			}
+		}
 	})
 }
 
@@ -626,9 +677,9 @@ func (s *Shell) windowButtons(c *ui.Context, t *theme.Tokens) {
 	}
 }
 
-func (s *Shell) sideBar(c *ui.Context, t *theme.Tokens) {
+func (s *Shell) sideBar(c *ui.Context, t *theme.Tokens, open bool) {
 	var target float32
-	if s.sidebar {
+	if open {
 		target = theme.SidebarWidth
 	}
 	box := ui.Box(c.Key("sidebar")).Clip()
@@ -682,15 +733,24 @@ func (s *Shell) openDocuments(c *ui.Context, t *theme.Tokens) {
 	})
 }
 
-func (s *Shell) sheet(c *ui.Context, t *theme.Tokens) {
-	ui.Box(c).Grow(1).Margin(0, 8, 8, 0).Radius(theme.RadiusSheet).Background(t.Sheet).Clip().Children(func() {
+// sheet draws the paper; in reading mode (read 1) it fills the window with
+// square corners, in focus mode (dim 1) it fades at the top and bottom.
+func (s *Shell) sheet(c *ui.Context, t *theme.Tokens, read, dim float32) {
+	m := 8 * (1 - read)
+	ui.Box(c).Grow(1).Margin(0, m, m, 0).Radius(theme.RadiusSheet * (1 - read)).Background(t.Sheet).Clip().Children(func() {
 		if s.active == nil {
 			s.welcome(c, t)
 		} else {
 			d := s.active
 			s.document(c.Key(d.s.ID()), t, d)
+			if dim > 0.01 {
+				s.focusFades(c, t, dim)
+			}
+			if read > 0.01 && s.active == d {
+				s.readingTop(c, t, d, read)
+			}
 			// A banner's button can close the tab as it builds.
-			if s.active == d {
+			if s.active == d && !s.reading {
 				s.capsule(c, t, d)
 			}
 		}
@@ -718,12 +778,16 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 			e.Focus()
 		}
 	default:
+		if s.reading {
+			s.readDoc(d)
+		}
+		d.live.SetTypography(s.typography())
 		if s.focusNext {
 			s.focusNext = false
 			d.live.Focus()
 		}
 		d.live.View(c.Key("live"))
-		if !d.live.FocusMode() {
+		if !d.live.FocusMode() && !s.reading {
 			d.live.Rail(c.Key("rail"))
 		}
 		d.live.TableBar(c.Key("tableBar"))
@@ -1001,6 +1065,15 @@ func (s *Shell) CloseAll(done func(bool)) {
 }
 
 func (s *Shell) setMode(d *doc, m editorapi.Mode) {
+	// Choosing a view leaves reading mode first.
+	if s.reading {
+		s.setReading(false)
+	}
+	s.switchMode(d, m)
+}
+
+// switchMode shows a tab in the live or the source view.
+func (s *Shell) switchMode(d *doc, m editorapi.Mode) {
 	if d.mode == m {
 		return
 	}
@@ -1081,7 +1154,7 @@ func (s *Shell) SidebarOpen() bool { return s.sidebar }
 
 // SheetLeft returns the sheet's left edge in the window.
 func (s *Shell) SheetLeft() float32 {
-	if s.sidebar {
+	if s.sidebar && !s.reading && !s.focused() {
 		return theme.SidebarWidth
 	}
 	return 0

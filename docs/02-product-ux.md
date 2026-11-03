@@ -53,7 +53,7 @@ P0 = MVP 必须（Phase 1–2）；P1 = Beta（Phase 3）；P2 = 1.0 打磨（Ph
 | 源码模式切换（`Ctrl/⌘+/`），滚动位置映射 | P0 |
 | 阅读模式（只读、隐藏界面、衬线正文、阅读进度条；`F7` 进入，`Esc` 或「退出阅读」退出） | P1 |
 | 专注模式（非当前段落淡化）、打字机模式（光标行居中） | P1 |
-| 内容宽度、字号、行高可调；窗口缩放 `Ctrl/⌘ +/-/0` | P1 |
+| 内容宽度、字号、行高可调；缩放 `Ctrl/⌘+Shift+=` / `-` / `0`（Typora 的键：`Ctrl+0` 是正文。只缩放文档，界面不缩放：MyGo 没有整窗缩放） | P1 |
 | 分屏（源码 + 预览同步滚动） | P2 |
 
 ### 2.3 文件与工作区
@@ -310,6 +310,7 @@ P0 = MVP 必须（Phase 1–2）；P1 = Beta（Phase 3）；P2 = 1.0 打磨（Ph
 | 插入表格 | Ctrl+T | 缩进/反缩进 | Tab / Shift+Tab（列表内）、Ctrl+] / [ |
 | 源码模式 | Ctrl+/ | 阅读模式 | F7（Esc 退出） |
 | 专注/打字机 | F8 / F9 | 侧栏 | Ctrl+Shift+L |
+| 放大/缩小/实际大小 | Ctrl+Shift+= / - / 0 | | |
 | 大纲 | Ctrl+Shift+1 | 全局搜索 | Ctrl+Shift+F |
 | 查找/替换 | Ctrl+F / Ctrl+H（macOS ⌥⌘F） | 保存/另存为 | Ctrl+S / Ctrl+Shift+S |
 | 新建/打开 | Ctrl+N / Ctrl+O | 关闭标签/重开 | Ctrl+W / Ctrl+Shift+T |

@@ -930,6 +930,78 @@ func (msgs Messages) ShellTypewriter() string {
 	return Catalog.Format(msgs.locale, "shell_typewriter", nil)
 }
 
+// ShellReading says "Reading Mode"
+// in the language the app shows.
+//
+// Hides the window around the document and shows it read-only in a serif
+// face.
+func ShellReading() string { return In(i18n.Locale()).ShellReading() }
+
+// ShellReading says "Reading Mode"
+// in the language of msgs.
+//
+// Hides the window around the document and shows it read-only in a serif
+// face.
+func (msgs Messages) ShellReading() string {
+	return Catalog.Format(msgs.locale, "shell_reading", nil)
+}
+
+// ShellExitReading says "Exit Reading"
+// in the language the app shows.
+//
+// The button at the top right of reading mode.
+func ShellExitReading() string { return In(i18n.Locale()).ShellExitReading() }
+
+// ShellExitReading says "Exit Reading"
+// in the language of msgs.
+//
+// The button at the top right of reading mode.
+func (msgs Messages) ShellExitReading() string {
+	return Catalog.Format(msgs.locale, "shell_exit_reading", nil)
+}
+
+// ShellZoomIn says "Zoom In"
+// in the language the app shows.
+//
+// Makes the document's text larger.
+func ShellZoomIn() string { return In(i18n.Locale()).ShellZoomIn() }
+
+// ShellZoomIn says "Zoom In"
+// in the language of msgs.
+//
+// Makes the document's text larger.
+func (msgs Messages) ShellZoomIn() string {
+	return Catalog.Format(msgs.locale, "shell_zoom_in", nil)
+}
+
+// ShellZoomOut says "Zoom Out"
+// in the language the app shows.
+//
+// Makes the document's text smaller.
+func ShellZoomOut() string { return In(i18n.Locale()).ShellZoomOut() }
+
+// ShellZoomOut says "Zoom Out"
+// in the language of msgs.
+//
+// Makes the document's text smaller.
+func (msgs Messages) ShellZoomOut() string {
+	return Catalog.Format(msgs.locale, "shell_zoom_out", nil)
+}
+
+// ShellZoomReset says "Actual Size"
+// in the language the app shows.
+//
+// Returns the document's text to the size in Settings.
+func ShellZoomReset() string { return In(i18n.Locale()).ShellZoomReset() }
+
+// ShellZoomReset says "Actual Size"
+// in the language of msgs.
+//
+// Returns the document's text to the size in Settings.
+func (msgs Messages) ShellZoomReset() string {
+	return Catalog.Format(msgs.locale, "shell_zoom_reset", nil)
+}
+
 // ShellHeading says "Heading {n}"
 // in the language the app shows.
 //

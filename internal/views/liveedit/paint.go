@@ -71,6 +71,11 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 	p.Fill(r, t.Sheet, 0)
 	selFrom, selTo := min(e.anchor, e.head), max(e.anchor, e.head)
 	ox := r.X + e.contentX()
+	// Typewriter mode marks the caret's line with a faint band across the sheet (02 §5.10).
+	if e.typewriter && selFrom == selTo {
+		_, cy, ch := e.caretRect()
+		p.Fill(ui.Rect{X: r.X, Y: r.Y + cy - 4, W: r.W, H: ch + 8}, t.Accent.Alpha(0.06), 0)
+	}
 	for i := e.first; i <= e.last; i++ {
 		l := e.current(i)
 		b := e.block(i)
@@ -85,7 +90,7 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		}
 		text := t.Text
 		if e.focusMode && i != e.caretRow {
-			text = text.Alpha(0.35)
+			text = text.Alpha(focusAlpha)
 		}
 		p.TextLayout(l.layout, x, y, text)
 		rc.paintObjects()

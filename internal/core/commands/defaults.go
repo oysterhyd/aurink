@@ -32,6 +32,10 @@ func DefaultBindings() []contract.KeyBinding {
 		{Command: contract.CmdViewRead, Chord: contract.Chord{Key: "F7"}},
 		{Command: contract.CmdViewFocus, Chord: contract.Chord{Key: "F8"}},
 		{Command: contract.CmdViewTypewriter, Chord: contract.Chord{Key: "F9"}},
+		// Typora's keys: Ctrl+0 is the paragraph, so the zoom takes Shift too.
+		{Command: contract.CmdViewZoomIn, Chord: contract.Chord{Mods: shifted, Key: "="}},
+		{Command: contract.CmdViewZoomOut, Chord: contract.Chord{Mods: shifted, Key: "-"}},
+		{Command: contract.CmdViewZoomReset, Chord: contract.Chord{Mods: shifted, Key: "0"}},
 		{Command: contract.CmdViewToggleSidebar, Chord: contract.Chord{Mods: shifted, Key: "L"}},
 		{Command: contract.CmdViewOutline, Chord: contract.Chord{Mods: shifted, Key: "1"}},
 		{Command: contract.CmdNavSearchWorkspace, Chord: contract.Chord{Mods: shifted, Key: "F"}},

@@ -815,13 +815,36 @@ func TestRevealOffsetAligns(t *testing.T) {
 	}
 }
 
+// Typewriter mode keeps the caret's line at 45% of the view (02 §5.10): 315 of 700.
 func TestTypewriterCenters(t *testing.T) {
 	h := open(t, longDoc(500))
 	h.e.SetTypewriter(true)
+	for _, n := range []int{100, 101, 300} {
+		h.caret(len(longDoc(n)))
+		r, _ := h.e.SelectionRect()
+		if mid := r.Y + r.H/2; mid < 312 || mid > 318 {
+			t.Fatalf("caret of line %d at %v", n, r)
+		}
+	}
+}
+
+// Typewriter mode draws a faint band on the caret's line, and only then.
+func TestTypewriterBand(t *testing.T) {
+	h := open(t, longDoc(500))
 	h.caret(len(longDoc(100)))
 	r, _ := h.e.SelectionRect()
-	if r.Y < 300 || r.Y > 400 {
-		t.Fatalf("caret at %v", r)
+	// Left of the column, where no text is.
+	const x = 20
+	y := int(r.Y + r.H/2)
+	before := h.tt.Image().RGBAAt(x, y)
+	h.e.SetTypewriter(true)
+	h.tt.Frame()
+	r, _ = h.e.SelectionRect()
+	y = int(r.Y + r.H/2)
+	img := h.tt.Image()
+	band, plain := img.RGBAAt(x, y), img.RGBAAt(x, y+int(r.H))
+	if band == plain || plain != before {
+		t.Fatalf("band %v, line below %v, before %v", band, plain, before)
 	}
 }
 

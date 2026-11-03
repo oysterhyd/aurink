@@ -271,6 +271,26 @@
   "@shell_typewriter": {
     "description": "Keeps the caret's line in the middle of the window."
   },
+  "shell_reading": "Reading Mode",
+  "@shell_reading": {
+    "description": "Hides the window around the document and shows it read-only in a serif face."
+  },
+  "shell_exit_reading": "Exit Reading",
+  "@shell_exit_reading": {
+    "description": "The button at the top right of reading mode."
+  },
+  "shell_zoom_in": "Zoom In",
+  "@shell_zoom_in": {
+    "description": "Makes the document's text larger."
+  },
+  "shell_zoom_out": "Zoom Out",
+  "@shell_zoom_out": {
+    "description": "Makes the document's text smaller."
+  },
+  "shell_zoom_reset": "Actual Size",
+  "@shell_zoom_reset": {
+    "description": "Returns the document's text to the size in Settings."
+  },
   "shell_heading": "Heading {n}",
   "@shell_heading": {
     "description": "Turns the block into a heading of a level from 1 to 6.",

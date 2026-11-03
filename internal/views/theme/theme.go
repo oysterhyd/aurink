@@ -118,26 +118,75 @@ func For(o Options) *Tokens {
 	return &t
 }
 
-// HeadingFont returns the font of a heading level (§4.2).
-func HeadingFont(level int) ui.Font {
-	switch level {
-	case 1:
-		return ui.Font{Family: Serif, Size: Body * 2.6, Weight: 500, LineHeight: 1.14}
-	case 2:
-		return ui.Font{Family: Serif, Size: Body * 1.62, Weight: 500, LineHeight: 1.3}
-	case 3:
-		return ui.Font{Family: Sans, Size: Body * 1.12, Weight: 650, LineHeight: 1.5}
-	case 6:
-		return ui.Font{Family: Sans, Size: Body * .95, Weight: 600, LineHeight: 1.5}
-	}
-	return ui.Font{Family: Sans, Size: Body, Weight: 600, LineHeight: 1.5}
+// Typography is the document's type: the body size and line height and the
+// column width of Settings.Appearance, with the window zoom applied, and a
+// serif body for reading mode (02 §2.2, §5.10). The other levels of §4.2 keep
+// their ratios to the body.
+type Typography struct {
+	Body       float32 // body text size, DIP
+	LineHeight float32 // body line height, times the size
+	Column     float32 // widest text column, DIP
+	Serif      bool    // body text in the serif face
 }
 
-// BodyFont, LeadFont and CodeFont are the other text levels of §4.2.
-func BodyFont() ui.Font { return ui.Font{Family: Sans, Size: Body, LineHeight: 1.75} }
+// DefaultTypography is §4.2 at 100%.
+func DefaultTypography() Typography {
+	return Typography{Body: Body, LineHeight: 1.75, Column: MaxColumn}
+}
+
+// Zoomed scales the sizes by z (1 is 100%).
+func (ty Typography) Zoomed(z float32) Typography {
+	ty.Body *= z
+	ty.Column *= z
+	return ty
+}
+
+func (ty Typography) body() string {
+	if ty.Serif {
+		return Serif
+	}
+	return Sans
+}
+
+// HeadingFont returns the font of a heading level (§4.2).
+func (ty Typography) HeadingFont(level int) ui.Font {
+	b := ty.Body
+	switch level {
+	case 1:
+		return ui.Font{Family: Serif, Size: b * 2.6, Weight: 500, LineHeight: 1.14}
+	case 2:
+		return ui.Font{Family: Serif, Size: b * 1.62, Weight: 500, LineHeight: 1.3}
+	case 3:
+		return ui.Font{Family: ty.body(), Size: b * 1.12, Weight: 650, LineHeight: 1.5}
+	case 6:
+		return ui.Font{Family: ty.body(), Size: b * .95, Weight: 600, LineHeight: 1.5}
+	}
+	return ui.Font{Family: ty.body(), Size: b, Weight: 600, LineHeight: 1.5}
+}
+
+// BodyFont is the body text.
+func (ty Typography) BodyFont() ui.Font {
+	return ui.Font{Family: ty.body(), Size: ty.Body, LineHeight: ty.LineHeight}
+}
 
 // LeadFont is the first paragraph's level.
-func LeadFont() ui.Font { return ui.Font{Family: Sans, Size: Body * 1.14, LineHeight: 1.7} }
+func (ty Typography) LeadFont() ui.Font {
+	return ui.Font{Family: ty.body(), Size: ty.Body * 1.14, LineHeight: ty.LineHeight - .05}
+}
 
 // CodeFont is the level of code and of shown markers.
-func CodeFont() ui.Font { return ui.Font{Family: Mono, Size: Body * .85, LineHeight: 1.55} }
+func (ty Typography) CodeFont() ui.Font {
+	return ui.Font{Family: Mono, Size: ty.Body * .85, LineHeight: 1.55}
+}
+
+// HeadingFont, BodyFont, LeadFont and CodeFont are the levels at 100%.
+func HeadingFont(level int) ui.Font { return DefaultTypography().HeadingFont(level) }
+
+// BodyFont is the body text at 100%.
+func BodyFont() ui.Font { return DefaultTypography().BodyFont() }
+
+// LeadFont is the first paragraph's level at 100%.
+func LeadFont() ui.Font { return DefaultTypography().LeadFont() }
+
+// CodeFont is the level of code at 100%.
+func CodeFont() ui.Font { return DefaultTypography().CodeFont() }

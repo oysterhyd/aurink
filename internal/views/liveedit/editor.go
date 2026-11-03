@@ -13,7 +13,6 @@ import (
 
 // Page geometry and how far layouts reach, from 02 §3.
 const (
-	maxColumn      = theme.MaxColumn
 	sidePad        = theme.PadSide
 	padTop         = theme.PadTop
 	padBottom      = theme.PadBottom
@@ -181,6 +180,7 @@ type Editor struct {
 
 	mode       editorapi.Mode
 	focusMode  bool
+	ty         theme.Typography
 	typewriter bool
 	find       []contract.Range
 	findCur    int
@@ -213,7 +213,8 @@ func New(o Options) *Editor {
 			return contract.EditPrefs{BulletMarker: '-', StrongDelim: "**", EmphasisDelim: "*", FenceDelim: "```", AutoPair: true, TabSize: 2, Exts: o.Exts}
 		}
 	}
-	e := &Editor{model: o.Model, opts: o, scroll: -padTop, anchorOff: -padTop, labels: map[labelKey]*ui.TextLayout{}, findCur: -1, t: o.Theme}
+	e := &Editor{model: o.Model, opts: o, scroll: -padTop, anchorOff: -padTop, labels: map[labelKey]*ui.TextLayout{}, findCur: -1, t: o.Theme,
+		ty: theme.DefaultTypography()}
 	if e.t == nil {
 		e.t = theme.For(theme.Options{})
 	}
@@ -759,6 +760,16 @@ func (e *Editor) setScroll(y float64) {
 	e.anchorOff = y - e.hs.top(e.anchorIdx)
 }
 
+// relayAll drops every row's form and height, as a new column or type needs.
+func (e *Editor) relayAll() {
+	e.dropAllForms()
+	for i := range e.rows {
+		e.rows[i].h = 0
+	}
+	e.preLaid = nil
+	e.resetHeights()
+}
+
 func (e *Editor) maxScroll() float64 {
 	return max(-padTop, e.hs.top(len(e.rows))+padBottom-float64(e.viewH))
 }
@@ -766,14 +777,9 @@ func (e *Editor) maxScroll() float64 {
 // layoutView lays out the rows in view of a w×h box. The anchor row and its offset
 // decide the scroll: a row above changing height moves nothing on screen.
 func (e *Editor) layoutView(w, h float32) {
-	column := max(min(w-2*sidePad, maxColumn), 1)
+	column := max(min(w-2*sidePad, e.ty.Column), 1)
 	if column != e.width {
-		e.dropAllForms()
-		for i := range e.rows {
-			e.rows[i].h = 0
-		}
-		e.preLaid = nil
-		e.resetHeights()
+		e.relayAll()
 		e.width = column
 	}
 	e.viewW, e.viewH = w, h
@@ -815,6 +821,9 @@ func (e *Editor) reveal(h float32) {
 			d = y - padTop
 		case editorapi.AlignCenter:
 			d = y + ch/2 - h/2
+			if e.typewriter {
+				d = y + ch/2 - h*typewriterLine
+			}
 		default:
 			switch {
 			case y < 0:

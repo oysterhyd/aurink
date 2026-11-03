@@ -172,9 +172,11 @@ func (s *Shell) editCommands() []contract.Command {
 		{"tableFormat", contract.EditCommand{ID: contract.CmdTableFormat}},
 	}
 	hasDoc := func() bool { return s.active != nil }
+	// Reading mode is read-only: copying works, editing and the writing modes do not.
+	editable := func() bool { return live() && !s.reading }
 	var out []contract.Command
 	for _, e := range edits {
-		out = append(out, contract.Command{ID: e.cmd.ID, Title: e.title, Enabled: live, Run: func() error {
+		out = append(out, contract.Command{ID: e.cmd.ID, Title: e.title, Enabled: editable, Run: func() error {
 			err := s.active.live.RunEdit(e.cmd)
 			s.focusNext = true
 			s.invalidate()
@@ -182,10 +184,16 @@ func (s *Shell) editCommands() []contract.Command {
 		}})
 	}
 	return append(out,
-		contract.Command{ID: contract.CmdViewFocus, Title: "focus", Enabled: live,
+		contract.Command{ID: contract.CmdViewRead, Title: "reading", Enabled: hasDoc,
+			Checked: func() bool { return s.reading },
+			Run:     func() error { s.setReading(!s.reading); return nil }},
+		contract.Command{ID: contract.CmdViewZoomIn, Title: "zoomIn", Enabled: hasDoc, Run: func() error { s.zoomBy(1); return nil }},
+		contract.Command{ID: contract.CmdViewZoomOut, Title: "zoomOut", Enabled: hasDoc, Run: func() error { s.zoomBy(-1); return nil }},
+		contract.Command{ID: contract.CmdViewZoomReset, Title: "zoomReset", Enabled: hasDoc, Run: func() error { s.zoomBy(0); return nil }},
+		contract.Command{ID: contract.CmdViewFocus, Title: "focus", Enabled: editable,
 			Checked: func() bool { return live() && s.active.live.FocusMode() },
 			Run:     func() error { s.active.live.SetFocusMode(!s.active.live.FocusMode()); s.invalidate(); return nil }},
-		contract.Command{ID: contract.CmdViewTypewriter, Title: "typewriter", Enabled: live,
+		contract.Command{ID: contract.CmdViewTypewriter, Title: "typewriter", Enabled: editable,
 			Checked: func() bool { return live() && s.active.live.Typewriter() },
 			Run:     func() error { s.active.live.SetTypewriter(!s.active.live.Typewriter()); s.invalidate(); return nil }},
 		contract.Command{ID: contract.CmdEditFind, Title: "find", Enabled: hasDoc, Run: func() error { s.find(false, 0); return nil }},
@@ -196,7 +204,7 @@ func (s *Shell) editCommands() []contract.Command {
 			Run: func() error { s.active.live.CopyMarkdown(); return nil }},
 		contract.Command{ID: contract.CmdEditCopyHTML, Title: "copyHTML", Enabled: live,
 			Run: func() error { s.active.live.CopyHTML(); return nil }},
-		contract.Command{ID: contract.CmdEditPastePlain, Title: "pastePlain", Enabled: live,
+		contract.Command{ID: contract.CmdEditPastePlain, Title: "pastePlain", Enabled: editable,
 			Run: func() error { s.active.live.PastePlain(); return nil }},
 	)
 }
@@ -211,7 +219,8 @@ var editTitles = map[string]func() string{
 	"tableInsert": locales.ShellTableInsert, "rowAbove": locales.ShellRowAbove, "rowBelow": locales.ShellRowBelow,
 	"colLeft": locales.ShellColLeft, "colRight": locales.ShellColRight, "deleteRow": locales.ShellDeleteRow,
 	"deleteCol": locales.ShellDeleteCol, "tableFormat": locales.ShellTableFormat, "focus": locales.ShellFocus,
-	"typewriter": locales.ShellTypewriter, "quickOpen": locales.ShellQuickOpen, "palette": locales.ShellCommandPalette,
+	"typewriter": locales.ShellTypewriter, "reading": locales.ShellReading, "zoomIn": locales.ShellZoomIn,
+	"zoomOut": locales.ShellZoomOut, "zoomReset": locales.ShellZoomReset, "quickOpen": locales.ShellQuickOpen, "palette": locales.ShellCommandPalette,
 	"goToHeading": locales.ShellGoToHeading, "openFolder": locales.ShellOpenFolder, "files": locales.ShellPanelFiles,
 	"outline": locales.ShellPanelOutline, "search": locales.ShellPanelSearch,
 	"searchWorkspace": locales.ShellSearchInFolder, "rename": locales.ShellRename,
@@ -304,6 +313,7 @@ var namedKeys = map[string]ui.Key{
 	"O": ui.KeyO, "P": ui.KeyP, "Q": ui.KeyQ, "R": ui.KeyR, "S": ui.KeyS, "T": ui.KeyT, "U": ui.KeyU,
 	"V": ui.KeyV, "W": ui.KeyW, "X": ui.KeyX, "Y": ui.KeyY, "Z": ui.KeyZ, "/": ui.KeySlash,
 	"Tab": ui.KeyTab, "`": ui.KeyBackquote, "[": ui.KeyBracketLeft, "]": ui.KeyBracketRight,
+	"=": ui.KeyEqual, "-": ui.KeyMinus,
 }
 
 func init() {

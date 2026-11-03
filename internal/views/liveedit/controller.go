@@ -1,6 +1,7 @@
 package liveedit
 
 import (
+	"aurink/internal/views/theme"
 	"sort"
 
 	"aurink/internal/contract"
@@ -38,6 +39,21 @@ func (e *Editor) SetMode(m editorapi.Mode) {
 	}
 	e.mode = m
 	e.dropAllForms()
+	e.invalidate()
+}
+
+// Typography returns the document's type.
+func (e *Editor) Typography() theme.Typography { return e.ty }
+
+// SetTypography changes the document's type (Settings.Appearance, the zoom,
+// reading mode's serif body). Every row is laid out again; the anchor row
+// keeps its place on screen.
+func (e *Editor) SetTypography(ty theme.Typography) {
+	if ty == e.ty {
+		return
+	}
+	e.ty = ty
+	e.relayAll()
 	e.invalidate()
 }
 
@@ -213,4 +229,28 @@ func (e *Editor) SetViewAnchor(row int, off float32) {
 	e.anchorIdx, e.anchorOff = max(0, min(row, len(e.rows)-1)), float64(off)
 	e.revealPending = false
 	e.invalidate()
+}
+
+// focusAlpha is how much of the text rows other than the caret's keep in focus
+// mode; typewriterLine is where typewriter mode keeps the caret, as a fraction
+// of the view's height (02 §5.10).
+const (
+	focusAlpha     = 0.28
+	typewriterLine = 0.45
+)
+
+// TitleAbove returns the text of the document's first level-1 heading and
+// whether the view has scrolled past it, for reading mode's title.
+func (e *Editor) TitleAbove() (string, bool) {
+	for _, h := range e.ast.Outline() {
+		if h.Level != 1 {
+			continue
+		}
+		r, ok := e.rowOf[h.Block]
+		if !ok {
+			return h.Text, false
+		}
+		return h.Text, e.rowTop(r)+float64(e.rows[r].h) <= e.scroll
+	}
+	return "", false
 }
