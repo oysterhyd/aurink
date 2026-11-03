@@ -187,6 +187,8 @@ MyGo 要求键匹配 `^[A-Za-z][A-Za-z0-9_]*$`，点号只留给 MyGo 自带的 
 
 ### Phase 3 · 高级 Markdown 与体验（约 3 周）
 
+> 顺序、M3 范围和修正后的验收要求见 [08-phase3.md](08-phase3.md)，与下表冲突时以 08 为准。“约 3 周”是旧估算，不再用于排期。
+
 | 卡 | 依赖 | 交付物 | 验收标准 | 估时 |
 |---|---|---|---|---|
 | BE-2.9 渲染服务 | M2、S2 | `core/render` + `adapters/webviewhost` + `resources/render`：懒启动、串行队列、超时、内存/磁盘缓存、亮暗主题、不可用降级 | 公式语料 ≥ 200 例 SVG 可被 `ui.ParseSVG` 解析；Mermaid 6 种图类型；缓存命中 < 1 ms | 5 |
