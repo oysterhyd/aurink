@@ -220,19 +220,19 @@ type paletteMatch struct{}
 // Match is the shared element the palette grows out of: give it to the omnibox.
 var Match any = paletteMatch{}
 
-// View builds the palette while it is open. live turns motion on.
+// View builds the palette while it is open. live turns motion on: the shell
+// passes false when motion is reduced.
 func (p *Palette) View(c *ui.Context, t *theme.Tokens, l Labels, live bool) {
 	if !p.open {
 		return
 	}
 	p.refresh()
 	p.Built = 0
-	reduce := c.Preferences().ReduceMotion
 	ui.DialogBase(c.Key("palette"), &p.open, func(backdrop, panel ui.Element) {
 		backdrop.Background(t.Scrim).Justify(ui.Start).PaddingY(86)
 		panel.Width(640).MaxHeight(460).Radius(theme.RadiusFloat+4).Border(1, t.Border).
 			Shadow(0, 24, 64, 0, t.ShadowColor).Material(effects.Glass(t, effects.Modal)).Clip().Label(l.Placeholder)
-		if live && !reduce {
+		if live {
 			panel.Transition(motion.Frame(Match))
 			if !p.glow {
 				key := [2]any{"glow", p.opens}
@@ -326,7 +326,7 @@ func (p *Palette) row(c *ui.Context, t *theme.Tokens, i int, it Item, pos []int)
 	r.Children(func() {
 		if i == p.sel {
 			ui.Box(c.Key("pill")).Absolute().Fill().Radius(theme.RadiusRow).Background(t.AccentSoft).
-				Border(1, t.AccentRing).Transition(ui.ElementTransition{Animation: &motion.Snappy, Match: selPill{}})
+				Border(1, t.AccentRing).Transition(motion.Still(t.Still, ui.ElementTransition{Animation: &motion.Snappy, Match: selPill{}}))
 		}
 		icon := kit.IconFile
 		switch p.mode {

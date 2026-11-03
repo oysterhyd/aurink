@@ -79,7 +79,7 @@ func (s *Shell) findBar(c *ui.Context, t *theme.Tokens, d *doc) {
 	s.refreshFind(d)
 	bar := ui.Column(c.Key("find")).Absolute().Top(12).Right(20).HandleInput(func(ui.InputEvent) bool { return false })
 	if s.live {
-		bar.Transition(ui.ElementTransition{Animation: &motion.Snappy, Enter: &ui.Motion{Y: -8, Opacity: 0}, Exit: &ui.Motion{Y: -8, Opacity: 0}})
+		bar.Transition(motion.Still(s.still, ui.ElementTransition{Animation: &motion.Snappy, Enter: &ui.Motion{Y: -8, Opacity: 0}, Exit: &ui.Motion{Y: -8, Opacity: 0}}))
 	}
 	kit.FindBar(c, t, bar, &liveFinder{s, d, c.Modifiers()}, s.live)
 	// What the bar typed or toggled searches at once.

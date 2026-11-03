@@ -13,7 +13,7 @@ import (
 func IconButton(c *ui.Context, t *theme.Tokens, s *ui.SVG, label string, size, iconSize float32) ui.Element {
 	b := ui.Row(c).Size(size, size).Justify(ui.Center).AlignItems(ui.Center).Radius(theme.RadiusButton).
 		Role(ui.RoleButton).Label(label).Tooltip(label).Focusable()
-	press(b)
+	press(t, b)
 	if b.Hovered() {
 		b.Background(t.Hover)
 	}
@@ -21,9 +21,11 @@ func IconButton(c *ui.Context, t *theme.Tokens, s *ui.SVG, label string, size, i
 	return b
 }
 
-func press(b ui.Element) {
+// press scales a pressed control down and springs it back (02 §4.4 rule 7);
+// with motion reduced it does not scale.
+func press(t *theme.Tokens, b ui.Element) {
 	var target float32 = 1
-	if b.Pressed() {
+	if b.Pressed() && !t.Still {
 		target = motion.PressScale
 	}
 	s := b.AnimateTo("press", target, motion.Snappy)
@@ -38,7 +40,7 @@ func Button(c *ui.Context, t *theme.Tokens, text, hint string, primary bool) ui.
 	}
 	b := ui.Row(c).Padding(10, 15).Gap(10).AlignItems(ui.Center).Radius(10).Background(bg).
 		Shadow(0, 2, 8, 0, t.ShadowColor).Role(ui.RoleButton).Label(text).Focusable()
-	press(b)
+	press(t, b)
 	b.Children(func() {
 		ui.Text(c, text).FontSize(theme.UIText + 1).FontWeight(500).TextColor(fg)
 		if hint != "" {
@@ -73,7 +75,7 @@ func Segmented(c *ui.Context, t *theme.Tokens, group any, items []string, select
 				if selected == i {
 					pill := ui.Box(c.Key("pill")).Absolute().Fill().Radius(7).Background(t.Sheet)
 					if live {
-						pill.Transition(ui.ElementTransition{Animation: &motion.Smooth, Match: segmentPill{group}})
+						pill.Transition(motion.Still(t.Still, ui.ElementTransition{Animation: &motion.Smooth, Match: segmentPill{group}}))
 					}
 				}
 				ui.Row(c).Absolute().Fill().Justify(ui.Center).AlignItems(ui.Center).Children(func() {
@@ -93,7 +95,7 @@ func Notice(c *ui.Context, t *theme.Tokens, s *ui.SVG, tone ui.Color, title, det
 	return ui.Row(c).Padding(10, 12).Gap(10).AlignItems(ui.Center).Radius(theme.RadiusFloat).MaxWidth(460).
 		Border(1, t.Border).Shadow(0, 12, 32, 0, t.ShadowColor).Material(effects.Glass(t, effects.Panel)).
 		Role(ui.RoleStatus).Label(title).
-		Transition(ui.ElementTransition{Animation: &motion.Snappy, Enter: &ui.Motion{Y: 12, Opacity: 0}, Exit: &ui.Motion{Y: 12, Opacity: 0}}).
+		Transition(motion.Still(t.Still, ui.ElementTransition{Animation: &motion.Snappy, Enter: &ui.Motion{Y: 12, Opacity: 0}, Exit: &ui.Motion{Y: 12, Opacity: 0}})).
 		Children(func() {
 			ui.Icon(c, s).Size(16, 16).TextColor(tone)
 			ui.Column(c).Shrink(1).Gap(2).Children(func() {

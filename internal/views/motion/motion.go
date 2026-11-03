@@ -20,6 +20,24 @@ var (
 	ContentIn = ui.Animation{Duration: 120 * time.Millisecond, Delay: 160 * time.Millisecond}
 )
 
+// Still returns t as reduced motion has it (02 §4.4 rule 5) when still:
+// nothing moves, grows or flies from elsewhere; fades and color changes stay.
+func Still(still bool, t ui.ElementTransition) ui.ElementTransition {
+	if !still {
+		return t
+	}
+	t.Match = nil
+	t.Position, t.Size, t.Colors = false, false, true
+	fade := func(m *ui.Motion) *ui.Motion {
+		if m == nil {
+			return nil
+		}
+		return &ui.Motion{Opacity: m.Opacity}
+	}
+	t.Enter, t.Exit = fade(t.Enter), fade(t.Exit)
+	return t
+}
+
 // PressScale is the scale of a pressed control.
 const PressScale = 0.965
 

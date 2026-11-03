@@ -128,6 +128,14 @@ type Shell struct {
 	renderWarned bool
 	// opening is the document on its way, for the skeleton.
 	opening opening
+	// edgeShown is whether the scroll edge showed in the last frame.
+	edgeShown bool
+	// welcomeAt and emptyAt are when the welcome page and the empty document
+	// showed, for their auroras; auroraShown is whether one showed.
+	welcomeAt, emptyAt time.Time
+	auroraShown        bool
+	// still is reduced motion this frame, the app's setting or the system's.
+	still   bool
 	docs    []*doc
 	active  *doc
 	sidebar bool
@@ -360,7 +368,7 @@ func (s *Shell) prefs() contract.EditPrefs {
 // palette returns the tokens of the settings, in the same value for the same options.
 func (s *Shell) palette(dark bool) *theme.Tokens {
 	a := s.o.Settings.Get().Appearance
-	o := theme.Options{Dark: dark, LowPower: a.ReduceTransparency, Hue: float32(a.AccentHue)}
+	o := theme.Options{Dark: dark, LowPower: a.ReduceTransparency, Still: s.still, Hue: float32(a.AccentHue)}
 	t := s.tokens[o]
 	if t == nil {
 		t = theme.For(o)
@@ -432,6 +440,7 @@ func (s *Shell) View(c *ui.Context) {
 	}
 	s.bindCommands(c)
 	s.escapeReading(c)
+	s.still = s.reduceMotion(c)
 	s.live = true
 	root := ui.Box(c).Fill().Clip()
 	v := root.Animate("theme", float32(s.themeGen), 400*time.Millisecond)
@@ -461,7 +470,7 @@ func (s *Shell) matched(a *ui.Animation, id any) ui.ElementTransition {
 	if !s.live {
 		return ui.ElementTransition{}
 	}
-	return ui.ElementTransition{Animation: a, Match: id}
+	return motion.Still(s.still, ui.ElementTransition{Animation: a, Match: id})
 }
 
 func (s *Shell) window(c *ui.Context, t *theme.Tokens) {
@@ -612,7 +621,7 @@ func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {
 	om := ui.Row(c).Size(280, 30).Padding(0, 10).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusButton).
 		Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.ShellOmnibox())
 	// The palette grows out of the omnibox and goes back into it (02 §5.4).
-	if !s.pal.IsOpen() && !c.Preferences().ReduceMotion {
+	if !s.pal.IsOpen() && !s.still {
 		om.Transition(s.matched(&motion.Gentle, palette.Match))
 	}
 	om.Children(func() {
@@ -768,9 +777,12 @@ func (s *Shell) openDocuments(c *ui.Context, t *theme.Tokens) {
 func (s *Shell) sheet(c *ui.Context, t *theme.Tokens, read, dim float32) {
 	m := 8 * (1 - read)
 	ui.Box(c).Grow(1).Margin(0, m, m, 0).Radius(theme.RadiusSheet * (1 - read)).Background(t.Sheet).Clip().Children(func() {
+		s.auroraShown = false
 		if s.active == nil {
+			s.auroraLayer(c.Key("welcomeAurora"), t, &s.welcomeAt, welcomePools(t), t.Sheet, 0)
 			s.welcome(c, t)
 		} else {
+			s.welcomeAt = time.Time{}
 			d := s.active
 			s.document(c.Key(d.s.ID()), t, d)
 			if dim > 0.01 {
@@ -792,9 +804,40 @@ func (s *Shell) sheet(c *ui.Context, t *theme.Tokens, read, dim float32) {
 func (s *Shell) document(c *ui.Context, t *theme.Tokens, d *doc) {
 	ui.Column(c).Absolute().Fill().Children(func() {
 		s.banner(c, t, d)
-		ui.Box(c.Key("editor")).Grow(1).Children(func() { s.editor(c, t, d) })
+		ui.Box(c.Key("editor")).Grow(1).Children(func() {
+			s.editor(c, t, d)
+			// An empty document glows at its foot until there is text.
+			if s.live && d.mode != editorapi.ModeSource && !s.reading && d.s.Model().Text().Len() == 0 {
+				s.auroraLayer(c.Key("emptyAurora"), t, &s.emptyAt, emptyPools(t), ui.Color{}, .45)
+			} else {
+				s.emptyAt = time.Time{}
+			}
+			s.scrollEdge(c, t, d)
+		})
 	})
 }
+
+// scrollEdge fades the text into the sheet at its top edge once the
+// document is scrolled (02 §6, glass.ScrollEdge's soft edge); in low power
+// a hairline marks the edge instead.
+func (s *Shell) scrollEdge(c *ui.Context, t *theme.Tokens, d *doc) {
+	if !s.live || d.mode == editorapi.ModeSource || d.live.ScrollOffset() <= 0 {
+		s.edgeShown = false
+		return
+	}
+	s.edgeShown = true
+	e := ui.Box(c.Key("scrollEdge")).Absolute().Top(0).Left(0).Right(0).PassThrough()
+	if t.LowPower {
+		e.Height(1).Background(t.Border)
+		return
+	}
+	e.Height(28).Draw(func(p *ui.Painter, r ui.Rect) {
+		p.FillGradient(r, ui.LinearGradient{From: t.Sheet.Alpha(.85), To: t.Sheet.Alpha(0), Angle: 180}, 0)
+	})
+}
+
+// ScrollEdgeShown reports whether the sheet's top edge shows, for tests.
+func (s *Shell) ScrollEdgeShown() bool { return s.edgeShown }
 
 func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 	switch {

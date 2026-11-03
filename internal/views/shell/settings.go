@@ -151,7 +151,7 @@ func (s *Shell) settingsNav(c *ui.Context, t *theme.Tokens) {
 				if i == s.set.cat {
 					pill := ui.Box(c.Key("pill")).Absolute().Fill().Radius(8).Background(t.AccentSoft)
 					if s.live {
-						pill.Transition(ui.ElementTransition{Animation: &motion.Snappy, Match: segmentPillOf("settingsNav")})
+						pill.Transition(motion.Still(s.still, ui.ElementTransition{Animation: &motion.Snappy, Match: segmentPillOf("settingsNav")}))
 					}
 				}
 				tone, weight := t.Muted, 400
@@ -194,7 +194,7 @@ func (s *Shell) choice(c *ui.Context, t *theme.Tokens, key string, options []str
 				if i == selected {
 					pill := ui.Box(c.Key("pill")).Absolute().Fill().Radius(6).Background(t.Sheet).Shadow(0, 1, 2, 0, t.ShadowColor)
 					if s.live {
-						pill.Transition(ui.ElementTransition{Animation: &motion.Snappy, Match: segmentPillOf(key)})
+						pill.Transition(motion.Still(s.still, ui.ElementTransition{Animation: &motion.Snappy, Match: segmentPillOf(key)}))
 					}
 				}
 				tone := t.Muted

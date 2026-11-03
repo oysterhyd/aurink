@@ -6,6 +6,7 @@ import (
 
 	"aurink/internal/contract"
 	"aurink/internal/views/kit"
+	"aurink/internal/views/motion"
 	"aurink/internal/views/theme"
 	"aurink/locales"
 	"github.com/egoist/mygo/ui"
@@ -173,6 +174,8 @@ func (s *Shell) move(path, dir string) {
 	})
 }
 
+type filePill struct{}
+
 func (s *Shell) fileRow(c *ui.Context, t *theme.Tokens, path string) {
 	s.files.Built++
 	dir := s.files.dirs[path]
@@ -188,11 +191,17 @@ func (s *Shell) fileRow(c *ui.Context, t *theme.Tokens, path string) {
 	case row.Dragging():
 		row.Opacity(.5)
 	case d != nil && d == s.active:
-		row.Background(t.SurfaceHover)
+		// The pill below shows it.
 	case row.Hovered():
 		row.Background(t.Hover)
 	}
 	row.Children(func() {
+		// One pill marks the open document, sliding from row to row (02 §4.4
+		// rule 2).
+		if d != nil && d == s.active && !lit {
+			ui.Box(c.Key("pill")).Absolute().Fill().Radius(theme.RadiusRow).Background(t.SurfaceHover).
+				PassThrough().Transition(s.matched(&motion.Smooth, filePill{}))
+		}
 		if s.files.renaming == path {
 			s.renameField(c, t, path)
 			return

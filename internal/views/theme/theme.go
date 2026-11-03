@@ -41,12 +41,16 @@ const (
 // Options choose a palette.
 type Options struct {
 	Dark, LowPower, HighContrast bool
-	Hue                          float32
+	// Still is reduced motion, the app's setting or the system's.
+	Still bool
+	Hue   float32
 }
 
 // Tokens are the colors of §4.1 and the fills of §4.3.
 type Tokens struct {
-	Dark, LowPower                       bool
+	Dark, LowPower bool
+	// Still: transitions fade but do not move (02 §4.4 rule 5).
+	Still                                bool
 	Window, Sheet, Text, Muted, Faint    ui.Color
 	Surface, SurfaceHover, Hover, Border ui.Color
 	Accent, AccentSoft, AccentRing       ui.Color
@@ -116,7 +120,7 @@ func For(o Options) *Tokens {
 			t.AccentRing = accent
 		}
 	}
-	t.Dark, t.LowPower = o.Dark, o.LowPower
+	t.Dark, t.LowPower, t.Still = o.Dark, o.LowPower, o.Still
 	return &t
 }
 

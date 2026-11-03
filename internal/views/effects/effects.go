@@ -3,6 +3,10 @@
 package effects
 
 import (
+	"math"
+	"strconv"
+	"time"
+
 	"aurink/internal/views/theme"
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/shader"
@@ -57,6 +61,102 @@ func ColorEffect(pos vec2, color vec4) vec4 {
 	return color * (1 - smoothstep(Radius-48, Radius, length(pos-Origin)))
 }
 `)
+
+// aurora is the welcome page's and an empty document's light (02 §6): up to
+// three soft pools of the aurora colors drifting slowly, composited over Base
+// (premultiplied; transparent over an empty document).
+var aurora = shader.MustCompile(`package main
+
+var Base vec4
+var P1, P2, P3 vec4
+var D1, D2, D3 vec4
+var C1, C2, C3 vec4
+var Phase float
+
+func pool(pos, s vec2, p, d vec4) float {
+	at := (p.xy + d.xy*Phase) * s
+	r := p.zw * s * (1 + 0.14*Phase)
+	return 1 - smoothstep(0, 1, length((pos-at)/r))
+}
+
+func over(dst vec4, c vec4, a float) vec4 {
+	return vec4(c.rgb*a, a) + dst*(1-a)
+}
+
+func Fragment(dst vec4, pos vec2) vec4 {
+	s := rectSize()
+	o := Base
+	o = over(o, C1, C1.a*pool(pos, s, P1, D1))
+	o = over(o, C2, C2.a*pool(pos, s, P2, D2))
+	o = over(o, C3, C3.a*pool(pos, s, P3, D3))
+	return o
+}
+`)
+
+// AuroraPool is one pool of an aurora: its centre and radii as fractions of
+// the box, how far it drifts at the top of its cycle, its color and strength.
+type AuroraPool struct {
+	X, Y, RX, RY float32
+	DX, DY       float32
+	Color        ui.Color
+	Strength     float32
+}
+
+// auroraLife is how long the aurora drifts before it stops asking for
+// frames (02 §4.4 rule 4); auroraCycle is one drift there and back.
+const (
+	auroraLife  = 12 * time.Second
+	auroraCycle = 16 * time.Second
+)
+
+// AuroraPhase is how far the pools have drifted, 0 to 1, after elapsed, and
+// whether another frame is wanted: none past auroraLife, with motion reduced,
+// or without a GPU.
+func AuroraPhase(elapsed time.Duration, still bool) (phase float32, more bool) {
+	if still || elapsed <= 0 {
+		return 0, !still && elapsed <= 0
+	}
+	more = elapsed < auroraLife
+	elapsed = min(elapsed, auroraLife)
+	return float32(1-math.Cos(2*math.Pi*elapsed.Seconds()/auroraCycle.Seconds())) / 2, more
+}
+
+// PaintAurora paints the pools over box, elapsed into their drift; base is
+// what is under them, transparent for none. In low power or without a GPU a
+// still gradient stands in. It reports whether it wants another frame.
+func PaintAurora(p *ui.Painter, box ui.Rect, t *theme.Tokens, base ui.Color, pools []AuroraPool, elapsed time.Duration, reduce bool) bool {
+	if base.A > 0 {
+		p.Fill(box, base, 0)
+	}
+	if len(pools) == 0 {
+		return false
+	}
+	if t.LowPower || !p.Accelerated() {
+		// The still gradient: the first pool's color fading across.
+		p.FillGradient(box, ui.LinearGradient{From: pools[0].Color.Alpha(pools[0].Strength * .5), To: pools[len(pools)-1].Color.Alpha(0), Angle: 135}, 0)
+		return false
+	}
+	phase, more := AuroraPhase(elapsed, reduce)
+	u := map[string]any{"Base": premultiplied(base), "Phase": phase}
+	for i := range 3 {
+		n := strconv.Itoa(i + 1)
+		if i >= len(pools) {
+			u["P"+n], u["D"+n], u["C"+n] = []float32{0, 0, 1, 1}, []float32{0, 0, 0, 0}, []float32{0, 0, 0, 0}
+			continue
+		}
+		q := pools[i]
+		u["P"+n] = []float32{q.X, q.Y, q.RX, q.RY}
+		u["D"+n] = []float32{q.DX, q.DY, 0, 0}
+		u["C"+n] = []float32{float32(q.Color.R) / 255, float32(q.Color.G) / 255, float32(q.Color.B) / 255, q.Strength}
+	}
+	aurora.Draw(p, box, shader.Options{Uniforms: u})
+	return more
+}
+
+func premultiplied(c ui.Color) []float32 {
+	a := float32(c.A) / 255
+	return []float32{float32(c.R) / 255 * a, float32(c.G) / 255 * a, float32(c.B) / 255 * a, a}
+}
 
 // Level is a glass level of §4.3.
 type Level int

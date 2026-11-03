@@ -1,6 +1,8 @@
 package qa
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -61,4 +63,55 @@ func TestLoadingStillWithMotionReduced(t *testing.T) {
 		t.Fatalf("with motion reduced: shown %v, pending %v", a.s.LoadingShown(), a.tt.FramePending())
 	}
 	a.settle()
+}
+
+// Scrolled, the sheet's top edge fades the text into it (02 §6); at the
+// top there is no edge.
+func TestScrollEdge(t *testing.T) {
+	a := newApp(t)
+	var b strings.Builder
+	for i := range 120 {
+		fmt.Fprintf(&b, "line %d of a long document\n\n", i)
+	}
+	a.open("long.md", b.String())
+	a.caret(0)
+	a.animate()
+	if a.s.ScrollEdgeShown() {
+		t.Fatal("an edge at the top of the document")
+	}
+	l := a.s.ActiveLive()
+	a.tt.Scroll(l.RowText(3).X+a.s.SheetLeft(), 300, 0, 400)
+	a.animate()
+	if l.ScrollOffset() <= 0 || !a.s.ScrollEdgeShown() || a.tt.FramePending() {
+		t.Fatalf("scrolled %v: edge %v, pending %v", l.ScrollOffset(), a.s.ScrollEdgeShown(), a.tt.FramePending())
+	}
+}
+
+// The welcome page and an empty document glow (02 §6); without a GPU, as
+// here, the glow is a still gradient and asks for no frames.
+func TestAurora(t *testing.T) {
+	a := newApp(t)
+	a.tt.Frame()
+	if !a.s.AuroraShown() {
+		t.Fatal("no aurora on the welcome page")
+	}
+	img := a.tt.Image()
+	if r, g, b, _ := img.At(60, 80).RGBA(); r == g && g == b {
+		t.Fatal("the welcome page's corner is not tinted")
+	}
+	a.tt.Advance(time.Second)
+	a.tt.Frame()
+	if a.tt.FramePending() {
+		t.Fatal("the still aurora asks for frames")
+	}
+	a.open("e.md", "")
+	a.tt.Frame()
+	if !a.s.AuroraShown() {
+		t.Fatal("no aurora on the empty document")
+	}
+	a.typed("x")
+	a.tt.Frame()
+	if a.s.AuroraShown() {
+		t.Fatal("the aurora stayed once there was text")
+	}
 }

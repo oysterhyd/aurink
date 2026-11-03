@@ -94,8 +94,8 @@ func FindBar(c *ui.Context, t *theme.Tokens, bar ui.Element, f Finder, live bool
 		if f.Replacing() {
 			row := ui.Row(c).Key("replace").Gap(4).AlignItems(ui.Center)
 			if live {
-				row.Transition(ui.ElementTransition{Animation: &motion.Snappy,
-					Enter: &ui.Motion{Collapse: true, Opacity: 0}, Exit: &ui.Motion{Collapse: true, Opacity: 0}})
+				row.Transition(motion.Still(t.Still, ui.ElementTransition{Animation: &motion.Snappy,
+					Enter: &ui.Motion{Collapse: true, Opacity: 0}, Exit: &ui.Motion{Collapse: true, Opacity: 0}}))
 			}
 			row.Children(func() {
 				ui.Box(c).Size(24, 24)
@@ -134,7 +134,7 @@ func findButton(c *ui.Context, t *theme.Tokens, text string) ui.Element {
 	if b.Hovered() {
 		b.Background(t.SurfaceHover)
 	}
-	press(b)
+	press(t, b)
 	b.Children(func() { ui.Text(c, text).FontSize(theme.UIBadge + 1).TextColor(t.Text).SingleLine() })
 	return b
 }

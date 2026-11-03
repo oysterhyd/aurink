@@ -60,8 +60,8 @@ func (s *Shell) banner(c *ui.Context, t *theme.Tokens, d *doc) {
 	// The outer row collapses; the strip inside keeps its margins as it does.
 	outer := ui.Column(c.Key(kind)).Padding(10, 12, 0, 12).Role(ui.RoleStatus).Label(title)
 	if s.live {
-		outer.Transition(ui.ElementTransition{Animation: &motion.Snappy,
-			Enter: &ui.Motion{Collapse: true, Opacity: 0}, Exit: &ui.Motion{Collapse: true, Opacity: 0}})
+		outer.Transition(motion.Still(s.still, ui.ElementTransition{Animation: &motion.Snappy,
+			Enter: &ui.Motion{Collapse: true, Opacity: 0}, Exit: &ui.Motion{Collapse: true, Opacity: 0}}))
 	}
 	outer.Children(func() {
 		ui.Row(c).Height(44).Padding(0, 8, 0, 14).Gap(10).AlignItems(ui.Center).Radius(12).Border(1, t.Border).

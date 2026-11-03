@@ -5,6 +5,7 @@ import (
 
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
+	"aurink/internal/views/motion"
 	"aurink/internal/views/theme"
 	"aurink/locales"
 	"github.com/egoist/mygo/ui"
@@ -73,12 +74,16 @@ func (s *Shell) outlinePanel(c *ui.Context, t *theme.Tokens) {
 		row := ui.Row(c.Key(h.id)).Height(28).Padding(0, 8).PaddingStart(8 + float32(h.level-minLevel)*14).
 			AlignItems(ui.Center).Radius(theme.RadiusRow).Role(ui.RoleButton).Label(h.title)
 		on := h.id == current
-		if on {
-			row.Background(t.AccentSoft)
-		} else if row.Hovered() {
+		if !on && row.Hovered() {
 			row.Background(t.Hover)
 		}
 		row.Children(func() {
+			// The heading in view has the one pill, which slides as the
+			// document scrolls (02 §5.7 scroll spy, §4.4 rule 2).
+			if on {
+				ui.Box(c.Key("pill")).Absolute().Fill().Radius(theme.RadiusRow).Background(t.AccentSoft).
+					PassThrough().Transition(s.matched(&motion.Smooth, outlinePill{}))
+			}
 			text := ui.Text(c, h.title).FontSize(theme.UIText).SingleLine()
 			if on {
 				text.TextColor(t.Accent).FontWeight(600)
@@ -91,3 +96,5 @@ func (s *Shell) outlinePanel(c *ui.Context, t *theme.Tokens) {
 		}
 	}).Grow(1).MinHeight(0).Padding(0, 8, 8)
 }
+
+type outlinePill struct{}
