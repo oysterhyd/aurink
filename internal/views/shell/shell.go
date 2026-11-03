@@ -602,9 +602,15 @@ func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {
 }
 
 func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
+	// The label names the mode the tab is in, as Focus.png has it.
 	label := locales.ShellViewLive()
-	if s.active.mode == editorapi.ModeSource {
+	switch {
+	case s.active.mode == editorapi.ModeSource:
 		label = locales.ShellViewSource()
+	case s.active.live.FocusMode():
+		label = locales.ShellViewFocus()
+	case s.active.live.Typewriter():
+		label = locales.ShellViewTypewriter()
 	}
 	b := ui.Row(c.Key("view")).Height(30).Padding(0, 8).Gap(4).AlignItems(ui.Center).Radius(theme.RadiusButton).Role(ui.RoleButton).Label(label)
 	if b.Hovered() {
@@ -787,7 +793,8 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 			d.live.Focus()
 		}
 		d.live.View(c.Key("live"))
-		if !d.live.FocusMode() && !s.reading {
+		// The rail stays in reading mode, as Reading.png has it.
+		if !d.live.FocusMode() || s.reading {
 			d.live.Rail(c.Key("rail"))
 		}
 		d.live.TableBar(c.Key("tableBar"))

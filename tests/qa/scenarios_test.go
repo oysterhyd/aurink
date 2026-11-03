@@ -126,12 +126,14 @@ func newApp(t *testing.T) *app {
 	return a
 }
 
-// idle waits until no session save runs.
+// idle waits until no session or settings save runs.
 func (a *app) idle() {
 	a.t.Helper()
 	if a.s == nil {
 		return
 	}
+	// Settings write on their own goroutine; the folder goes after the test.
+	_ = a.store.Flush()
 	done := false
 	a.s.SaveSession(false, func(error) { done = true })
 	a.pumpUntil("the session saved", &done)

@@ -272,6 +272,34 @@ func (msgs Messages) ShellViewSource() string {
 	return Catalog.Format(msgs.locale, "shell_view_source", nil)
 }
 
+// ShellViewFocus says "Focus"
+// in the language the app shows.
+//
+// The view menu's label in focus mode.
+func ShellViewFocus() string { return In(i18n.Locale()).ShellViewFocus() }
+
+// ShellViewFocus says "Focus"
+// in the language of msgs.
+//
+// The view menu's label in focus mode.
+func (msgs Messages) ShellViewFocus() string {
+	return Catalog.Format(msgs.locale, "shell_view_focus", nil)
+}
+
+// ShellViewTypewriter says "Typewriter"
+// in the language the app shows.
+//
+// The view menu's label in typewriter mode.
+func ShellViewTypewriter() string { return In(i18n.Locale()).ShellViewTypewriter() }
+
+// ShellViewTypewriter says "Typewriter"
+// in the language of msgs.
+//
+// The view menu's label in typewriter mode.
+func (msgs Messages) ShellViewTypewriter() string {
+	return Catalog.Format(msgs.locale, "shell_view_typewriter", nil)
+}
+
 // ShellOpenDocuments says "Open documents"
 // in the language the app shows.
 //

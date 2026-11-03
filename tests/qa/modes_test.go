@@ -19,6 +19,9 @@ func readingDoc() string {
 	var b strings.Builder
 	b.WriteString("# Reading Title\n\n")
 	for i := range 200 {
+		if i%50 == 49 {
+			fmt.Fprintf(&b, "## Section %d\n\n", i/50+1)
+		}
 		fmt.Fprintf(&b, "Paragraph %d with a few words to read.\n\n", i)
 	}
 	return b.String()
@@ -77,6 +80,10 @@ func TestReadingModeEntersAndLeaves(t *testing.T) {
 	}
 	if !a.shows(locales.ShellExitReading()) {
 		t.Fatal("no exit button")
+	}
+	// The structure rail stays (Reading.png).
+	if _, ok := a.tt.Find(locales.LiveeditStructure()); !ok {
+		t.Fatal("no rail in reading mode")
 	}
 	before := a.text()
 	a.typed("x")
@@ -262,6 +269,14 @@ func TestFocusModeFoldsTheSidebar(t *testing.T) {
 	if !a.s.ActiveLive().Typewriter() {
 		t.Fatal("F9 did not turn typewriter mode on")
 	}
+	// The view menu names the mode (Focus.png).
+	if !a.shows(locales.ShellViewTypewriter()) {
+		t.Fatal("the view menu does not say typewriter")
+	}
+	a.key(0, ui.KeyF8)
+	if !a.shows(locales.ShellViewFocus()) {
+		t.Fatal("the view menu does not say focus")
+	}
 }
 
 // The view menu has the writing modes and the zoom, as Typora's does.
@@ -278,7 +293,8 @@ func TestViewMenuHasTheModes(t *testing.T) {
 	if !a.s.ActiveLive().FocusMode() {
 		t.Fatal("the menu did not turn focus mode on")
 	}
-	a.click(locales.ShellViewLive())
+	// The menu's label now says focus.
+	a.click(locales.ShellViewFocus())
 	a.click(locales.ShellReading())
 	if !a.s.Reading() {
 		t.Fatal("the menu did not enter reading mode")

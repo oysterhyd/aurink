@@ -17,6 +17,8 @@
   "shell_theme_dark": "深色",
   "shell_view_live": "实时",
   "shell_view_source": "源码",
+  "shell_view_focus": "专注",
+  "shell_view_typewriter": "打字机",
   "shell_open_documents": "已打开的文档",
   "shell_saved": "已保存",
   "shell_saving": "保存中",

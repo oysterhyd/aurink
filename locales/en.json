@@ -68,6 +68,14 @@
   "@shell_view_source": {
     "description": "The view of the plain Markdown text."
   },
+  "shell_view_focus": "Focus",
+  "@shell_view_focus": {
+    "description": "The view menu's label in focus mode."
+  },
+  "shell_view_typewriter": "Typewriter",
+  "@shell_view_typewriter": {
+    "description": "The view menu's label in typewriter mode."
+  },
   "shell_open_documents": "Open documents",
   "@shell_open_documents": {
     "description": "The heading of the sidebar list."
