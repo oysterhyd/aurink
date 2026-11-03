@@ -187,6 +187,9 @@ type Editor struct {
 	softBreak  contract.SoftBreakMode
 	find       []contract.Range
 	findCur    int
+	// reduceMotion is the shell's reading of Appearance.ReduceMotion.
+	reduceMotion bool
+	fmtBar       formatBar
 
 	services   ui.Services
 	hasView    bool

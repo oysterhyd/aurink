@@ -234,5 +234,17 @@
   "settings_shortcuts_hint": "只能查看",
   "settings_about": "关于 Aurink",
   "settings_version": "版本 {version}",
-  "settings_licenses": "开源组件"
+  "settings_licenses": "开源组件",
+  "liveedit_format_bar": "格式",
+  "liveedit_bold": "加粗",
+  "liveedit_italic": "斜体",
+  "liveedit_underline": "下划线",
+  "liveedit_strike": "删除线",
+  "liveedit_inline_code": "行内代码",
+  "liveedit_highlight": "高亮",
+  "liveedit_transform": "转换",
+  "liveedit_body": "正文",
+  "liveedit_heading_n": "标题 {level}",
+  "liveedit_quote": "引用",
+  "liveedit_link_address": "链接地址"
 }

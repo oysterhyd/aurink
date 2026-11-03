@@ -1005,5 +1005,58 @@
   "settings_licenses": "Open Source",
   "@settings_licenses": {
     "description": "The about dialog's list of bundled libraries."
+  },
+  "liveedit_format_bar": "Format",
+  "@liveedit_format_bar": {
+    "description": "The format bar over a selection, for screen readers."
+  },
+  "liveedit_bold": "Bold",
+  "@liveedit_bold": {
+    "description": "Format bar button."
+  },
+  "liveedit_italic": "Italic",
+  "@liveedit_italic": {
+    "description": "Format bar button."
+  },
+  "liveedit_underline": "Underline",
+  "@liveedit_underline": {
+    "description": "Format bar button."
+  },
+  "liveedit_strike": "Strikethrough",
+  "@liveedit_strike": {
+    "description": "Format bar button."
+  },
+  "liveedit_inline_code": "Code",
+  "@liveedit_inline_code": {
+    "description": "Format bar button for inline code."
+  },
+  "liveedit_highlight": "Highlight",
+  "@liveedit_highlight": {
+    "description": "Format bar button."
+  },
+  "liveedit_transform": "Transform",
+  "@liveedit_transform": {
+    "description": "The format bar's menu that turns the block into another kind."
+  },
+  "liveedit_body": "Text",
+  "@liveedit_body": {
+    "description": "The Transform menu's body text item, and its button when the block is a paragraph."
+  },
+  "liveedit_heading_n": "Heading {level}",
+  "@liveedit_heading_n": {
+    "description": "The Transform menu's heading items.",
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "liveedit_quote": "Quote",
+  "@liveedit_quote": {
+    "description": "The Transform menu's block quote item."
+  },
+  "liveedit_link_address": "Link address",
+  "@liveedit_link_address": {
+    "description": "The format bar's address field, its placeholder."
   }
 }

@@ -73,6 +73,10 @@ func (e *Editor) SetReveal(m contract.RevealMode, sb contract.SoftBreakMode) {
 	e.invalidate()
 }
 
+// SetReduceMotion turns off the editor's movements: the format bar's entrance,
+// the lightbox's flight and the gliding caret (02 §4.4).
+func (e *Editor) SetReduceMotion(on bool) { e.reduceMotion = on }
+
 // FocusMode reports whether rows other than the caret's are dimmed.
 func (e *Editor) FocusMode() bool { return e.focusMode }
 

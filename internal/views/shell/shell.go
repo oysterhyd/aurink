@@ -802,6 +802,7 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 		d.live.SetTypography(s.typography())
 		ed := s.o.Settings.Get().Editor
 		d.live.SetReveal(ed.Reveal, ed.SoftBreak)
+		d.live.SetReduceMotion(s.reduceMotion(c))
 		if s.focusNext {
 			s.focusNext = false
 			d.live.Focus()
@@ -813,6 +814,7 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 		}
 		d.live.TableBar(c.Key("tableBar"))
 		d.live.LinkBar(c.Key("linkBar"))
+		d.live.FormatBar(c.Key("formatBar"))
 		s.findBar(c, t, d)
 	}
 }

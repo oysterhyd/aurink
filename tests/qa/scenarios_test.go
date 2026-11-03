@@ -81,6 +81,9 @@ func (p *platform) ToggleMaximize()   { p.maxs++ }
 func (p *platform) IsMaximized() bool { return false }
 func (p *platform) Close()            { p.closes++ }
 
+// qaExts are the extensions the app parses with, as internal/app has them.
+const qaExts = contract.ExtFrontMatter
+
 type app struct {
 	t        *testing.T
 	dir      string
@@ -176,7 +179,7 @@ func (a *app) boot() {
 	}
 	a.store = store
 	base := store.Get()
-	base.Editor.Exts = contract.ExtFrontMatter
+	base.Editor.Exts = qaExts
 	base.Files.AutosaveDelayMs = 1000
 	a.timers = nil
 	a.sessions = docsession.New(files, document.Factory{}, a.q, filepath.Join(a.data, "recovery"), docsession.Options{Settings: &base,
@@ -192,15 +195,15 @@ func (a *app) boot() {
 		ws = heldWorkspace{a.ws, a}
 	}
 	a.assets = workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages)
-	store.Subscribe(aurinkapp.FollowSettings(a.ws, a.assets, a.sessions, contract.ExtFrontMatter))
+	store.Subscribe(aurinkapp.FollowSettings(a.ws, a.assets, a.sessions, qaExts))
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
+		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: qaExts, Fuzzy: search.NewFuzzy(),
 		Files: func() []string { return a.files }, Workspace: ws, Search: search.NewWorkspaceSearch(),
 		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
 		Recent:       workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q),
-		ExportHTML:   aurinkapp.ExportHTML(files, a.q, contract.ExtFrontMatter),
+		ExportHTML:   aurinkapp.ExportHTML(files, a.q, qaExts),
 		SetLanguage:  func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"}})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
@@ -1336,7 +1339,7 @@ var scenarios = []scenario{
 			a.caret(off)
 			a.typed("x\n")
 			m := a.s.ActiveSession().Model()
-			fresh := document.Factory{}.New("fresh", m.Text().String(), m.Meta(), contract.ExtFrontMatter).AST()
+			fresh := document.Factory{}.New("fresh", m.Text().String(), m.Meta(), qaExts).AST()
 			if err := sameTree(m.AST(), fresh); err != "" {
 				a.t.Fatalf("after typing at %d: %s", off, err)
 			}

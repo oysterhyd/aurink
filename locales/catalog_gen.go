@@ -3331,3 +3331,173 @@ func SettingsLicenses() string { return In(i18n.Locale()).SettingsLicenses() }
 func (msgs Messages) SettingsLicenses() string {
 	return Catalog.Format(msgs.locale, "settings_licenses", nil)
 }
+
+// LiveeditFormatBar says "Format"
+// in the language the app shows.
+//
+// The format bar over a selection, for screen readers.
+func LiveeditFormatBar() string { return In(i18n.Locale()).LiveeditFormatBar() }
+
+// LiveeditFormatBar says "Format"
+// in the language of msgs.
+//
+// The format bar over a selection, for screen readers.
+func (msgs Messages) LiveeditFormatBar() string {
+	return Catalog.Format(msgs.locale, "liveedit_format_bar", nil)
+}
+
+// LiveeditBold says "Bold"
+// in the language the app shows.
+//
+// Format bar button.
+func LiveeditBold() string { return In(i18n.Locale()).LiveeditBold() }
+
+// LiveeditBold says "Bold"
+// in the language of msgs.
+//
+// Format bar button.
+func (msgs Messages) LiveeditBold() string {
+	return Catalog.Format(msgs.locale, "liveedit_bold", nil)
+}
+
+// LiveeditItalic says "Italic"
+// in the language the app shows.
+//
+// Format bar button.
+func LiveeditItalic() string { return In(i18n.Locale()).LiveeditItalic() }
+
+// LiveeditItalic says "Italic"
+// in the language of msgs.
+//
+// Format bar button.
+func (msgs Messages) LiveeditItalic() string {
+	return Catalog.Format(msgs.locale, "liveedit_italic", nil)
+}
+
+// LiveeditUnderline says "Underline"
+// in the language the app shows.
+//
+// Format bar button.
+func LiveeditUnderline() string { return In(i18n.Locale()).LiveeditUnderline() }
+
+// LiveeditUnderline says "Underline"
+// in the language of msgs.
+//
+// Format bar button.
+func (msgs Messages) LiveeditUnderline() string {
+	return Catalog.Format(msgs.locale, "liveedit_underline", nil)
+}
+
+// LiveeditStrike says "Strikethrough"
+// in the language the app shows.
+//
+// Format bar button.
+func LiveeditStrike() string { return In(i18n.Locale()).LiveeditStrike() }
+
+// LiveeditStrike says "Strikethrough"
+// in the language of msgs.
+//
+// Format bar button.
+func (msgs Messages) LiveeditStrike() string {
+	return Catalog.Format(msgs.locale, "liveedit_strike", nil)
+}
+
+// LiveeditInlineCode says "Code"
+// in the language the app shows.
+//
+// Format bar button for inline code.
+func LiveeditInlineCode() string { return In(i18n.Locale()).LiveeditInlineCode() }
+
+// LiveeditInlineCode says "Code"
+// in the language of msgs.
+//
+// Format bar button for inline code.
+func (msgs Messages) LiveeditInlineCode() string {
+	return Catalog.Format(msgs.locale, "liveedit_inline_code", nil)
+}
+
+// LiveeditHighlight says "Highlight"
+// in the language the app shows.
+//
+// Format bar button.
+func LiveeditHighlight() string { return In(i18n.Locale()).LiveeditHighlight() }
+
+// LiveeditHighlight says "Highlight"
+// in the language of msgs.
+//
+// Format bar button.
+func (msgs Messages) LiveeditHighlight() string {
+	return Catalog.Format(msgs.locale, "liveedit_highlight", nil)
+}
+
+// LiveeditTransform says "Transform"
+// in the language the app shows.
+//
+// The format bar's menu that turns the block into another kind.
+func LiveeditTransform() string { return In(i18n.Locale()).LiveeditTransform() }
+
+// LiveeditTransform says "Transform"
+// in the language of msgs.
+//
+// The format bar's menu that turns the block into another kind.
+func (msgs Messages) LiveeditTransform() string {
+	return Catalog.Format(msgs.locale, "liveedit_transform", nil)
+}
+
+// LiveeditBody says "Text"
+// in the language the app shows.
+//
+// The Transform menu's body text item, and its button when the block is a
+// paragraph.
+func LiveeditBody() string { return In(i18n.Locale()).LiveeditBody() }
+
+// LiveeditBody says "Text"
+// in the language of msgs.
+//
+// The Transform menu's body text item, and its button when the block is a
+// paragraph.
+func (msgs Messages) LiveeditBody() string {
+	return Catalog.Format(msgs.locale, "liveedit_body", nil)
+}
+
+// LiveeditHeadingN says "Heading {level}"
+// in the language the app shows.
+//
+// The Transform menu's heading items.
+func LiveeditHeadingN(level string) string { return In(i18n.Locale()).LiveeditHeadingN(level) }
+
+// LiveeditHeadingN says "Heading {level}"
+// in the language of msgs.
+//
+// The Transform menu's heading items.
+func (msgs Messages) LiveeditHeadingN(level string) string {
+	return Catalog.Format(msgs.locale, "liveedit_heading_n", map[string]any{"level": level})
+}
+
+// LiveeditQuote says "Quote"
+// in the language the app shows.
+//
+// The Transform menu's block quote item.
+func LiveeditQuote() string { return In(i18n.Locale()).LiveeditQuote() }
+
+// LiveeditQuote says "Quote"
+// in the language of msgs.
+//
+// The Transform menu's block quote item.
+func (msgs Messages) LiveeditQuote() string {
+	return Catalog.Format(msgs.locale, "liveedit_quote", nil)
+}
+
+// LiveeditLinkAddress says "Link address"
+// in the language the app shows.
+//
+// The format bar's address field, its placeholder.
+func LiveeditLinkAddress() string { return In(i18n.Locale()).LiveeditLinkAddress() }
+
+// LiveeditLinkAddress says "Link address"
+// in the language of msgs.
+//
+// The format bar's address field, its placeholder.
+func (msgs Messages) LiveeditLinkAddress() string {
+	return Catalog.Format(msgs.locale, "liveedit_link_address", nil)
+}
