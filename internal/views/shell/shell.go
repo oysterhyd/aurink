@@ -831,6 +831,7 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 		d.live.TableBar(c.Key("tableBar"))
 		d.live.LinkBar(c.Key("linkBar"))
 		d.live.FormatBar(c.Key("formatBar"))
+		d.live.SlashMenu(c.Key("slashMenu"))
 		s.findBar(c, t, d)
 	}
 }

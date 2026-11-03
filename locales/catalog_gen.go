@@ -3657,3 +3657,579 @@ func LiveeditRenderingDiagram() string { return In(i18n.Locale()).LiveeditRender
 func (msgs Messages) LiveeditRenderingDiagram() string {
 	return Catalog.Format(msgs.locale, "liveedit_rendering_diagram", nil)
 }
+
+// LiveeditSlashMenu says "Insert"
+// in the language the app shows.
+//
+// The slash menu's accessible name.
+func LiveeditSlashMenu() string { return In(i18n.Locale()).LiveeditSlashMenu() }
+
+// LiveeditSlashMenu says "Insert"
+// in the language of msgs.
+//
+// The slash menu's accessible name.
+func (msgs Messages) LiveeditSlashMenu() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_menu", nil)
+}
+
+// LiveeditSlashBasic says "Basic"
+// in the language the app shows.
+//
+// Slash menu group: headings, lists, quote.
+func LiveeditSlashBasic() string { return In(i18n.Locale()).LiveeditSlashBasic() }
+
+// LiveeditSlashBasic says "Basic"
+// in the language of msgs.
+//
+// Slash menu group: headings, lists, quote.
+func (msgs Messages) LiveeditSlashBasic() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_basic", nil)
+}
+
+// LiveeditSlashMedia says "Media and structure"
+// in the language the app shows.
+//
+// Slash menu group: code, table, image, divider, contents, footnote.
+func LiveeditSlashMedia() string { return In(i18n.Locale()).LiveeditSlashMedia() }
+
+// LiveeditSlashMedia says "Media and structure"
+// in the language of msgs.
+//
+// Slash menu group: code, table, image, divider, contents, footnote.
+func (msgs Messages) LiveeditSlashMedia() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_media", nil)
+}
+
+// LiveeditSlashAdvanced says "Advanced"
+// in the language the app shows.
+//
+// Slash menu group: math and Mermaid.
+func LiveeditSlashAdvanced() string { return In(i18n.Locale()).LiveeditSlashAdvanced() }
+
+// LiveeditSlashAdvanced says "Advanced"
+// in the language of msgs.
+//
+// Slash menu group: math and Mermaid.
+func (msgs Messages) LiveeditSlashAdvanced() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_advanced", nil)
+}
+
+// LiveeditSlashH1Desc says "The document's or a chapter's main title"
+// in the language the app shows.
+//
+// Slash menu preview of Heading 1.
+func LiveeditSlashH1Desc() string { return In(i18n.Locale()).LiveeditSlashH1Desc() }
+
+// LiveeditSlashH1Desc says "The document's or a chapter's main title"
+// in the language of msgs.
+//
+// Slash menu preview of Heading 1.
+func (msgs Messages) LiveeditSlashH1Desc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_h1_desc", nil)
+}
+
+// LiveeditSlashH2Desc says "A section title"
+// in the language the app shows.
+//
+// Slash menu preview of Heading 2.
+func LiveeditSlashH2Desc() string { return In(i18n.Locale()).LiveeditSlashH2Desc() }
+
+// LiveeditSlashH2Desc says "A section title"
+// in the language of msgs.
+//
+// Slash menu preview of Heading 2.
+func (msgs Messages) LiveeditSlashH2Desc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_h2_desc", nil)
+}
+
+// LiveeditSlashH3Desc says "A subsection title"
+// in the language the app shows.
+//
+// Slash menu preview of Heading 3.
+func LiveeditSlashH3Desc() string { return In(i18n.Locale()).LiveeditSlashH3Desc() }
+
+// LiveeditSlashH3Desc says "A subsection title"
+// in the language of msgs.
+//
+// Slash menu preview of Heading 3.
+func (msgs Messages) LiveeditSlashH3Desc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_h3_desc", nil)
+}
+
+// LiveeditSlashBullets says "Bulleted list"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashBullets() string { return In(i18n.Locale()).LiveeditSlashBullets() }
+
+// LiveeditSlashBullets says "Bulleted list"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashBullets() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_bullets", nil)
+}
+
+// LiveeditSlashBulletsDesc says "Enter continues it; Enter on an empty item ends it"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashBulletsDesc() string { return In(i18n.Locale()).LiveeditSlashBulletsDesc() }
+
+// LiveeditSlashBulletsDesc says "Enter continues it; Enter on an empty item ends it"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashBulletsDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_bullets_desc", nil)
+}
+
+// LiveeditSlashNumbers says "Numbered list"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashNumbers() string { return In(i18n.Locale()).LiveeditSlashNumbers() }
+
+// LiveeditSlashNumbers says "Numbered list"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashNumbers() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_numbers", nil)
+}
+
+// LiveeditSlashNumbersDesc says "Numbering continues by itself"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashNumbersDesc() string { return In(i18n.Locale()).LiveeditSlashNumbersDesc() }
+
+// LiveeditSlashNumbersDesc says "Numbering continues by itself"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashNumbersDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_numbers_desc", nil)
+}
+
+// LiveeditSlashTasks says "Task list"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashTasks() string { return In(i18n.Locale()).LiveeditSlashTasks() }
+
+// LiveeditSlashTasks says "Task list"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashTasks() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_tasks", nil)
+}
+
+// LiveeditSlashTasksDesc says "Clicking a checkbox changes one byte"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashTasksDesc() string { return In(i18n.Locale()).LiveeditSlashTasksDesc() }
+
+// LiveeditSlashTasksDesc says "Clicking a checkbox changes one byte"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashTasksDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_tasks_desc", nil)
+}
+
+// LiveeditSlashQuoteDesc says "Shows as a quotation"
+// in the language the app shows.
+//
+// Slash menu preview of Quote.
+func LiveeditSlashQuoteDesc() string { return In(i18n.Locale()).LiveeditSlashQuoteDesc() }
+
+// LiveeditSlashQuoteDesc says "Shows as a quotation"
+// in the language of msgs.
+//
+// Slash menu preview of Quote.
+func (msgs Messages) LiveeditSlashQuoteDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_quote_desc", nil)
+}
+
+// LiveeditSlashCode says "Code block"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashCode() string { return In(i18n.Locale()).LiveeditSlashCode() }
+
+// LiveeditSlashCode says "Code block"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashCode() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_code", nil)
+}
+
+// LiveeditSlashCodeDesc says "Next, choose the language"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashCodeDesc() string { return In(i18n.Locale()).LiveeditSlashCodeDesc() }
+
+// LiveeditSlashCodeDesc says "Next, choose the language"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashCodeDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_code_desc", nil)
+}
+
+// LiveeditSlashTable says "Table"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashTable() string { return In(i18n.Locale()).LiveeditSlashTable() }
+
+// LiveeditSlashTable says "Table"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashTable() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_table", nil)
+}
+
+// LiveeditSlashTableDesc says "Next, choose the size"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashTableDesc() string { return In(i18n.Locale()).LiveeditSlashTableDesc() }
+
+// LiveeditSlashTableDesc says "Next, choose the size"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashTableDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_table_desc", nil)
+}
+
+// LiveeditSlashImage says "Image"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashImage() string { return In(i18n.Locale()).LiveeditSlashImage() }
+
+// LiveeditSlashImage says "Image"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashImage() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_image", nil)
+}
+
+// LiveeditSlashImageDesc says "Pasted or dropped images are copied into the assets folder"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashImageDesc() string { return In(i18n.Locale()).LiveeditSlashImageDesc() }
+
+// LiveeditSlashImageDesc says "Pasted or dropped images are copied into the assets folder"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashImageDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_image_desc", nil)
+}
+
+// LiveeditSlashDivider says "Divider"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashDivider() string { return In(i18n.Locale()).LiveeditSlashDivider() }
+
+// LiveeditSlashDivider says "Divider"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashDivider() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_divider", nil)
+}
+
+// LiveeditSlashDividerDesc says "Shows as a section break"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashDividerDesc() string { return In(i18n.Locale()).LiveeditSlashDividerDesc() }
+
+// LiveeditSlashDividerDesc says "Shows as a section break"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashDividerDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_divider_desc", nil)
+}
+
+// LiveeditSlashToc says "Table of contents"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashToc() string { return In(i18n.Locale()).LiveeditSlashToc() }
+
+// LiveeditSlashToc says "Table of contents"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashToc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_toc", nil)
+}
+
+// LiveeditSlashTocDesc says "Made from the headings, kept up to date"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashTocDesc() string { return In(i18n.Locale()).LiveeditSlashTocDesc() }
+
+// LiveeditSlashTocDesc says "Made from the headings, kept up to date"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashTocDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_toc_desc", nil)
+}
+
+// LiveeditSlashFootnote says "Footnote"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashFootnote() string { return In(i18n.Locale()).LiveeditSlashFootnote() }
+
+// LiveeditSlashFootnote says "Footnote"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashFootnote() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_footnote", nil)
+}
+
+// LiveeditSlashFootnoteDesc says "A superscript reference; hover to preview the note"
+// in the language the app shows.
+//
+// Slash menu preview.
+func LiveeditSlashFootnoteDesc() string { return In(i18n.Locale()).LiveeditSlashFootnoteDesc() }
+
+// LiveeditSlashFootnoteDesc says "A superscript reference; hover to preview the note"
+// in the language of msgs.
+//
+// Slash menu preview.
+func (msgs Messages) LiveeditSlashFootnoteDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_footnote_desc", nil)
+}
+
+// LiveeditSlashMath says "Math block"
+// in the language the app shows.
+//
+// Slash menu item.
+func LiveeditSlashMath() string { return In(i18n.Locale()).LiveeditSlashMath() }
+
+// LiveeditSlashMath says "Math block"
+// in the language of msgs.
+//
+// Slash menu item.
+func (msgs Messages) LiveeditSlashMath() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_math", nil)
+}
+
+// LiveeditSlashRenderDesc says "Rendered by the WebView; its source shows without one"
+// in the language the app shows.
+//
+// Slash menu preview of Math block and Mermaid.
+func LiveeditSlashRenderDesc() string { return In(i18n.Locale()).LiveeditSlashRenderDesc() }
+
+// LiveeditSlashRenderDesc says "Rendered by the WebView; its source shows without one"
+// in the language of msgs.
+//
+// Slash menu preview of Math block and Mermaid.
+func (msgs Messages) LiveeditSlashRenderDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_render_desc", nil)
+}
+
+// LiveeditSlashEmpty says "No match. Esc keeps the /"
+// in the language the app shows.
+//
+// Slash menu when the filter matches nothing.
+func LiveeditSlashEmpty() string { return In(i18n.Locale()).LiveeditSlashEmpty() }
+
+// LiveeditSlashEmpty says "No match. Esc keeps the /"
+// in the language of msgs.
+//
+// Slash menu when the filter matches nothing.
+func (msgs Messages) LiveeditSlashEmpty() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_empty", nil)
+}
+
+// LiveeditSlashLanguage says "Choose a language"
+// in the language the app shows.
+//
+// Slash menu's second step for a code block.
+func LiveeditSlashLanguage() string { return In(i18n.Locale()).LiveeditSlashLanguage() }
+
+// LiveeditSlashLanguage says "Choose a language"
+// in the language of msgs.
+//
+// Slash menu's second step for a code block.
+func (msgs Messages) LiveeditSlashLanguage() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_language", nil)
+}
+
+// LiveeditSlashLanguageDesc says "Type to filter; Enter inserts the code block"
+// in the language the app shows.
+//
+// Slash menu preview in the language step.
+func LiveeditSlashLanguageDesc() string { return In(i18n.Locale()).LiveeditSlashLanguageDesc() }
+
+// LiveeditSlashLanguageDesc says "Type to filter; Enter inserts the code block"
+// in the language of msgs.
+//
+// Slash menu preview in the language step.
+func (msgs Messages) LiveeditSlashLanguageDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_language_desc", nil)
+}
+
+// LiveeditSlashPlain says "Plain text"
+// in the language the app shows.
+//
+// The code block language that is none.
+func LiveeditSlashPlain() string { return In(i18n.Locale()).LiveeditSlashPlain() }
+
+// LiveeditSlashPlain says "Plain text"
+// in the language of msgs.
+//
+// The code block language that is none.
+func (msgs Messages) LiveeditSlashPlain() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_plain", nil)
+}
+
+// LiveeditSlashSize says "Choose a size"
+// in the language the app shows.
+//
+// Slash menu's second step for a table.
+func LiveeditSlashSize() string { return In(i18n.Locale()).LiveeditSlashSize() }
+
+// LiveeditSlashSize says "Choose a size"
+// in the language of msgs.
+//
+// Slash menu's second step for a table.
+func (msgs Messages) LiveeditSlashSize() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_size", nil)
+}
+
+// LiveeditSlashSizeDesc says "Arrow keys change it; Enter inserts the table"
+// in the language the app shows.
+//
+// Slash menu preview in the size step.
+func LiveeditSlashSizeDesc() string { return In(i18n.Locale()).LiveeditSlashSizeDesc() }
+
+// LiveeditSlashSizeDesc says "Arrow keys change it; Enter inserts the table"
+// in the language of msgs.
+//
+// Slash menu preview in the size step.
+func (msgs Messages) LiveeditSlashSizeDesc() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_size_desc", nil)
+}
+
+// LiveeditSlashSizeN says "{rows} rows × {cols} columns"
+// in the language the app shows.
+//
+// The table size chosen in the slash menu, header row included.
+func LiveeditSlashSizeN(rows string, cols string) string {
+	return In(i18n.Locale()).LiveeditSlashSizeN(rows, cols)
+}
+
+// LiveeditSlashSizeN says "{rows} rows × {cols} columns"
+// in the language of msgs.
+//
+// The table size chosen in the slash menu, header row included.
+func (msgs Messages) LiveeditSlashSizeN(rows string, cols string) string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_size_n", map[string]any{"rows": rows, "cols": cols})
+}
+
+// LiveeditSlashSampleTitle says "Title"
+// in the language the app shows.
+//
+// Sample text in the slash menu's syntax preview.
+func LiveeditSlashSampleTitle() string { return In(i18n.Locale()).LiveeditSlashSampleTitle() }
+
+// LiveeditSlashSampleTitle says "Title"
+// in the language of msgs.
+//
+// Sample text in the slash menu's syntax preview.
+func (msgs Messages) LiveeditSlashSampleTitle() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_sample_title", nil)
+}
+
+// LiveeditSlashSampleItem says "Item"
+// in the language the app shows.
+//
+// Sample text in the slash menu's syntax preview.
+func LiveeditSlashSampleItem() string { return In(i18n.Locale()).LiveeditSlashSampleItem() }
+
+// LiveeditSlashSampleItem says "Item"
+// in the language of msgs.
+//
+// Sample text in the slash menu's syntax preview.
+func (msgs Messages) LiveeditSlashSampleItem() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_sample_item", nil)
+}
+
+// LiveeditSlashSampleTodo says "To do"
+// in the language the app shows.
+//
+// Sample text in the slash menu's syntax preview.
+func LiveeditSlashSampleTodo() string { return In(i18n.Locale()).LiveeditSlashSampleTodo() }
+
+// LiveeditSlashSampleTodo says "To do"
+// in the language of msgs.
+//
+// Sample text in the slash menu's syntax preview.
+func (msgs Messages) LiveeditSlashSampleTodo() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_sample_todo", nil)
+}
+
+// LiveeditSlashSampleQuote says "Quoted text"
+// in the language the app shows.
+//
+// Sample text in the slash menu's syntax preview.
+func LiveeditSlashSampleQuote() string { return In(i18n.Locale()).LiveeditSlashSampleQuote() }
+
+// LiveeditSlashSampleQuote says "Quoted text"
+// in the language of msgs.
+//
+// Sample text in the slash menu's syntax preview.
+func (msgs Messages) LiveeditSlashSampleQuote() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_sample_quote", nil)
+}
+
+// LiveeditSlashSampleCaption says "Caption"
+// in the language the app shows.
+//
+// Sample text in the slash menu's syntax preview.
+func LiveeditSlashSampleCaption() string { return In(i18n.Locale()).LiveeditSlashSampleCaption() }
+
+// LiveeditSlashSampleCaption says "Caption"
+// in the language of msgs.
+//
+// Sample text in the slash menu's syntax preview.
+func (msgs Messages) LiveeditSlashSampleCaption() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_sample_caption", nil)
+}
+
+// LiveeditSlashSampleNote says "The note"
+// in the language the app shows.
+//
+// Sample text in the slash menu's syntax preview.
+func LiveeditSlashSampleNote() string { return In(i18n.Locale()).LiveeditSlashSampleNote() }
+
+// LiveeditSlashSampleNote says "The note"
+// in the language of msgs.
+//
+// Sample text in the slash menu's syntax preview.
+func (msgs Messages) LiveeditSlashSampleNote() string {
+	return Catalog.Format(msgs.locale, "liveedit_slash_sample_note", nil)
+}

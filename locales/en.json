@@ -1102,5 +1102,177 @@
   "liveedit_rendering_diagram": "Rendering diagram",
   "@liveedit_rendering_diagram": {
     "description": "Shown in a diagram's placeholder while it renders."
+  },
+  "liveedit_slash_menu": "Insert",
+  "@liveedit_slash_menu": {
+    "description": "The slash menu's accessible name."
+  },
+  "liveedit_slash_basic": "Basic",
+  "@liveedit_slash_basic": {
+    "description": "Slash menu group: headings, lists, quote."
+  },
+  "liveedit_slash_media": "Media and structure",
+  "@liveedit_slash_media": {
+    "description": "Slash menu group: code, table, image, divider, contents, footnote."
+  },
+  "liveedit_slash_advanced": "Advanced",
+  "@liveedit_slash_advanced": {
+    "description": "Slash menu group: math and Mermaid."
+  },
+  "liveedit_slash_h1_desc": "The document's or a chapter's main title",
+  "@liveedit_slash_h1_desc": {
+    "description": "Slash menu preview of Heading 1."
+  },
+  "liveedit_slash_h2_desc": "A section title",
+  "@liveedit_slash_h2_desc": {
+    "description": "Slash menu preview of Heading 2."
+  },
+  "liveedit_slash_h3_desc": "A subsection title",
+  "@liveedit_slash_h3_desc": {
+    "description": "Slash menu preview of Heading 3."
+  },
+  "liveedit_slash_bullets": "Bulleted list",
+  "@liveedit_slash_bullets": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_bullets_desc": "Enter continues it; Enter on an empty item ends it",
+  "@liveedit_slash_bullets_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_numbers": "Numbered list",
+  "@liveedit_slash_numbers": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_numbers_desc": "Numbering continues by itself",
+  "@liveedit_slash_numbers_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_tasks": "Task list",
+  "@liveedit_slash_tasks": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_tasks_desc": "Clicking a checkbox changes one byte",
+  "@liveedit_slash_tasks_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_quote_desc": "Shows as a quotation",
+  "@liveedit_slash_quote_desc": {
+    "description": "Slash menu preview of Quote."
+  },
+  "liveedit_slash_code": "Code block",
+  "@liveedit_slash_code": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_code_desc": "Next, choose the language",
+  "@liveedit_slash_code_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_table": "Table",
+  "@liveedit_slash_table": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_table_desc": "Next, choose the size",
+  "@liveedit_slash_table_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_image": "Image",
+  "@liveedit_slash_image": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_image_desc": "Pasted or dropped images are copied into the assets folder",
+  "@liveedit_slash_image_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_divider": "Divider",
+  "@liveedit_slash_divider": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_divider_desc": "Shows as a section break",
+  "@liveedit_slash_divider_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_toc": "Table of contents",
+  "@liveedit_slash_toc": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_toc_desc": "Made from the headings, kept up to date",
+  "@liveedit_slash_toc_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_footnote": "Footnote",
+  "@liveedit_slash_footnote": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_footnote_desc": "A superscript reference; hover to preview the note",
+  "@liveedit_slash_footnote_desc": {
+    "description": "Slash menu preview."
+  },
+  "liveedit_slash_math": "Math block",
+  "@liveedit_slash_math": {
+    "description": "Slash menu item."
+  },
+  "liveedit_slash_render_desc": "Rendered by the WebView; its source shows without one",
+  "@liveedit_slash_render_desc": {
+    "description": "Slash menu preview of Math block and Mermaid."
+  },
+  "liveedit_slash_empty": "No match. Esc keeps the /",
+  "@liveedit_slash_empty": {
+    "description": "Slash menu when the filter matches nothing."
+  },
+  "liveedit_slash_language": "Choose a language",
+  "@liveedit_slash_language": {
+    "description": "Slash menu's second step for a code block."
+  },
+  "liveedit_slash_language_desc": "Type to filter; Enter inserts the code block",
+  "@liveedit_slash_language_desc": {
+    "description": "Slash menu preview in the language step."
+  },
+  "liveedit_slash_plain": "Plain text",
+  "@liveedit_slash_plain": {
+    "description": "The code block language that is none."
+  },
+  "liveedit_slash_size": "Choose a size",
+  "@liveedit_slash_size": {
+    "description": "Slash menu's second step for a table."
+  },
+  "liveedit_slash_size_desc": "Arrow keys change it; Enter inserts the table",
+  "@liveedit_slash_size_desc": {
+    "description": "Slash menu preview in the size step."
+  },
+  "liveedit_slash_size_n": "{rows} rows × {cols} columns",
+  "@liveedit_slash_size_n": {
+    "description": "The table size chosen in the slash menu, header row included.",
+    "placeholders": {
+      "rows": {
+        "type": "String"
+      },
+      "cols": {
+        "type": "String"
+      }
+    }
+  },
+  "liveedit_slash_sample_title": "Title",
+  "@liveedit_slash_sample_title": {
+    "description": "Sample text in the slash menu's syntax preview."
+  },
+  "liveedit_slash_sample_item": "Item",
+  "@liveedit_slash_sample_item": {
+    "description": "Sample text in the slash menu's syntax preview."
+  },
+  "liveedit_slash_sample_todo": "To do",
+  "@liveedit_slash_sample_todo": {
+    "description": "Sample text in the slash menu's syntax preview."
+  },
+  "liveedit_slash_sample_quote": "Quoted text",
+  "@liveedit_slash_sample_quote": {
+    "description": "Sample text in the slash menu's syntax preview."
+  },
+  "liveedit_slash_sample_caption": "Caption",
+  "@liveedit_slash_sample_caption": {
+    "description": "Sample text in the slash menu's syntax preview."
+  },
+  "liveedit_slash_sample_note": "The note",
+  "@liveedit_slash_sample_note": {
+    "description": "Sample text in the slash menu's syntax preview."
   }
 }

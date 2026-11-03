@@ -88,6 +88,7 @@ func (e *Editor) ReplaceText(r *ui.TextInputRange, s string) {
 			e.commitPlain(s)
 		}
 	}
+	e.slashTyped(s)
 }
 
 func (e *Editor) commitIME(rg contract.Range, s string) {

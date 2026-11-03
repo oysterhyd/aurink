@@ -25,6 +25,10 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 		if e.preedit != "" {
 			return false // the input method owns the keys while composing
 		}
+		if e.slash.open && e.slashKey(ev) {
+			e.blinkStart = ev.Time
+			return true
+		}
 		if e.key(ev) {
 			e.blinkStart = ev.Time
 			return true

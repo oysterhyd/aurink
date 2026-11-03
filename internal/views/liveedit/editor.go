@@ -171,6 +171,7 @@ type Editor struct {
 	texts         map[textKey]*ui.TextLayout
 	renders       map[renderKey]*renderState
 	renderOff     bool
+	slash         slashMenu
 	// frameNow is the frame's clock, which the work started between frames
 	// keeps its times by: the paint compares them with its own.
 	frameNow    time.Time
