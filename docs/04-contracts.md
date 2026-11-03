@@ -76,6 +76,15 @@
    3. 最后一个叶子的 `Trailer` 以分隔行结尾时，在源码末尾追加一个三个区间都为空的；
    4. 空文档恰有一个，三个区间都是 `[0,0)`。
    `BlockBlank` 的 `Parent` 是包含该行的最内层容器（没有则为根），BlockID 规则（第 6 条）同样适用。解析器不产生块的链接引用定义行归 `BlockLinkDef`。
+10. 扩展语法（08 D1–D6，Phase 3）。每项由 `Extensions` 的一位单独开关；关闭时不产生该扩展的任何节点。扩展不在代码、自动链接、原始 HTML、公式、链接目标里生效，反斜杠转义的定界符不算。定界符必须在同一父节点的兄弟序列里成对出现，中间可以包含其他内联节点。
+    1. `ExtHighlight`：`==x==` 为 `InlineHighlight`，`Open`/`Close` 是 `==`。开定界符后、闭定界符前不能是空白，内容非空。
+    2. `ExtSupSub`：`^x^` 为 `InlineSup`，内容非空且不含空白。
+    3. `ExtTildeSub`：单个 `~` 成对为 `InlineSub`，内容非空且不含空白；`~~x~~` 仍是 `InlineStrike`。关闭时单个 `~` 按 GFM 是删除线。
+    4. `ExtEmoji`：`:短码:` 在 gemoji 表里时为 `InlineEmoji`，`Text` 是表情字符，`Open`/`Close` 为空；不在表里的保持原文。
+    5. `ExtWikiLink`：`[[目标]]`、`[[目标|别名]]`、`[[目标#标题]]` 为 `InlineWikiLink`。`Dest` 是 `|` 之前的部分（含 `#标题`）。`Open` 是 `[[`，有别名时是 `[[目标|`；`Close` 是 `]]`；子节点是显示的文字。目标为空或跨行时是普通文本。
+    6. `ExtTOC`：内容只有 `[TOC]`（不分大小写，前后可有空白）的段落为 `BlockTOC` 叶子，区间与原段落相同。只认文档顶层的段落，容器里的（如 `> [TOC]`）仍是段落。
+    7. `ExtDollarMath`：`$x$` 为 `InlineMath`，`Display` 为 false，规则同 MyGo 解析器的 `ExtDollarMath`（`$` 后不能是空白，闭合的 `$` 后不能是数字）。
+    8. 打开全部扩展时，增量解析和全量解析的结果仍然相同，§4.2 的其余不变式（覆盖、无隐藏文本）照样成立。
 
 ### 4.3 Projection
 1. 片段覆盖叶子块的 `[Lead.Start, Trailer.End)`，按源码顺序首尾相接（**无缝无叠**）；`Lead`、`Trailer` 一律为 `SegHidden`，容器语法的视觉由 `ContainerDecor` 表达（CR-001）。
@@ -83,6 +92,8 @@
 3. `ToSource(ToDisplay(s)) == Snap(s)`；`ToDisplay` 单调不减；`Snap` 的结果不落在 `SegHidden`/`SegObject` 内部、不切开字素。
 4. `Sig` 是排版缓存键（CR-002）：覆盖 `Kind`、`Level`、`Lang`、`Revealed`、`Containers`（不含 `Block`、`TaskSrc`）与各片段的 `Kind`、`Display`、`Style`、`Object`；不含 `Block`、`Index` 与绝对偏移，块整体平移时不变；任一影响排版的输出变化必须改变 `Sig`。`Sig` 相同不代表 `Src` 映射相同（如 `&amp;` 与 `&#x26;`）。
 5. `RevealNone`（阅读模式）下不存在 `SegMarker`。
+5a. 扩展与对象（Phase 3）：高亮、上标、下标的定界符和强调一样，显隐时为 `SegMarker`，否则为 `SegHidden`，内容带 `StyleHighlight` / `StyleSup` / `StyleSub`。Emoji 未显隐时是 `SegReplaced`（表情字符），显隐时是源码。Wiki 链接未显隐时只显示子节点文字，带 `StyleWikiLink`，`Link` 是 `Dest`。行内公式、块公式（`ObjMath`，`Source` 为 TeX，块公式 `Display` 为 true）、语言在 `ObjectLangs` 里的代码块（`ObjDiagram`，`Source` 是代码行以 `
+` 连接，不带末尾换行）、TOC（`ObjTOC`）和能解析的 Front Matter（`ObjFrontMatter`，带 `Meta`）未显隐时各是一个 `SegObject`，规则同图片：光标或选区进入、`RevealAlways` 时显示源码，`RevealNone` 时总是对象。Front Matter 不在 08 D5 的 YAML 子集内时按淡色源码显示。
 6. 投影的输入（CR-002）：`Project` 的输出在平移后只取决于该叶子 `[Lead.Start, Trailer.End)` 的字节与容器链、`Reveal` 中与本块相关的部分，以及全局表 `LinkDefs`、`Footnotes`、`Outline`（`[TOC]` 用）、`Exts`、`ObjectLangs`。缓存的投影只有在本块未与任何 `Change` 相交且全局表未变时才能平移复用（`Segments[].Src` 与 `Containers[].TaskSrc` 一起平移）；不能以 `Sig` 相同为复用条件。
 7. `Affinity`（CR-002）：显示索引 `d` 处夹着连续的零宽片段（`SegHidden`，含 `Lead`、`Trailer`）时，`d` 对应源码区间 `[h0, h1]`：`Upstream` 取 `h0`，`Downstream` 取 `h1`。`ToSource` 与 `Snap` 的结果限制在 `[Range.Start, Range.End]` 内（不进入 `Lead`、不越过 `Trailer`）。唯一例外是待定标记（02 §5 显隐规则：其后尚无空格的单独 `#`、`+`、`>` 等按普通文本显示）：它的源码在 `Lead` 或 `Trailer` 里（解析器把 `>` 放在 `Trailer`，`1.` 可能横跨两者），作为可见的 `SegText` 1:1 映射，结果区间扩到覆盖这些可见片段；§4.3.1 "`Lead`、`Trailer` 隐藏"对它同样例外（2026-11-02）；`ToDisplay` 对该区间内任何偏移返回同一个 `d`。
 
@@ -202,3 +213,16 @@
 | `editing.go` | `PastePayload`：转换在视图里做，Editing 只选用哪种表示；代码块和表格单元格的规则 | D11、D12 |
 
 另加套件 `TestEditingV2` `TestPasteConverter` `TestSessionsV2` `TestSessionStore`。`docsession.Manager` 的 `Recheck`、`Moved` 暂为空实现，由 BE-2.7 完成。
+
+## 附：Phase 3 批次 1（2026-11-02）
+
+依据 [08 §5](08-phase3.md)。套件：`TestExtensions`（AST）、`TestProjectionExtensions`、`TestEditingExtensions`、`TestRenderer` 和测试替身 `FakeRenderHost`。前三个已在实现包里接好，先 `t.Skip`，由 BE-1.7 去掉；`TestRenderer` 由 BE-2.9 接。
+
+| 文件 | 变更 | 依据 |
+|---|---|---|
+| `ast.go` | `ExtDefault` 为全部扩展，含 `ExtTildeSub`、`ExtWikiLink` | U1 |
+| `commands.go` | `CmdFormatSup`、`CmdFormatSub` | BE-1.7 |
+| `editing.go` | `FormatState.Sup`、`Sub` | BE-1.7 |
+| `projection.go` | `ObjectRef.Meta`、`FrontMatterMeta` | D5 |
+| `render.go` | `RenderHost` 与渲染页面的协议；`RenderRequest.Scale`；`ExportOptions.Renderer` | D7–D9、D14 |
+| 本文 §4.2.10、§4.3.5a | 扩展语法和对象的规则 | D1–D6 |

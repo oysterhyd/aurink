@@ -21,7 +21,8 @@ type RenderRequest struct {
 	Lang     string // RenderDiagram 的语言，如 "mermaid"
 	Dark     bool
 	FontSize float32
-	Color    string // 文本颜色 "#RRGGBB"
+	Color    string  // 文本颜色 "#RRGGBB"
+	Scale    float32 // 屏幕缩放，PNG 的像素 = DIP × Scale；0 视为 1
 }
 
 // RenderResult 是渲染结果；尺寸为 DIP。
@@ -37,6 +38,28 @@ type RenderResult struct {
 	Ascent float32 // 行内公式基线以上的高度
 	Scale  float32
 }
+
+// RenderHost 是一个不显示的浏览器页面（adapters/webviewhost 用 MyGo 的 WebView 实现，08 D8）。
+// 方法阻塞，禁止在主线程调用；core/render 串行调用，同一时刻至多一个调用。
+type RenderHost interface {
+	// Available 报告系统的浏览器运行时是否存在。为 false 时不得调用 Start。
+	Available() bool
+	// Start 创建页面并以非空 baseURL 加载 page，页面脚本就绪后返回。已启动时先 Stop。
+	Start(ctx context.Context, page, baseURL string) error
+	// Eval 在页面里求值 script（结果是一个 Promise 或值），返回其 JSON。
+	// 页面的渲染进程退出时返回 CodeUnavailable。ctx 结束时返回 CodeCanceled 或 CodeTimeout。
+	Eval(ctx context.Context, script string) ([]byte, error)
+	// Stop 关闭页面，释放浏览器进程。未启动时什么也不做。
+	Stop()
+}
+
+// 渲染页面的协议（resources/render 的页面与 core/render 之间，08 D7–D9）：
+//   - core/render 求值 "aurink.render(" + JSON(RenderRequest) + ")"。JSON 字段名为
+//     kind（1 行内公式、2 块公式、3 图表）、source、lang、dark、fontSize、color、scale。
+//   - 页面返回 {"svg": "...", "png": "<base64>", "width": w, "height": h, "ascent": a,
+//     "scale": s}，svg 与 png 恰有一个非空；失败时返回 {"error": "说明"}。
+//   - 公式的 SVG 不含 <text> 时返回 svg，否则返回 png；图表一律 png（CR-005）。
+//   - core/render 再检查一次：svg 含 <text、png 解不开、尺寸不为正，都按 CodeRender 处理，不进缓存。
 
 // Renderer 渲染数学与图表（core/render 实现）。Render 阻塞且带缓存，禁止在主线程调用。
 type Renderer interface {
@@ -72,6 +95,10 @@ type ExportOptions struct {
 	// Highlight 可为 nil；为代码块返回语法记号（D17）。core 不能导入 ui/editor，
 	// 由 app 用 MyGo 的词法分析实现。
 	Highlight func(lang, code string) []CodeToken
+	// Renderer 可为 nil；非 nil 时公式和 mermaid 代码块以渲染结果导出（SVG 内联，PNG 为
+	// data: URL）。为 nil 或渲染失败时，公式导出为 <span class="math"> / <div class="math">
+	// 里的 TeX 源码，图表导出为代码块（08 D14）。
+	Renderer Renderer
 }
 
 // CodeToken 是代码块中的一个记号。导出为 <span class="tok-Kind">。

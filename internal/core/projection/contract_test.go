@@ -11,7 +11,12 @@ import (
 
 func parse(t testing.TB, src string) (contract.Text, contract.AST) {
 	t.Helper()
-	p, err := markdown.New(src, 1, contract.ExtFrontMatter)
+	return parseExts(t, src, contract.ExtFrontMatter)
+}
+
+func parseExts(t testing.TB, src string, exts contract.Extensions) (contract.Text, contract.AST) {
+	t.Helper()
+	p, err := markdown.New(src, 1, exts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +24,14 @@ func parse(t testing.TB, src string) (contract.Text, contract.AST) {
 }
 
 func TestContract(t *testing.T) {
-	contracttest.TestProjection(t, contracttest.ProjectionFixture{Projector: New(), Parse: func(src string) (contract.Text, contract.AST) {
-		return parse(t, src)
+	contracttest.TestProjection(t, contracttest.ProjectionFixture{Projector: New(), Parse: func(src string, exts contract.Extensions) (contract.Text, contract.AST) {
+		return parseExts(t, src, exts)
+	}})
+}
+
+func TestExtensionsContract(t *testing.T) {
+	t.Skip("BE-1.7 removes this skip")
+	contracttest.TestProjectionExtensions(t, contracttest.ProjectionFixture{Projector: New(), Parse: func(src string, exts contract.Extensions) (contract.Text, contract.AST) {
+		return parseExts(t, src, exts)
 	}})
 }

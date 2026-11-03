@@ -265,6 +265,11 @@ var editFragments = []string{
 
 // randomEdit returns an edit on UTF-8 boundaries of src.
 func randomEdit(rng *rand.Rand, src string) contract.TextEdit {
+	return randomEditOf(rng, src, editFragments)
+}
+
+// randomEditOf is randomEdit typing the given fragments.
+func randomEditOf(rng *rand.Rand, src string, fragments []string) contract.TextEdit {
 	boundary := func(i int) int {
 		for i > 0 && i < len(src) && !utf8.RuneStart(src[i]) {
 			i--
@@ -279,7 +284,7 @@ func randomEdit(rng *rand.Rand, src string) contract.TextEdit {
 	}
 	text := ""
 	if end == start || rng.Intn(2) == 0 {
-		text = editFragments[rng.Intn(len(editFragments))]
+		text = fragments[rng.Intn(len(fragments))]
 	}
 	return contract.TextEdit{Range: contract.Range{Start: start, End: end}, Text: text}
 }

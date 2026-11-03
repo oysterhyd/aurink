@@ -97,12 +97,12 @@ const (
 
 // FormatState 描述选区的格式，用于菜单勾选与格式条高亮。
 type FormatState struct {
-	Strong, Emphasis, Strike, Code, Highlight, Link TriState
-	LinkDest                                        string
-	Block                                           BlockKind
-	Level                                           int
-	List                                            ListKind
-	InTable, InCode                                 bool
+	Strong, Emphasis, Strike, Code, Highlight, Sup, Sub, Link TriState
+	LinkDest                                                  string
+	Block                                                     BlockKind
+	Level                                                     int
+	List                                                      ListKind
+	InTable, InCode                                           bool
 }
 
 // Editing 把意图与命令转换为事务（core/editing 实现，纯函数）。

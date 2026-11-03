@@ -16,8 +16,8 @@ func mustNew(t testing.TB, src string, v contract.Version, ext contract.Extensio
 	return p
 }
 
-func TestContract(t *testing.T) {
-	contracttest.TestAST(t, contracttest.ASTFixture{
+func fixture(t *testing.T) contracttest.ASTFixture {
+	return contracttest.ASTFixture{
 		Parse: func(src string, ext contract.Extensions) contract.AST { return mustNew(t, src, 1, ext).Snapshot() },
 		Edit: func(prev contract.AST, src string, edits []contract.TextEdit) (contract.AST, string) {
 			old := prev.(*Snapshot)
@@ -33,5 +33,12 @@ func TestContract(t *testing.T) {
 			}
 			return u.Snapshot, u.Snapshot.text.String()
 		},
-	})
+	}
+}
+
+func TestContract(t *testing.T) { contracttest.TestAST(t, fixture(t)) }
+
+func TestExtensionsContract(t *testing.T) {
+	t.Skip("BE-1.7 removes this skip")
+	contracttest.TestExtensions(t, fixture(t))
 }

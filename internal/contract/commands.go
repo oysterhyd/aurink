@@ -40,6 +40,8 @@ const (
 	CmdFormatStrike    CommandID = "format.strike"
 	CmdFormatCode      CommandID = "format.code"
 	CmdFormatHighlight CommandID = "format.highlight"
+	CmdFormatSup       CommandID = "format.sup"
+	CmdFormatSub       CommandID = "format.sub"
 	CmdFormatLink      CommandID = "format.link"
 	CmdFormatClear     CommandID = "format.clear"
 

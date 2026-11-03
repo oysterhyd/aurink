@@ -12,8 +12,8 @@ import (
 // ProjectionFixture is a projector and a way to parse the documents it projects.
 type ProjectionFixture struct {
 	Projector contract.Projector
-	// Parse returns a snapshot of src and its AST.
-	Parse func(src string) (contract.Text, contract.AST)
+	// Parse returns a snapshot of src and its AST with the given extensions.
+	Parse func(src string, exts contract.Extensions) (contract.Text, contract.AST)
 }
 
 // projectionCorpus returns astSamples and the small documents of the corpus.
@@ -44,7 +44,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	pr := f.Projector
 	t.Run("invariants", func(t *testing.T) {
 		for _, src := range projectionCorpus(t) {
-			text, ast := f.Parse(src)
+			text, ast := f.Parse(src, contract.ExtFrontMatter)
 			for leaf := range ast.Leaves() {
 				b := ast.Block(leaf)
 				carets := []int{-1, b.Range.Start, (b.Range.Start + b.Range.End) / 2, b.Range.End}
@@ -59,7 +59,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("caret walks through every leaf", func(t *testing.T) {
 		for _, src := range projectionCorpus(t) {
-			text, ast := f.Parse(src)
+			text, ast := f.Parse(src, contract.ExtFrontMatter)
 			for leaf := range ast.Leaves() {
 				walkCaret(t, pr, src, ast, text, leaf)
 			}
@@ -67,7 +67,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("inline reveal", func(t *testing.T) {
 		src := "a **粗** b\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		leaf := ast.LeafAt(0)
 		display := func(caret int) string {
 			p := pr.Project(ast, text, leaf, contract.Reveal{Mode: contract.RevealInline, Caret: caret})
@@ -85,7 +85,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("nested markers show with their ancestors", func(t *testing.T) {
 		src := "**a *b* c** d\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		p := pr.Project(ast, text, ast.LeafAt(0), contract.Reveal{Mode: contract.RevealInline, Caret: strings.Index(src, "b")})
 		if got := pr.DisplayText(&p); got != "**a *b* c** d" {
 			t.Errorf("display %q", got)
@@ -93,7 +93,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("a selection reveals the nodes it covers", func(t *testing.T) {
 		src := "**a** *b* c\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		p := pr.Project(ast, text, ast.LeafAt(0), contract.Reveal{
 			Mode: contract.RevealInline, Caret: -1, Selection: contract.Range{Start: 0, End: strings.Index(src, " c")},
 		})
@@ -103,7 +103,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("headings show # only at the start of the line", func(t *testing.T) {
 		src := "## 标题\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		leaf := ast.LeafAt(0)
 		show := func(caret int) string {
 			p := pr.Project(ast, text, leaf, contract.Reveal{Mode: contract.RevealInline, Caret: caret})
@@ -118,7 +118,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("replacements", func(t *testing.T) {
 		src := "a &amp; \\* b\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		p := pr.Project(ast, text, ast.LeafAt(0), contract.Reveal{Mode: contract.RevealInline, Caret: -1})
 		if got := pr.DisplayText(&p); got != "a & * b" {
 			t.Errorf("display %q", got)
@@ -126,7 +126,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("objects", func(t *testing.T) {
 		src := "![图](a.png)\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		p := pr.Project(ast, text, ast.LeafAt(0), contract.Reveal{Mode: contract.RevealInline, Caret: -1})
 		var obj *contract.ObjectRef
 		for _, s := range p.Segments {
@@ -140,7 +140,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("tasks", func(t *testing.T) {
 		src := "- [x] 项\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		leaf := ast.LeafAt(strings.Index(src, "项"))
 		p := pr.Project(ast, text, leaf, contract.Reveal{Mode: contract.RevealInline, Caret: -1})
 		if len(p.Containers) == 0 {
@@ -156,7 +156,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("Sig", func(t *testing.T) {
 		src := "x\n\n**a** b\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		at := strings.Index(src, "**")
 		hidden := pr.Project(ast, text, ast.LeafAt(at), contract.Reveal{Mode: contract.RevealInline, Caret: -1})
 		shown := pr.Project(ast, text, ast.LeafAt(at), contract.Reveal{Mode: contract.RevealInline, Caret: at + 2})
@@ -165,7 +165,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 		}
 		// Moving a block does not change its layout key.
 		moved := "longer first line\n\n**a** b\n"
-		text2, ast2 := f.Parse(moved)
+		text2, ast2 := f.Parse(moved, contract.ExtFrontMatter)
 		other := pr.Project(ast2, text2, ast2.LeafAt(strings.Index(moved, "**")), contract.Reveal{Mode: contract.RevealInline, Caret: -1})
 		if hidden.Sig != other.Sig {
 			t.Error("Sig depends on the offset")
@@ -173,7 +173,7 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 	})
 	t.Run("Display does not pin the source", func(t *testing.T) {
 		src := strings.Repeat("word ", 100) + "\n"
-		text, ast := f.Parse(src)
+		text, ast := f.Parse(src, contract.ExtFrontMatter)
 		p := pr.Project(ast, text, ast.LeafAt(0), contract.Reveal{Mode: contract.RevealInline, Caret: -1})
 		for _, s := range p.Segments {
 			if s.Display != "" && sameMemory(s.Display, text.String()) {

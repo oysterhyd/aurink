@@ -69,8 +69,8 @@ const (
 	ExtTOC                    // 独占段落的 [TOC]
 	ExtDollarMath             // $行内公式$
 
-	// ExtDefault 是默认启用的扩展。
-	ExtDefault = ExtFrontMatter | ExtHighlight | ExtSupSub | ExtEmoji | ExtTOC | ExtDollarMath
+	// ExtDefault 是默认启用的扩展：全部（用户 2026-11-02，08 §2.2 U1）。
+	ExtDefault = ExtFrontMatter | ExtHighlight | ExtSupSub | ExtTildeSub | ExtEmoji | ExtWikiLink | ExtTOC | ExtDollarMath
 )
 
 // BlockLine 描述解析器的一条内容行，不包含行终止符。

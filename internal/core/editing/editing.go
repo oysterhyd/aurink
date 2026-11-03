@@ -133,7 +133,7 @@ func (Editor) HandleIntent(ctx contract.EditContext, in contract.Intent) (contra
 		}
 	}
 	if (!typing && !tableSafe(ctx, tx.Edits)) || check && !inRow && !preservesTables(ctx, tx.Edits) {
-		// TODO(BE-1.6): Navigate table cells without changing row structure.
+		// tableIntent took the table keys first; what is left must not break a row.
 		return transaction(nil, ctx.Selection, tx.Origin, "table"), true
 	}
 	return tx, ok
@@ -145,7 +145,7 @@ func handleIntent(ctx contract.EditContext, in contract.Intent) (contract.Transa
 	}
 	r := ctx.Selection.Primary().Range()
 	if (in.Kind == contract.IntentIndent || in.Kind == contract.IntentOutdent || in.Kind == contract.IntentNewline || in.Kind == contract.IntentLineBreak) && selectionHas(ctx, contract.BlockTable) {
-		// TODO(BE-1.6): Table cell navigation.
+		// Reached only when tableIntent declined, as for a selection across cells: do nothing.
 		return transaction(nil, ctx.Selection, contract.OriginUser, "table"), true
 	}
 	switch in.Kind {

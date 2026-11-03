@@ -192,6 +192,7 @@ var knownIDs = map[contract.CommandID]bool{
 	contract.CmdEditFindPrev: true,
 	contract.CmdFormatStrong: true, contract.CmdFormatEmphasis: true, contract.CmdFormatUnderline: true,
 	contract.CmdFormatStrike: true, contract.CmdFormatCode: true, contract.CmdFormatHighlight: true,
+	contract.CmdFormatSup: true, contract.CmdFormatSub: true,
 	contract.CmdFormatLink: true, contract.CmdFormatClear: true,
 	contract.CmdBlockHeading1: true, contract.CmdBlockHeading2: true, contract.CmdBlockHeading3: true,
 	contract.CmdBlockHeading4: true, contract.CmdBlockHeading5: true, contract.CmdBlockHeading6: true,

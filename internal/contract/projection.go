@@ -87,6 +87,15 @@ type ObjectRef struct {
 	Lang    string // ObjDiagram 的语言
 	Display bool   // 块级对象（独占一行）
 	Checked bool   // ObjCheckbox
+	// Meta 是 ObjFrontMatter 的页眉字段；YAML 不在 08 D5 的子集内时为 nil，块按淡色源码投影。
+	Meta *FrontMatterMeta
+}
+
+// FrontMatterMeta 是 Front Matter 编辑式页眉的字段（08 D5）。
+type FrontMatterMeta struct {
+	Kicker string   // title，没有时为 kicker
+	Tags   []string // tags，没有时为 keywords
+	Date   string   // date，原样
 }
 
 // Segment 是投影的一个显示片段，覆盖源码 Src。一个块的片段按源码顺序覆盖
