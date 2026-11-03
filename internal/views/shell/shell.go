@@ -485,6 +485,9 @@ func (s *Shell) window(c *ui.Context, t *theme.Tokens) {
 		})
 		s.paletteView(c, t)
 		s.settingsView(c, t)
+		if d := s.active; d != nil && s.live && d.mode != editorapi.ModeSource {
+			d.live.Lightbox(c.Key("lightbox"))
+		}
 	})
 }
 

@@ -248,5 +248,10 @@
   "liveedit_quote": "引用",
   "liveedit_link_address": "链接地址",
   "settings_smooth_caret": "平滑光标",
-  "settings_smooth_caret_hint": "光标滑动到新位置，带微弱辉光"
+  "settings_smooth_caret_hint": "光标滑动到新位置，带微弱辉光",
+  "liveedit_lightbox": "图片",
+  "liveedit_zoom_out": "缩小",
+  "liveedit_zoom_in": "放大",
+  "liveedit_fit": "适应",
+  "liveedit_close_lightbox": "关闭"
 }

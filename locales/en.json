@@ -1066,5 +1066,25 @@
   "settings_smooth_caret_hint": "The caret glides to where it goes, with a faint glow",
   "@settings_smooth_caret_hint": {
     "description": "Hint under the smooth caret setting."
+  },
+  "liveedit_lightbox": "Image",
+  "@liveedit_lightbox": {
+    "description": "The lightbox showing an image, for screen readers."
+  },
+  "liveedit_zoom_out": "Zoom Out",
+  "@liveedit_zoom_out": {
+    "description": "Lightbox button."
+  },
+  "liveedit_zoom_in": "Zoom In",
+  "@liveedit_zoom_in": {
+    "description": "Lightbox button."
+  },
+  "liveedit_fit": "Fit",
+  "@liveedit_fit": {
+    "description": "Lightbox button: back to the size that fits the window."
+  },
+  "liveedit_close_lightbox": "Close",
+  "@liveedit_close_lightbox": {
+    "description": "Lightbox button."
   }
 }

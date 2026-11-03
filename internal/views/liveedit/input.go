@@ -181,6 +181,9 @@ func (e *Editor) secondaryDown(ev ui.InputEvent) {
 
 func (e *Editor) pointerDown(ev ui.InputEvent) {
 	e.UnmarkText()
+	if e.imageClick(ev) {
+		return
+	}
 	if ev.Clicks <= 1 && ev.Mods&ui.Shift == 0 && e.rowCommand(ev) {
 		e.blinkStart = ev.Time
 		return

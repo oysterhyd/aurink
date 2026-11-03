@@ -127,6 +127,9 @@ func (rc *rowContext) paintObjects() {
 			continue
 		}
 		st := rc.e.image(s.Object.Source)
+		if st.src != nil && rc.e.flying(rc.row, s.Object.Source) {
+			continue
+		}
 		if st.src != nil {
 			rc.p.Image(st.src, box, ui.Contain)
 			continue

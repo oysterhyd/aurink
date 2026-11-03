@@ -3529,3 +3529,73 @@ func SettingsSmoothCaretHint() string { return In(i18n.Locale()).SettingsSmoothC
 func (msgs Messages) SettingsSmoothCaretHint() string {
 	return Catalog.Format(msgs.locale, "settings_smooth_caret_hint", nil)
 }
+
+// LiveeditLightbox says "Image"
+// in the language the app shows.
+//
+// The lightbox showing an image, for screen readers.
+func LiveeditLightbox() string { return In(i18n.Locale()).LiveeditLightbox() }
+
+// LiveeditLightbox says "Image"
+// in the language of msgs.
+//
+// The lightbox showing an image, for screen readers.
+func (msgs Messages) LiveeditLightbox() string {
+	return Catalog.Format(msgs.locale, "liveedit_lightbox", nil)
+}
+
+// LiveeditZoomOut says "Zoom Out"
+// in the language the app shows.
+//
+// Lightbox button.
+func LiveeditZoomOut() string { return In(i18n.Locale()).LiveeditZoomOut() }
+
+// LiveeditZoomOut says "Zoom Out"
+// in the language of msgs.
+//
+// Lightbox button.
+func (msgs Messages) LiveeditZoomOut() string {
+	return Catalog.Format(msgs.locale, "liveedit_zoom_out", nil)
+}
+
+// LiveeditZoomIn says "Zoom In"
+// in the language the app shows.
+//
+// Lightbox button.
+func LiveeditZoomIn() string { return In(i18n.Locale()).LiveeditZoomIn() }
+
+// LiveeditZoomIn says "Zoom In"
+// in the language of msgs.
+//
+// Lightbox button.
+func (msgs Messages) LiveeditZoomIn() string {
+	return Catalog.Format(msgs.locale, "liveedit_zoom_in", nil)
+}
+
+// LiveeditFit says "Fit"
+// in the language the app shows.
+//
+// Lightbox button: back to the size that fits the window.
+func LiveeditFit() string { return In(i18n.Locale()).LiveeditFit() }
+
+// LiveeditFit says "Fit"
+// in the language of msgs.
+//
+// Lightbox button: back to the size that fits the window.
+func (msgs Messages) LiveeditFit() string {
+	return Catalog.Format(msgs.locale, "liveedit_fit", nil)
+}
+
+// LiveeditCloseLightbox says "Close"
+// in the language the app shows.
+//
+// Lightbox button.
+func LiveeditCloseLightbox() string { return In(i18n.Locale()).LiveeditCloseLightbox() }
+
+// LiveeditCloseLightbox says "Close"
+// in the language of msgs.
+//
+// Lightbox button.
+func (msgs Messages) LiveeditCloseLightbox() string {
+	return Catalog.Format(msgs.locale, "liveedit_close_lightbox", nil)
+}

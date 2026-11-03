@@ -192,6 +192,8 @@ type Editor struct {
 	fmtBar       formatBar
 	smoothCaret  bool
 	caret        caretMotion
+	lb           lightbox
+	lastImage    imageHit
 
 	services   ui.Services
 	hasView    bool

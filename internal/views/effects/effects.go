@@ -100,6 +100,17 @@ func Glass(t *theme.Tokens, l Level) ui.Material {
 	return material{36, 1.6, t.Modal, t.Solid, t.LowPower}
 }
 
+// Scrim is the lightbox's ground: the strong scrim over a blur of the window
+// (02 §6), the scrim alone in low power.
+func Scrim(t *theme.Tokens) ui.Material {
+	return material{20, 1, t.ScrimStrong, t.ScrimStrong, t.LowPower}
+}
+
+// Clear is the lightbox controls' glass, half-transparent black in low power.
+func Clear(t *theme.Tokens) ui.Material {
+	return material{12, 1.2, ui.RGBA(20, 20, 24, .38), ui.RGBA(0, 0, 0, .6), t.LowPower}
+}
+
 // PaintWindow paints the window's ground and reports whether a GPU drew it, which
 // the next theme change uses to choose its transition.
 func PaintWindow(p *ui.Painter, r ui.Rect, t *theme.Tokens) (accelerated bool) {
