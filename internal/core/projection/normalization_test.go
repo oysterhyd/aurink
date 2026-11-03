@@ -54,21 +54,34 @@ func TestBreakAndImageDetails(t *testing.T) {
 }
 
 func TestM1Scope(t *testing.T) {
-	for _, tc := range []struct{ src, want string }{
-		{"==hi== ^up^ :smile: [[wiki]] $x$", "==hi== ^up^ :smile: [[wiki]] $x$"},
-		{"\\(x\\)", "\\(x\\)"},
-		{"$$\nx\n$$", "$$\nx\n$$"},
-		{"```mermaid\na-->b\n```", "a-->b"},
+	for _, tc := range []struct {
+		src, want string
+		exts      contract.Extensions
+		object    contract.ObjectKind
+	}{
+		{"==hi== ^up^ :smile: [[wiki]] $x$", "==hi== ^up^ :smile: [[wiki]] $x$", 0, contract.ObjNone},
+		{"\\(x\\)", "\ufffc", 0, contract.ObjMath},
+		{"$$\nx\n$$", "\ufffc", 0, contract.ObjMath},
+		{"```mermaid\na-->b\n```", "\ufffc", 0, contract.ObjDiagram},
+		{"[TOC]", "\ufffc", contract.ExtTOC, contract.ObjTOC},
+		{"---\ntitle: hello\n---\n", "\ufffc", contract.ExtFrontMatter, contract.ObjFrontMatter},
 	} {
-		tx, a := parse(t, tc.src)
+		tx, a := parseExts(t, tc.src, tc.exts)
 		p := New().Project(a, tx, a.LeafAt(0), contract.Reveal{Caret: -1, Exts: contract.ExtDefault, ObjectLangs: []string{"mermaid"}})
 		if got := New().DisplayText(&p); got != tc.want {
-			t.Errorf("M1 source %q: %q", tc.src, got)
+			t.Errorf("source %q: %q, want %q", tc.src, got, tc.want)
 		}
+		objects := 0
 		for _, s := range p.Segments {
 			if s.Object != nil {
-				t.Errorf("M1 produced an extension object: %+v", s.Object)
+				objects++
+				if s.Kind != contract.SegObject || s.Object.Kind != tc.object {
+					t.Errorf("unexpected object: %+v", s)
+				}
 			}
+		}
+		if (objects == 1) != (tc.object != contract.ObjNone) {
+			t.Errorf("source %q: got %d objects", tc.src, objects)
 		}
 	}
 }

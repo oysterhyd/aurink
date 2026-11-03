@@ -62,6 +62,15 @@ func signature(p *contract.BlockProjection) uint64 {
 			h.text(o.Lang)
 			h.flag(o.Display)
 			h.flag(o.Checked)
+			h.flag(o.Meta != nil)
+			if o.Meta != nil {
+				h.text(o.Meta.Kicker)
+				h.number(uint64(len(o.Meta.Tags)))
+				for _, tag := range o.Meta.Tags {
+					h.text(tag)
+				}
+				h.text(o.Meta.Date)
+			}
 		}
 	}
 	return uint64(h)

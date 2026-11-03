@@ -30,7 +30,6 @@ func TestContract(t *testing.T) {
 }
 
 func TestExtensionsContract(t *testing.T) {
-	t.Skip("BE-1.7 removes this skip")
 	contracttest.TestProjectionExtensions(t, contracttest.ProjectionFixture{Projector: New(), Parse: func(src string, exts contract.Extensions) (contract.Text, contract.AST) {
 		return parseExts(t, src, exts)
 	}})

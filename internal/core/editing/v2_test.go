@@ -14,7 +14,6 @@ func TestContractV2(t *testing.T) {
 }
 
 func TestExtensionsContract(t *testing.T) {
-	t.Skip("BE-1.7 removes this skip")
 	contracttest.TestEditingExtensions(t, contracttest.EditingFixture{Editing: New(), Context: func(src string, sel contract.Selection, dominant string) contract.EditContext {
 		return contextFor(t, src, sel, dominant)
 	}})

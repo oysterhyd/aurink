@@ -22,6 +22,43 @@ func parseAdapted(src string, ext parser.Extensions, frontMatter bool) (*adapted
 	return adapt(src, d, at)
 }
 
+func parserExtensions(exts contract.Extensions) parser.Extensions {
+	ext := parser.Default
+	if exts&contract.ExtDollarMath != 0 {
+		ext |= parser.ExtDollarMath
+	}
+	return ext
+}
+
+func parseWithExtensions(src string, exts contract.Extensions, frontMatter bool) (*adapted, error) {
+	a, err := parseAdapted(src, parserExtensions(exts), frontMatter)
+	if err != nil || exts&contract.ExtTOC == 0 || !containsTOC(src) {
+		return a, err
+	}
+	for i := range a.blocks {
+		b := &a.blocks[i]
+		if b.Parent == 0 && b.Kind == contract.BlockParagraph && len(b.Lines) == 1 &&
+			strings.EqualFold(strings.TrimSpace(src[b.Lines[0].Source.Start:b.Lines[0].Source.End]), "[toc]") {
+			b.Kind = contract.BlockTOC
+		}
+	}
+	return a, nil
+}
+
+func containsTOC(src string) bool {
+	for len(src) >= len("[toc]") {
+		i := strings.IndexByte(src, '[')
+		if i < 0 || len(src)-i < len("[toc]") {
+			return false
+		}
+		if strings.EqualFold(src[i:i+len("[toc]")], "[toc]") {
+			return true
+		}
+		src = src[i+1:]
+	}
+	return false
+}
+
 // front recognizes exact delimiter lines, including CRLF and lone CR. YAML
 // validation is deliberately separate from detecting the source envelope.
 func front(src string, enabled bool) (int, contract.Range) {

@@ -126,7 +126,7 @@ func TestInvalidAndUnsupported(t *testing.T) {
 		}
 	}
 	for _, id := range []contract.CommandID{
-		"x.unknown", "block.heading7", "block.headingx", "format.unknown", contract.CmdFormatHighlight,
+		"x.unknown", "block.heading7", "block.headingx", "format.unknown",
 		contract.CmdBlockMoveUp, contract.CmdBlockMoveDown, contract.CmdBlockToggleTask, contract.CmdBlockOutdent,
 		contract.CmdTableInsert, contract.CmdTableRowAbove, contract.CmdTableRowBelow, contract.CmdTableColLeft,
 		contract.CmdTableColRight, contract.CmdTableDeleteRow, contract.CmdTableDeleteCol, contract.CmdTableAlign,
@@ -135,6 +135,9 @@ func TestInvalidAndUnsupported(t *testing.T) {
 		if _, ok, err := ed.Run(ctx, contract.EditCommand{ID: id}); ok || err != nil {
 			t.Fatalf("command %q: ok=%v err=%v", id, ok, err)
 		}
+	}
+	if tx, ok, err := ed.Run(ctx, contract.EditCommand{ID: contract.CmdFormatHighlight}); !ok || err != nil || len(tx.Edits) == 0 {
+		t.Fatalf("highlight command: ok=%v err=%v edits=%v", ok, err, tx.Edits)
 	}
 	for _, src := range []string{"```\n中文\n```", "|a|b|\n|-|-|\n|中|文|"} {
 		ctx := contextFor(t, src, contract.Caret(strings.Index(src, "中")), "\n")

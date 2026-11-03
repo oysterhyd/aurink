@@ -5,7 +5,6 @@ import (
 
 	"aurink/internal/contract"
 	"aurink/internal/core/text"
-	"github.com/egoist/mygo/ui/markdown/parser"
 )
 
 // localUpdate reparses complete top-level subtrees, including their source
@@ -76,7 +75,7 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		}
 		ext := old.exts&contract.ExtFrontMatter != 0 && start == 0
 		var err error
-		a, err = parseAdapted(source[start:newEnd], parser.Default, ext)
+		a, err = parseWithExtensions(source[start:newEnd], old.exts, ext)
 		if err != nil {
 			stats.BoundaryFallbacks++
 			return Update{Stats: stats}, false

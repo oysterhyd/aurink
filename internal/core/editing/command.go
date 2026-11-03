@@ -18,6 +18,9 @@ func (Editor) Run(ctx contract.EditContext, cmd contract.EditCommand) (contract.
 	if cmd.ID == contract.CmdInsertFootnote || cmd.ID == contract.CmdInsertImages {
 		return insertCommand(ctx, cmd)
 	}
+	if cmd.ID == contract.CmdInsertFrontMatter {
+		return insertFrontMatter(ctx)
+	}
 	if strings.HasPrefix(string(cmd.ID), "format.") || cmd.ID == contract.CmdInsertLink {
 		inTable := selectionHas(ctx, contract.BlockTable)
 		if inTable && ctx.Selection.Primary().Empty() {
@@ -58,6 +61,13 @@ func (Editor) Run(ctx contract.EditContext, cmd contract.EditCommand) (contract.
 		return toggleTask(ctx)
 	case contract.CmdBlockCode:
 		return codeCommand(ctx, cmd)
+	case contract.CmdBlockMath:
+		return fenceCommand(ctx, cmd, true)
+	case contract.CmdBlockMermaid:
+		cmd.Text = "mermaid"
+		return codeCommand(ctx, cmd)
+	case contract.CmdBlockTOC:
+		return insertTOC(ctx)
 	case contract.CmdBlockHR:
 		r := ctx.Selection.Primary().Range()
 		s := "---" + eol(ctx) + eol(ctx)
@@ -231,6 +241,10 @@ func toggleTask(ctx contract.EditContext) (contract.Transaction, bool, error) {
 }
 
 func codeCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract.Transaction, bool, error) {
+	return fenceCommand(ctx, cmd, false)
+}
+
+func fenceCommand(ctx contract.EditContext, cmd contract.EditCommand, math bool) (contract.Transaction, bool, error) {
 	if strings.ContainsAny(cmd.Text, "\r\n`") {
 		return contract.Transaction{}, false, &contract.Error{Code: contract.CodeInvalid, Op: "editing.Run", Detail: "invalid code language"}
 	}
@@ -303,8 +317,15 @@ func codeCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract.T
 	if fence != "~~~" {
 		fence = "```"
 	}
-	for strings.Contains(s, fence) {
-		fence += fence[:1]
+	if math {
+		fence = "$$"
+		if strings.Contains(s, fence) {
+			return contract.Transaction{}, false, nil
+		}
+	} else {
+		for strings.Contains(s, fence) {
+			fence += fence[:1]
+		}
 	}
 	nl := eol(ctx)
 	open, close := fence+cmd.Text+nl+lead, nl+lead+fence
@@ -335,6 +356,41 @@ func codeCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract.T
 		sel.Head -= len(close)
 	}
 	return transaction(edits, contract.Selection{Ranges: []contract.SelRange{sel}}, contract.OriginCommand, "block"), true, nil
+}
+
+func insertTOC(ctx contract.EditContext) (contract.Transaction, bool, error) {
+	r := ctx.Selection.Primary().Range()
+	_, b := leaf(ctx, r.Start)
+	if b == nil || b.Parent != 0 || r.End > b.Range.End {
+		return contract.Transaction{}, false, nil
+	}
+	if b.Kind == contract.BlockBlank {
+		tx := replace(r, "[TOC]", contract.OriginCommand, "block")
+		return tx, true, nil
+	}
+	at := b.Range.End
+	insert := eol(ctx) + eol(ctx) + "[TOC]"
+	tx := replace(contract.Range{Start: at, End: at}, insert, contract.OriginCommand, "block")
+	return tx, true, nil
+}
+
+func insertFrontMatter(ctx contract.EditContext) (contract.Transaction, bool, error) {
+	if ctx.AST == nil {
+		return contract.Transaction{}, false, nil
+	}
+	if b, ok := ctx.AST.FrontMatter(); ok {
+		at := b.Content.Start
+		if len(b.Lines) > 0 {
+			at = b.Lines[len(b.Lines)-1].Source.End
+		}
+		return transaction(nil, contract.Caret(at), contract.OriginCommand, "block"), true, nil
+	}
+	nl := eol(ctx)
+	s := "---" + nl + nl + "---" + nl + nl
+	tx := replace(contract.Range{}, s, contract.OriginCommand, "block")
+	sel := contract.Caret(3 + len(nl))
+	tx.Selection = &sel
+	return tx, true, nil
 }
 
 func moveBlock(ctx contract.EditContext, down bool) (contract.Transaction, bool, error) {

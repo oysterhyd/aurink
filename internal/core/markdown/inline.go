@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Snapshot) inlineDoc() *parser.Document {
-	s.lazyOnce.Do(func() { s.lazy = parser.New(parser.Default); s.lazy.Set(s.text.String()[s.bodyAt:]) })
+	s.lazyOnce.Do(func() { s.lazy = parser.New(parserExtensions(s.exts)); s.lazy.Set(s.text.String()[s.bodyAt:]) })
 	return s.lazy
 }
 
@@ -28,7 +28,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 			data := e.data
 			data.inlineOnce.Do(func() {
 				line := s.text.Slice(b.Lines[0].Source)
-				d := parser.New(parser.Default)
+				d := parser.New(parserExtensions(s.exts))
 				local := "# " + line
 				d.Set(local)
 				if d.Len() != 2 || d.LineCount(1) != 1 {
@@ -38,7 +38,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				if got != line {
 					return
 				}
-				data.inline = adaptInlines(local, d.Inlines(1), 0)
+				data.inline = extendInlines(local, adaptInlines(local, d.Inlines(1), 0), s.exts)
 				shiftInlines(data.inline, b.Lines[0].Source.Start-e.start-2)
 				data.local = true
 			})
@@ -62,7 +62,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				last--
 			}
 			start, end := s.Block(first).Lead.Start, s.Block(last).Trailer.End
-			d = parser.New(parser.Default)
+			d = parser.New(parserExtensions(s.exts))
 			d.Set(s.text.String()[start:end])
 			shift = start
 		} else {
@@ -101,7 +101,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		if !found && b.Kind == contract.BlockTableCell {
 			// Overflow cells have no upstream block. A synthetic table preserves
 			// cell escapes, with the snapshot as its global reference context.
-			d = parser.New(parser.Default)
+			d = parser.New(parserExtensions(s.exts))
 			context := ""
 			if s.hasDefinitions {
 				context = s.text.String()[s.bodyAt:]
@@ -110,7 +110,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 			in = d.Inlines(3)
 			shift = b.Range.Start - 2
 		}
-		e.in = adaptInlines(s.text.String(), in, shift)
+		e.in = extendInlines(s.text.String(), adaptInlines(s.text.String(), in, shift), s.exts)
 	})
 	return e.in
 }
@@ -188,6 +188,8 @@ func delimiters(src string, n *contract.Inline) {
 	case contract.InlineMath:
 		if strings.HasPrefix(t, `\(`) || strings.HasPrefix(t, `\[`) || strings.HasPrefix(t, "$$") {
 			a, b = 2, 2
+		} else if strings.HasPrefix(t, "$") && strings.HasSuffix(t, "$") {
+			a, b = 1, 1
 		}
 	case contract.InlineFootnoteRef:
 		a, b = 2, 1

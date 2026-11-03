@@ -20,6 +20,12 @@ func inlineKind(id contract.CommandID) contract.InlineKind {
 		return contract.InlineCode
 	case contract.CmdFormatLink:
 		return contract.InlineLink
+	case contract.CmdFormatHighlight:
+		return contract.InlineHighlight
+	case contract.CmdFormatSup:
+		return contract.InlineSup
+	case contract.CmdFormatSub:
+		return contract.InlineSub
 	}
 	return contract.InlineText
 }
@@ -76,8 +82,8 @@ func (Editor) Formatting(ctx contract.EditContext) contract.FormatState {
 			f.List = contract.ListTask
 		}
 	}
-	kinds := []contract.InlineKind{contract.InlineStrong, contract.InlineEmphasis, contract.InlineStrike, contract.InlineCode, contract.InlineHighlight, contract.InlineLink}
-	var yes, no [6]bool
+	kinds := []contract.InlineKind{contract.InlineStrong, contract.InlineEmphasis, contract.InlineStrike, contract.InlineCode, contract.InlineHighlight, contract.InlineLink, contract.InlineSup, contract.InlineSub}
+	var yes, no [8]bool
 	destSet := false
 	for _, i := range selectedLeaves(ctx) {
 		nodes := ctx.AST.Inlines(i)
@@ -116,7 +122,7 @@ func (Editor) Formatting(ctx contract.EditContext) contract.FormatState {
 			}
 		}
 	}
-	states := []*contract.TriState{&f.Strong, &f.Emphasis, &f.Strike, &f.Code, &f.Highlight, &f.Link}
+	states := []*contract.TriState{&f.Strong, &f.Emphasis, &f.Strike, &f.Code, &f.Highlight, &f.Link, &f.Sup, &f.Sub}
 	for k, state := range states {
 		if yes[k] {
 			*state = contract.On
@@ -162,6 +168,12 @@ func delimiters(ctx contract.EditContext, id contract.CommandID, s string) (stri
 		return "*", "*"
 	case contract.CmdFormatStrike:
 		return "~~", "~~"
+	case contract.CmdFormatHighlight:
+		return "==", "=="
+	case contract.CmdFormatSup:
+		return "^", "^"
+	case contract.CmdFormatSub:
+		return "~", "~"
 	case contract.CmdFormatUnderline:
 		return "<u>", "</u>"
 	case contract.CmdFormatCode:
@@ -191,6 +203,9 @@ func inlineCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract
 		return contract.Transaction{}, false, nil
 	}
 	r := ctx.Selection.Primary().Range()
+	if (cmd.ID == contract.CmdFormatSup || cmd.ID == contract.CmdFormatSub) && strings.IndexFunc(ctx.Text.Slice(r), unicode.IsSpace) >= 0 {
+		return contract.Transaction{}, false, nil
+	}
 	if cmd.ID == contract.CmdFormatClear {
 		return clearFormat(ctx), true, nil
 	}
@@ -315,6 +330,12 @@ func formatOn(ctx contract.EditContext, id contract.CommandID) bool {
 		return f.Strike == contract.On
 	case contract.CmdFormatCode:
 		return f.Code == contract.On
+	case contract.CmdFormatHighlight:
+		return f.Highlight == contract.On
+	case contract.CmdFormatSup:
+		return f.Sup == contract.On
+	case contract.CmdFormatSub:
+		return f.Sub == contract.On
 	case contract.CmdFormatUnderline:
 		r := ctx.Selection.Primary().Range()
 		for _, i := range selectedLeaves(ctx) {
@@ -384,6 +405,12 @@ func inlinePart(ctx contract.EditContext, cmd contract.EditCommand) (contract.Tr
 		state = f.Strike
 	case contract.CmdFormatCode:
 		state = f.Code
+	case contract.CmdFormatHighlight:
+		state = f.Highlight
+	case contract.CmdFormatSup:
+		state = f.Sup
+	case contract.CmdFormatSub:
+		state = f.Sub
 	case contract.CmdFormatUnderline:
 		if formatOn(ctx, cmd.ID) {
 			state = contract.On
@@ -434,7 +461,7 @@ func clearFormat(ctx contract.EditContext) contract.Transaction {
 				continue
 			}
 			switch n.Kind {
-			case contract.InlineStrong, contract.InlineEmphasis, contract.InlineStrike, contract.InlineCode, contract.InlineLink:
+			case contract.InlineStrong, contract.InlineEmphasis, contract.InlineStrike, contract.InlineCode, contract.InlineLink, contract.InlineHighlight, contract.InlineSup, contract.InlineSub:
 				if !n.Open.Empty() {
 					edits = append(edits, edit(n.Open.Start, n.Open.End, ""))
 				}

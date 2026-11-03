@@ -58,6 +58,12 @@ func init() {
 		contract.InlineEmphasis:    {contract.StyleEmphasis, nestedInline},
 		contract.InlineStrong:      {contract.StyleStrong, nestedInline},
 		contract.InlineStrike:      {contract.StyleStrike, nestedInline},
+		contract.InlineHighlight:   {contract.StyleHighlight, nestedInline},
+		contract.InlineSup:         {contract.StyleSup, nestedInline},
+		contract.InlineSub:         {contract.StyleSub, nestedInline},
+		contract.InlineEmoji:       {apply: replacedInline},
+		contract.InlineWikiLink:    {contract.StyleWikiLink, linkInline},
+		contract.InlineMath:        {contract.StyleMath, mathInline},
 		contract.InlineLink:        {contract.StyleLink, linkInline},
 		contract.InlineCode:        {contract.StyleCode, codeInline},
 		contract.InlineImage:       {apply: imageInline},
@@ -68,8 +74,7 @@ func init() {
 	}
 }
 
-// Project projects a leaf without modifying or retaining its inputs. Extensions
-// and diagram objects are intentionally inactive in M1.
+// Project projects a leaf without modifying or retaining its inputs.
 func (Projector) Project(ast contract.AST, text contract.Text, leaf int, r contract.Reveal) contract.BlockProjection {
 	n := ast.Block(leaf)
 	if n == nil || n.Next != leaf+1 {
@@ -102,6 +107,17 @@ func (Projector) Project(ast contract.AST, text contract.Text, leaf int, r contr
 	// mapper, without retaining a block or adding fields to the contract.
 	b.emit(n.Range.Start, contract.SegHidden, "", 0, "", nil)
 	show := b.blockRevealed()
+	if !plain {
+		if obj := blockObject(n, text, r); obj != nil {
+			if !show {
+				b.emit(n.Range.End, contract.SegObject, "\ufffc", 0, "", obj)
+				b.emit(n.Trailer.End, contract.SegHidden, "", 0, "", nil)
+				p.Sig = signature(&p)
+				return p
+			}
+			p.Revealed = true
+		}
+	}
 	if rule.lineStart && r.Mode == contract.RevealInline {
 		show = r.Caret == n.Range.Start || selected(r, n.Range)
 	}
@@ -496,4 +512,48 @@ func imageInline(b *builder, in []contract.Inline, i int, style contract.Style, 
 	}
 	b.emit(n.Range.End, contract.SegObject, "\ufffc", style, link, &contract.ObjectRef{Kind: contract.ObjImage,
 		Source: strings.Clone(n.Dest), Alt: alt.String(), Title: strings.Clone(n.Title)})
+}
+
+func mathInline(b *builder, in []contract.Inline, i int, style contract.Style, link string, show bool) {
+	n := in[i]
+	if show {
+		nestedInline(b, in, i, style, link, true)
+		return
+	}
+	b.emit(n.Range.End, contract.SegObject, "\ufffc", style, link,
+		&contract.ObjectRef{Kind: contract.ObjMath, Source: strings.Clone(n.Text), Display: n.Display})
+}
+
+func blockObject(n *contract.Block, text contract.Text, r contract.Reveal) *contract.ObjectRef {
+	var kind contract.ObjectKind
+	var lang string
+	var meta *contract.FrontMatterMeta
+	switch n.Kind {
+	case contract.BlockMath:
+		kind = contract.ObjMath
+	case contract.BlockCode:
+		if !slices.Contains(r.ObjectLangs, n.Lang) || n.Lang == "" {
+			return nil
+		}
+		kind, lang = contract.ObjDiagram, strings.Clone(n.Lang)
+	case contract.BlockTOC:
+		kind = contract.ObjTOC
+	case contract.BlockFrontMatter:
+		kind = contract.ObjFrontMatter
+		meta = parseFrontMatter(strings.Clone(text.Slice(n.Content)))
+		if meta == nil {
+			return nil
+		}
+	default:
+		return nil
+	}
+	var source string
+	if kind == contract.ObjMath || kind == contract.ObjDiagram {
+		var lines []string
+		for _, line := range n.Lines {
+			lines = append(lines, strings.Repeat(" ", int(line.Padding))+text.Slice(line.Source))
+		}
+		source = strings.Join(lines, "\n")
+	}
+	return &contract.ObjectRef{Kind: kind, Source: source, Lang: lang, Display: true, Meta: meta}
 }

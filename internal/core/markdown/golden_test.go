@@ -156,11 +156,34 @@ func TestFrontMatterAndDisabledExtensions(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for _, src := range []string{"==highlight==", "^sup^", ":smile:", "[[wiki]]", "[TOC]", "$math$"} {
-		s := mustNew(t, src, 1, ^contract.Extensions(0)).Snapshot()
-		in := s.Inlines(s.LeafAt(0))
-		if len(in) != 1 || in[0].Kind != contract.InlineText || in[0].Text != src {
-			t.Fatalf("extension should be plain text: %q %+v", src, in)
+	for _, tc := range []struct {
+		src   string
+		ext   contract.Extensions
+		kind  contract.InlineKind
+		block contract.BlockKind
+	}{
+		{"==highlight==", contract.ExtHighlight, contract.InlineHighlight, 0},
+		{"^sup^", contract.ExtSupSub, contract.InlineSup, 0},
+		{"~sub~", contract.ExtTildeSub, contract.InlineSub, 0},
+		{":smile:", contract.ExtEmoji, contract.InlineEmoji, 0},
+		{"[[wiki]]", contract.ExtWikiLink, contract.InlineWikiLink, 0},
+		{"[TOC]", contract.ExtTOC, 0, contract.BlockTOC},
+		{"$math$", contract.ExtDollarMath, contract.InlineMath, 0},
+	} {
+		for _, enabled := range []bool{false, true} {
+			ext := contract.Extensions(0)
+			if enabled {
+				ext = tc.ext
+			}
+			s := mustNew(t, tc.src, 1, ext).Snapshot()
+			leaf := s.LeafAt(0)
+			found := tc.block != 0 && s.Block(leaf).Kind == tc.block
+			for _, n := range s.Inlines(leaf) {
+				found = found || tc.kind != 0 && n.Kind == tc.kind
+			}
+			if found != enabled {
+				t.Errorf("source %q enabled=%v: extension found=%v", tc.src, enabled, found)
+			}
 		}
 	}
 }

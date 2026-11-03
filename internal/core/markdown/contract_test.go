@@ -39,6 +39,5 @@ func fixture(t *testing.T) contracttest.ASTFixture {
 func TestContract(t *testing.T) { contracttest.TestAST(t, fixture(t)) }
 
 func TestExtensionsContract(t *testing.T) {
-	t.Skip("BE-1.7 removes this skip")
 	contracttest.TestExtensions(t, fixture(t))
 }

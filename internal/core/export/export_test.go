@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"aurink/internal/contract"
+	"aurink/internal/core/markdown"
 	"aurink/internal/core/text"
 	"aurink/tests/corpus"
 )
@@ -130,7 +131,12 @@ func (a extensionAST) Inlines(i int) []contract.Inline {
 }
 
 func TestOptionalASTNodes(t *testing.T) {
-	txt, base := parse(t, "# Head\n\n[TOC]\n\nplaceholder\n")
+	src := "# Head\n\n[TOC]\n\nplaceholder\n"
+	parser, parseErr := markdown.New(src, 1, contract.ExtDefault&^contract.ExtTOC)
+	if parseErr != nil {
+		t.Fatal(parseErr)
+	}
+	txt, base := text.New(src, 1), parser.Snapshot()
 	var paragraphs []int
 	for i := 1; i < base.Len(); i++ {
 		if base.Block(i).Kind == contract.BlockParagraph {

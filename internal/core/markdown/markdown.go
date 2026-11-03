@@ -49,14 +49,13 @@ type Update struct {
 	Stats    Stats
 }
 
-// New parses source at version with the requested extension settings. Only Front
-// Matter is enabled beyond the parser's CommonMark, GFM, footnotes and math.
+// New parses source at version with the requested extension settings.
 func New(source string, version contract.Version, exts contract.Extensions) (*Parser, error) {
 	if version == 0 {
 		return nil, &contract.Error{Code: contract.CodeInvalid, Op: "markdown.New", Detail: "zero version"}
 	}
 	p := &Parser{}
-	a, err := parseAdapted(source, parser.Default, exts&contract.ExtFrontMatter != 0)
+	a, err := parseWithExtensions(source, exts, exts&contract.ExtFrontMatter != 0)
 	if err != nil {
 		return nil, &contract.Error{Code: contract.CodeInternal, Op: "markdown.New", Err: err}
 	} // Public Line offsets must map to their source.
@@ -118,7 +117,7 @@ func (p *Parser) Update(next contract.Text, changes []contract.Change) (Update, 
 		stats = u.Stats
 	}
 	stats.FullRebuilds++
-	a, err := parseAdapted(source, parser.Default, old.exts&contract.ExtFrontMatter != 0)
+	a, err := parseWithExtensions(source, old.exts, old.exts&contract.ExtFrontMatter != 0)
 	if err != nil {
 		return Update{}, &contract.Error{Code: contract.CodeInternal, Op: "markdown.Update", Err: err}
 	}
@@ -391,23 +390,6 @@ func (s *Snapshot) typing(source string, v contract.Version, cs []contract.Chang
 	}
 	return n, dirty, true
 }
-
-// InlineExtension and BlockExtension reserve the compile-time syntax registry.
-// No optional syntax hook is active in M1.
-type InlineExtension func(string, contract.Range) []contract.Inline
-
-// BlockExtension recognizes an optional block envelope.
-type BlockExtension func(string) (contract.Block, bool)
-
-var inlineExtensions = map[contract.Extensions]InlineExtension{}
-var blockExtensions = map[contract.Extensions]BlockExtension{}
-
-// TODO(BE-1.7): Register highlight syntax.
-// TODO(BE-1.7): Register superscript and subscript syntax.
-// TODO(BE-1.7): Register emoji shortcodes.
-// TODO(BE-1.7): Register wiki links.
-// TODO(BE-1.7): Register TOC blocks.
-// TODO(BE-1.7): Register dollar math.
 
 func normalizeLabel(s string) string {
 	s = strings.Join(strings.FieldsFunc(s, func(r rune) bool { return r == ' ' || r == '\t' || r == '\r' || r == '\n' }), " ")

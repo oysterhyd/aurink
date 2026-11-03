@@ -20,7 +20,7 @@ func (s *Snapshot) derive() {
 				var title strings.Builder
 				for _, n := range s.Inlines(i) {
 					switch n.Kind {
-					case contract.InlineText, contract.InlineCode, contract.InlineEscape, contract.InlineEntity, contract.InlineMath:
+					case contract.InlineText, contract.InlineCode, contract.InlineEscape, contract.InlineEntity, contract.InlineMath, contract.InlineEmoji:
 						title.WriteString(n.Text)
 					case contract.InlineSoftBreak, contract.InlineLineBreak:
 						title.WriteByte(' ')
