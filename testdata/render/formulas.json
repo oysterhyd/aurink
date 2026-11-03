@@ -1,0 +1,1272 @@
+[
+  {
+    "id": "F01",
+    "group": "fraction",
+    "tex": "\\frac{a}{b}"
+  },
+  {
+    "id": "F02",
+    "group": "fraction",
+    "tex": "\\frac{1}{1+\\frac{1}{x}}"
+  },
+  {
+    "id": "F03",
+    "group": "fraction",
+    "tex": "x=\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}"
+  },
+  {
+    "id": "F04",
+    "group": "fraction",
+    "tex": "\\binom{n}{k}=\\frac{n!}{k!(n-k)!}"
+  },
+  {
+    "id": "F05",
+    "group": "fraction",
+    "tex": "\\dfrac{\\partial f}{\\partial x}"
+  },
+  {
+    "id": "F06",
+    "group": "root",
+    "tex": "\\sqrt{x^2+y^2}"
+  },
+  {
+    "id": "F07",
+    "group": "root",
+    "tex": "\\sqrt[3]{x+1}"
+  },
+  {
+    "id": "F08",
+    "group": "root",
+    "tex": "\\sqrt{1+\\sqrt{1+x}}"
+  },
+  {
+    "id": "F09",
+    "group": "root",
+    "tex": "\\sqrt{\\frac{a+b}{c+d}}"
+  },
+  {
+    "id": "F10",
+    "group": "sum-integral",
+    "tex": "\\sum_{i=1}^{n}i=\\frac{n(n+1)}{2}"
+  },
+  {
+    "id": "F11",
+    "group": "sum-integral",
+    "tex": "\\sum_{n=0}^{\\infty}\\frac{x^n}{n!}=e^x"
+  },
+  {
+    "id": "F12",
+    "group": "sum-integral",
+    "tex": "\\prod_{k=1}^{n}k=n!"
+  },
+  {
+    "id": "F13",
+    "group": "sum-integral",
+    "tex": "\\int_0^1 x^2\\,dx=\\frac13"
+  },
+  {
+    "id": "F14",
+    "group": "sum-integral",
+    "tex": "\\int_{-\\infty}^{\\infty}e^{-x^2}\\,dx=\\sqrt{\\pi}"
+  },
+  {
+    "id": "F15",
+    "group": "sum-integral",
+    "tex": "\\iint_D f(x,y)\\,dx\\,dy"
+  },
+  {
+    "id": "F16",
+    "group": "sum-integral",
+    "tex": "\\oint_C \\mathbf{F}\\cdot d\\mathbf{r}"
+  },
+  {
+    "id": "F17",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}"
+  },
+  {
+    "id": "F18",
+    "group": "matrix",
+    "tex": "\\begin{bmatrix}1&0&0\\\\0&1&0\\\\0&0&1\\end{bmatrix}"
+  },
+  {
+    "id": "F19",
+    "group": "matrix",
+    "tex": "\\begin{vmatrix}a&b\\\\c&d\\end{vmatrix}=ad-bc"
+  },
+  {
+    "id": "F20",
+    "group": "matrix",
+    "tex": "\\left[\\begin{array}{cc|c}1&2&3\\\\4&5&6\\end{array}\\right]"
+  },
+  {
+    "id": "F21",
+    "group": "align",
+    "tex": "\\begin{aligned}a&=b+c\\\\&=d+e\\end{aligned}"
+  },
+  {
+    "id": "F22",
+    "group": "align",
+    "tex": "\\begin{align}x+y&=2\\\\x-y&=0\\end{align}"
+  },
+  {
+    "id": "F23",
+    "group": "align",
+    "tex": "\\begin{gathered}a+b=c\\\\d+e=f\\end{gathered}"
+  },
+  {
+    "id": "F24",
+    "group": "align",
+    "tex": "f(x)=\\begin{cases}x^2&x\\ge0\\\\-x&x<0\\end{cases}"
+  },
+  {
+    "id": "F25",
+    "group": "scripts",
+    "tex": "x_i^2+y_j^{n+1}"
+  },
+  {
+    "id": "F26",
+    "group": "scripts",
+    "tex": "a_{i_j}^{b^c}"
+  },
+  {
+    "id": "F27",
+    "group": "scripts",
+    "tex": "{}^{14}_{6}\\mathrm{C}"
+  },
+  {
+    "id": "F28",
+    "group": "scripts",
+    "tex": "\\lim_{x\\to0}\\frac{\\sin x}{x}=1"
+  },
+  {
+    "id": "F29",
+    "group": "scripts",
+    "tex": "\\underbrace{a+\\cdots+a}_{n\\text{ times}}=na"
+  },
+  {
+    "id": "F30",
+    "group": "scripts",
+    "tex": "\\overbrace{x+\\cdots+x}^{n}"
+  },
+  {
+    "id": "F31",
+    "group": "accents",
+    "tex": "\\hat{x}+\\bar{y}+\\vec{v}+\\dot{a}+\\ddot{b}"
+  },
+  {
+    "id": "F32",
+    "group": "accents",
+    "tex": "\\widehat{ABC}+\\widetilde{xyz}"
+  },
+  {
+    "id": "F33",
+    "group": "delimiters",
+    "tex": "\\left\\langle\\frac{x}{y},\\sqrt{z}\\right\\rangle"
+  },
+  {
+    "id": "F34",
+    "group": "delimiters",
+    "tex": "\\left\\{x\\in\\mathbb{R}\\mid x^2<2\\right\\}"
+  },
+  {
+    "id": "F35",
+    "group": "greek",
+    "tex": "\\alpha+\\beta+\\gamma+\\Delta+\\Omega+\\varphi"
+  },
+  {
+    "id": "F36",
+    "group": "operators",
+    "tex": "\\sin^2\\theta+\\cos^2\\theta=1"
+  },
+  {
+    "id": "F37",
+    "group": "operators",
+    "tex": "\\log_a x=\\frac{\\ln x}{\\ln a}"
+  },
+  {
+    "id": "F38",
+    "group": "arrows",
+    "tex": "A\\xrightarrow{f}B\\xrightarrow{g}C"
+  },
+  {
+    "id": "F39",
+    "group": "arrows",
+    "tex": "P\\implies Q\\iff\\neg P\\lor Q"
+  },
+  {
+    "id": "F40",
+    "group": "fonts",
+    "tex": "\\mathbf{v}+\\mathcal{F}+\\mathbb{R}+\\mathrm{d}x"
+  },
+  {
+    "id": "F41",
+    "group": "sets",
+    "tex": "A\\cup B,\\quad A\\cap B,\\quad x\\notin\\varnothing"
+  },
+  {
+    "id": "F42",
+    "group": "physics",
+    "tex": "E=mc^2,\\quad F=ma"
+  },
+  {
+    "id": "F43",
+    "group": "physics",
+    "tex": "\\nabla\\cdot\\mathbf{E}=\\frac{\\rho}{\\varepsilon_0}"
+  },
+  {
+    "id": "F44",
+    "group": "probability",
+    "tex": "P(A\\mid B)=\\frac{P(B\\mid A)P(A)}{P(B)}"
+  },
+  {
+    "id": "F45",
+    "group": "statistics",
+    "tex": "\\bar{x}=\\frac1n\\sum_{i=1}^n x_i,\\quad \\sigma^2=\\frac1n\\sum_i(x_i-\\bar{x})^2"
+  },
+  {
+    "id": "F46",
+    "group": "text",
+    "tex": "\\text{area}=\\pi r^2"
+  },
+  {
+    "id": "F47",
+    "group": "text",
+    "tex": "v=20\\,\\text{m/s}"
+  },
+  {
+    "id": "F48",
+    "group": "cjk",
+    "tex": "\\text{中文}"
+  },
+  {
+    "id": "F49",
+    "group": "cjk",
+    "tex": "\\text{面积}=\\pi r^2"
+  },
+  {
+    "id": "F50",
+    "group": "cjk",
+    "tex": "\\begin{cases}1&\\text{当 }x>0\\\\0&\\text{其他}\\end{cases}"
+  },
+  {
+    "id": "F051",
+    "group": "fraction",
+    "tex": "\\frac{1 x+1}{2 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F052",
+    "group": "fraction",
+    "tex": "\\frac{2 x+1}{3 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F053",
+    "group": "fraction",
+    "tex": "\\frac{3 x+1}{4 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F054",
+    "group": "fraction",
+    "tex": "\\frac{4 x+1}{5 y+2}",
+    "inline": true
+  },
+  {
+    "id": "F055",
+    "group": "fraction",
+    "tex": "\\frac{5 x+1}{6 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F056",
+    "group": "fraction",
+    "tex": "\\frac{6 x+1}{7 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F057",
+    "group": "fraction",
+    "tex": "\\frac{7 x+1}{8 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F058",
+    "group": "fraction",
+    "tex": "\\frac{8 x+1}{9 y+2}",
+    "inline": true
+  },
+  {
+    "id": "F059",
+    "group": "fraction",
+    "tex": "\\frac{9 x+1}{10 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F060",
+    "group": "fraction",
+    "tex": "\\frac{10 x+1}{11 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F061",
+    "group": "fraction",
+    "tex": "\\frac{11 x+1}{12 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F062",
+    "group": "fraction",
+    "tex": "\\frac{12 x+1}{13 y+2}",
+    "inline": true
+  },
+  {
+    "id": "F063",
+    "group": "fraction",
+    "tex": "\\frac{13 x+1}{14 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F064",
+    "group": "fraction",
+    "tex": "\\frac{14 x+1}{15 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F065",
+    "group": "fraction",
+    "tex": "\\frac{15 x+1}{16 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F066",
+    "group": "fraction",
+    "tex": "\\frac{16 x+1}{17 y+2}",
+    "inline": true
+  },
+  {
+    "id": "F067",
+    "group": "fraction",
+    "tex": "\\frac{17 x+1}{18 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F068",
+    "group": "fraction",
+    "tex": "\\frac{18 x+1}{19 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F069",
+    "group": "fraction",
+    "tex": "\\frac{19 x+1}{20 y+2}",
+    "inline": false
+  },
+  {
+    "id": "F070",
+    "group": "fraction",
+    "tex": "\\frac{20 x+1}{21 y+2}",
+    "inline": true
+  },
+  {
+    "id": "F071",
+    "group": "root",
+    "tex": "\\sqrt[3]{x^{3}+\\frac{1}{1}}",
+    "inline": false
+  },
+  {
+    "id": "F072",
+    "group": "root",
+    "tex": "\\sqrt[4]{x^{4}+\\frac{1}{2}}",
+    "inline": false
+  },
+  {
+    "id": "F073",
+    "group": "root",
+    "tex": "\\sqrt[5]{x^{5}+\\frac{1}{3}}",
+    "inline": false
+  },
+  {
+    "id": "F074",
+    "group": "root",
+    "tex": "\\sqrt[6]{x^{6}+\\frac{1}{4}}",
+    "inline": true
+  },
+  {
+    "id": "F075",
+    "group": "root",
+    "tex": "\\sqrt[2]{x^{7}+\\frac{1}{5}}",
+    "inline": false
+  },
+  {
+    "id": "F076",
+    "group": "root",
+    "tex": "\\sqrt[3]{x^{8}+\\frac{1}{6}}",
+    "inline": false
+  },
+  {
+    "id": "F077",
+    "group": "root",
+    "tex": "\\sqrt[4]{x^{2}+\\frac{1}{7}}",
+    "inline": false
+  },
+  {
+    "id": "F078",
+    "group": "root",
+    "tex": "\\sqrt[5]{x^{3}+\\frac{1}{8}}",
+    "inline": true
+  },
+  {
+    "id": "F079",
+    "group": "root",
+    "tex": "\\sqrt[6]{x^{4}+\\frac{1}{9}}",
+    "inline": false
+  },
+  {
+    "id": "F080",
+    "group": "root",
+    "tex": "\\sqrt[2]{x^{5}+\\frac{1}{10}}",
+    "inline": false
+  },
+  {
+    "id": "F081",
+    "group": "root",
+    "tex": "\\sqrt[3]{x^{6}+\\frac{1}{11}}",
+    "inline": false
+  },
+  {
+    "id": "F082",
+    "group": "root",
+    "tex": "\\sqrt[4]{x^{7}+\\frac{1}{12}}",
+    "inline": true
+  },
+  {
+    "id": "F083",
+    "group": "root",
+    "tex": "\\sqrt[5]{x^{8}+\\frac{1}{13}}",
+    "inline": false
+  },
+  {
+    "id": "F084",
+    "group": "root",
+    "tex": "\\sqrt[6]{x^{2}+\\frac{1}{14}}",
+    "inline": false
+  },
+  {
+    "id": "F085",
+    "group": "root",
+    "tex": "\\sqrt[2]{x^{3}+\\frac{1}{15}}",
+    "inline": false
+  },
+  {
+    "id": "F086",
+    "group": "root",
+    "tex": "\\sqrt[3]{x^{4}+\\frac{1}{16}}",
+    "inline": true
+  },
+  {
+    "id": "F087",
+    "group": "root",
+    "tex": "\\sqrt[4]{x^{5}+\\frac{1}{17}}",
+    "inline": false
+  },
+  {
+    "id": "F088",
+    "group": "root",
+    "tex": "\\sqrt[5]{x^{6}+\\frac{1}{18}}",
+    "inline": false
+  },
+  {
+    "id": "F089",
+    "group": "root",
+    "tex": "\\sqrt[6]{x^{7}+\\frac{1}{19}}",
+    "inline": false
+  },
+  {
+    "id": "F090",
+    "group": "root",
+    "tex": "\\sqrt[2]{x^{8}+\\frac{1}{20}}",
+    "inline": true
+  },
+  {
+    "id": "F091",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{4}\\frac{k^{2}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F092",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{5}\\frac{k^{3}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F093",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{6}\\frac{k^{4}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F094",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{7}\\frac{k^{1}}{k+1}",
+    "inline": true
+  },
+  {
+    "id": "F095",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{8}\\frac{k^{2}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F096",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{9}\\frac{k^{3}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F097",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{10}\\frac{k^{4}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F098",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{11}\\frac{k^{1}}{k+1}",
+    "inline": true
+  },
+  {
+    "id": "F099",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{12}\\frac{k^{2}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F100",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{13}\\frac{k^{3}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F101",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{14}\\frac{k^{4}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F102",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{15}\\frac{k^{1}}{k+1}",
+    "inline": true
+  },
+  {
+    "id": "F103",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{16}\\frac{k^{2}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F104",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{17}\\frac{k^{3}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F105",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{18}\\frac{k^{4}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F106",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{19}\\frac{k^{1}}{k+1}",
+    "inline": true
+  },
+  {
+    "id": "F107",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{20}\\frac{k^{2}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F108",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{21}\\frac{k^{3}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F109",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{22}\\frac{k^{4}}{k+1}",
+    "inline": false
+  },
+  {
+    "id": "F110",
+    "group": "operator",
+    "tex": "\\sum_{k=1}^{23}\\frac{k^{1}}{k+1}",
+    "inline": true
+  },
+  {
+    "id": "F111",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}1&x\\\\y&2\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F112",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}2&x\\\\y&3\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F113",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}3&x\\\\y&4\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F114",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}4&x\\\\y&5\\end{pmatrix}",
+    "inline": true
+  },
+  {
+    "id": "F115",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}5&x\\\\y&6\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F116",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}6&x\\\\y&7\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F117",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}7&x\\\\y&8\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F118",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}8&x\\\\y&9\\end{pmatrix}",
+    "inline": true
+  },
+  {
+    "id": "F119",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}9&x\\\\y&10\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F120",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}10&x\\\\y&11\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F121",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}11&x\\\\y&12\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F122",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}12&x\\\\y&13\\end{pmatrix}",
+    "inline": true
+  },
+  {
+    "id": "F123",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}13&x\\\\y&14\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F124",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}14&x\\\\y&15\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F125",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}15&x\\\\y&16\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F126",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}16&x\\\\y&17\\end{pmatrix}",
+    "inline": true
+  },
+  {
+    "id": "F127",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}17&x\\\\y&18\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F128",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}18&x\\\\y&19\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F129",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}19&x\\\\y&20\\end{pmatrix}",
+    "inline": false
+  },
+  {
+    "id": "F130",
+    "group": "matrix",
+    "tex": "\\begin{pmatrix}20&x\\\\y&21\\end{pmatrix}",
+    "inline": true
+  },
+  {
+    "id": "F131",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}1&1&x\\\\0&2&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F132",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}2&1&x\\\\0&3&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F133",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}3&1&x\\\\0&4&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F134",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}4&1&x\\\\0&5&y\\end{array}\\right]",
+    "inline": true
+  },
+  {
+    "id": "F135",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}5&1&x\\\\0&6&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F136",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}6&1&x\\\\0&7&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F137",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}7&1&x\\\\0&8&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F138",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}8&1&x\\\\0&9&y\\end{array}\\right]",
+    "inline": true
+  },
+  {
+    "id": "F139",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}9&1&x\\\\0&10&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F140",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}10&1&x\\\\0&11&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F141",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}11&1&x\\\\0&12&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F142",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}12&1&x\\\\0&13&y\\end{array}\\right]",
+    "inline": true
+  },
+  {
+    "id": "F143",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}13&1&x\\\\0&14&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F144",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}14&1&x\\\\0&15&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F145",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}15&1&x\\\\0&16&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F146",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}16&1&x\\\\0&17&y\\end{array}\\right]",
+    "inline": true
+  },
+  {
+    "id": "F147",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}17&1&x\\\\0&18&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F148",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}18&1&x\\\\0&19&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F149",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}19&1&x\\\\0&20&y\\end{array}\\right]",
+    "inline": false
+  },
+  {
+    "id": "F150",
+    "group": "array-lines",
+    "tex": "\\left[\\begin{array}{cc|c}20&1&x\\\\0&21&y\\end{array}\\right]",
+    "inline": true
+  },
+  {
+    "id": "F151",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{1}(x)&=x^2+1\\\\f_{1}(0)&=1\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F152",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{2}(x)&=x^2+2\\\\f_{2}(0)&=2\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F153",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{3}(x)&=x^2+3\\\\f_{3}(0)&=3\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F154",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{4}(x)&=x^2+4\\\\f_{4}(0)&=4\\end{aligned}",
+    "inline": true
+  },
+  {
+    "id": "F155",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{5}(x)&=x^2+5\\\\f_{5}(0)&=5\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F156",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{6}(x)&=x^2+6\\\\f_{6}(0)&=6\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F157",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{7}(x)&=x^2+7\\\\f_{7}(0)&=7\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F158",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{8}(x)&=x^2+8\\\\f_{8}(0)&=8\\end{aligned}",
+    "inline": true
+  },
+  {
+    "id": "F159",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{9}(x)&=x^2+9\\\\f_{9}(0)&=9\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F160",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{10}(x)&=x^2+10\\\\f_{10}(0)&=10\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F161",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{11}(x)&=x^2+11\\\\f_{11}(0)&=11\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F162",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{12}(x)&=x^2+12\\\\f_{12}(0)&=12\\end{aligned}",
+    "inline": true
+  },
+  {
+    "id": "F163",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{13}(x)&=x^2+13\\\\f_{13}(0)&=13\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F164",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{14}(x)&=x^2+14\\\\f_{14}(0)&=14\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F165",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{15}(x)&=x^2+15\\\\f_{15}(0)&=15\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F166",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{16}(x)&=x^2+16\\\\f_{16}(0)&=16\\end{aligned}",
+    "inline": true
+  },
+  {
+    "id": "F167",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{17}(x)&=x^2+17\\\\f_{17}(0)&=17\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F168",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{18}(x)&=x^2+18\\\\f_{18}(0)&=18\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F169",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{19}(x)&=x^2+19\\\\f_{19}(0)&=19\\end{aligned}",
+    "inline": false
+  },
+  {
+    "id": "F170",
+    "group": "ams",
+    "tex": "\\begin{aligned}f_{20}(x)&=x^2+20\\\\f_{20}(0)&=20\\end{aligned}",
+    "inline": true
+  },
+  {
+    "id": "F171",
+    "group": "accent",
+    "tex": "\\widehat{x_{1}}+\\overline{y_{1}}+\\vec{v}_{1}",
+    "inline": false
+  },
+  {
+    "id": "F172",
+    "group": "accent",
+    "tex": "\\widehat{x_{2}}+\\overline{y_{2}}+\\vec{v}_{2}",
+    "inline": false
+  },
+  {
+    "id": "F173",
+    "group": "accent",
+    "tex": "\\widehat{x_{3}}+\\overline{y_{3}}+\\vec{v}_{3}",
+    "inline": false
+  },
+  {
+    "id": "F174",
+    "group": "accent",
+    "tex": "\\widehat{x_{4}}+\\overline{y_{4}}+\\vec{v}_{4}",
+    "inline": true
+  },
+  {
+    "id": "F175",
+    "group": "accent",
+    "tex": "\\widehat{x_{5}}+\\overline{y_{5}}+\\vec{v}_{5}",
+    "inline": false
+  },
+  {
+    "id": "F176",
+    "group": "accent",
+    "tex": "\\widehat{x_{6}}+\\overline{y_{6}}+\\vec{v}_{6}",
+    "inline": false
+  },
+  {
+    "id": "F177",
+    "group": "accent",
+    "tex": "\\widehat{x_{7}}+\\overline{y_{7}}+\\vec{v}_{7}",
+    "inline": false
+  },
+  {
+    "id": "F178",
+    "group": "accent",
+    "tex": "\\widehat{x_{8}}+\\overline{y_{8}}+\\vec{v}_{8}",
+    "inline": true
+  },
+  {
+    "id": "F179",
+    "group": "accent",
+    "tex": "\\widehat{x_{9}}+\\overline{y_{9}}+\\vec{v}_{9}",
+    "inline": false
+  },
+  {
+    "id": "F180",
+    "group": "accent",
+    "tex": "\\widehat{x_{10}}+\\overline{y_{10}}+\\vec{v}_{10}",
+    "inline": false
+  },
+  {
+    "id": "F181",
+    "group": "accent",
+    "tex": "\\widehat{x_{11}}+\\overline{y_{11}}+\\vec{v}_{11}",
+    "inline": false
+  },
+  {
+    "id": "F182",
+    "group": "accent",
+    "tex": "\\widehat{x_{12}}+\\overline{y_{12}}+\\vec{v}_{12}",
+    "inline": true
+  },
+  {
+    "id": "F183",
+    "group": "accent",
+    "tex": "\\widehat{x_{13}}+\\overline{y_{13}}+\\vec{v}_{13}",
+    "inline": false
+  },
+  {
+    "id": "F184",
+    "group": "accent",
+    "tex": "\\widehat{x_{14}}+\\overline{y_{14}}+\\vec{v}_{14}",
+    "inline": false
+  },
+  {
+    "id": "F185",
+    "group": "accent",
+    "tex": "\\widehat{x_{15}}+\\overline{y_{15}}+\\vec{v}_{15}",
+    "inline": false
+  },
+  {
+    "id": "F186",
+    "group": "accent",
+    "tex": "\\widehat{x_{16}}+\\overline{y_{16}}+\\vec{v}_{16}",
+    "inline": true
+  },
+  {
+    "id": "F187",
+    "group": "accent",
+    "tex": "\\widehat{x_{17}}+\\overline{y_{17}}+\\vec{v}_{17}",
+    "inline": false
+  },
+  {
+    "id": "F188",
+    "group": "accent",
+    "tex": "\\widehat{x_{18}}+\\overline{y_{18}}+\\vec{v}_{18}",
+    "inline": false
+  },
+  {
+    "id": "F189",
+    "group": "accent",
+    "tex": "\\widehat{x_{19}}+\\overline{y_{19}}+\\vec{v}_{19}",
+    "inline": false
+  },
+  {
+    "id": "F190",
+    "group": "accent",
+    "tex": "\\widehat{x_{20}}+\\overline{y_{20}}+\\vec{v}_{20}",
+    "inline": true
+  },
+  {
+    "id": "F191",
+    "group": "cjk",
+    "tex": "\\text{面积1}=\\pi r_{1}^2",
+    "inline": false
+  },
+  {
+    "id": "F192",
+    "group": "cjk",
+    "tex": "\\text{面积2}=\\pi r_{2}^2",
+    "inline": false
+  },
+  {
+    "id": "F193",
+    "group": "cjk",
+    "tex": "\\text{面积3}=\\pi r_{3}^2",
+    "inline": false
+  },
+  {
+    "id": "F194",
+    "group": "cjk",
+    "tex": "\\text{面积4}=\\pi r_{4}^2",
+    "inline": true
+  },
+  {
+    "id": "F195",
+    "group": "cjk",
+    "tex": "\\text{面积5}=\\pi r_{5}^2",
+    "inline": false
+  },
+  {
+    "id": "F196",
+    "group": "cjk",
+    "tex": "\\text{面积6}=\\pi r_{6}^2",
+    "inline": false
+  },
+  {
+    "id": "F197",
+    "group": "cjk",
+    "tex": "\\text{面积7}=\\pi r_{7}^2",
+    "inline": false
+  },
+  {
+    "id": "F198",
+    "group": "cjk",
+    "tex": "\\text{面积8}=\\pi r_{8}^2",
+    "inline": true
+  },
+  {
+    "id": "F199",
+    "group": "cjk",
+    "tex": "\\text{面积9}=\\pi r_{9}^2",
+    "inline": false
+  },
+  {
+    "id": "F200",
+    "group": "cjk",
+    "tex": "\\text{面积10}=\\pi r_{10}^2",
+    "inline": false
+  },
+  {
+    "id": "F201",
+    "group": "cjk",
+    "tex": "\\text{面积11}=\\pi r_{11}^2",
+    "inline": false
+  },
+  {
+    "id": "F202",
+    "group": "cjk",
+    "tex": "\\text{面积12}=\\pi r_{12}^2",
+    "inline": true
+  },
+  {
+    "id": "F203",
+    "group": "cjk",
+    "tex": "\\text{面积13}=\\pi r_{13}^2",
+    "inline": false
+  },
+  {
+    "id": "F204",
+    "group": "cjk",
+    "tex": "\\text{面积14}=\\pi r_{14}^2",
+    "inline": false
+  },
+  {
+    "id": "F205",
+    "group": "cjk",
+    "tex": "\\text{面积15}=\\pi r_{15}^2",
+    "inline": false
+  },
+  {
+    "id": "F206",
+    "group": "cjk",
+    "tex": "\\text{面积16}=\\pi r_{16}^2",
+    "inline": true
+  },
+  {
+    "id": "F207",
+    "group": "cjk",
+    "tex": "\\text{面积17}=\\pi r_{17}^2",
+    "inline": false
+  },
+  {
+    "id": "F208",
+    "group": "cjk",
+    "tex": "\\text{面积18}=\\pi r_{18}^2",
+    "inline": false
+  },
+  {
+    "id": "F209",
+    "group": "cjk",
+    "tex": "\\text{面积19}=\\pi r_{19}^2",
+    "inline": false
+  },
+  {
+    "id": "F210",
+    "group": "cjk",
+    "tex": "\\text{面积20}=\\pi r_{20}^2",
+    "inline": true
+  },
+  {
+    "id": "BAD01",
+    "group": "invalid",
+    "tex": "\\frac{1}{",
+    "fail": true
+  },
+  {
+    "id": "BAD02",
+    "group": "invalid",
+    "tex": "\\sqrt{",
+    "fail": true
+  },
+  {
+    "id": "BAD03",
+    "group": "invalid",
+    "tex": "\\begin{matrix}x",
+    "fail": true
+  },
+  {
+    "id": "BAD04",
+    "group": "invalid",
+    "tex": "\\notarealcommand{x}",
+    "fail": true
+  },
+  {
+    "id": "BAD05",
+    "group": "invalid",
+    "tex": "\\left(",
+    "fail": true
+  },
+  {
+    "id": "BAD06",
+    "group": "invalid",
+    "tex": "x^",
+    "fail": true
+  },
+  {
+    "id": "BAD07",
+    "group": "invalid",
+    "tex": "\\end{matrix}",
+    "fail": true
+  },
+  {
+    "id": "BAD08",
+    "group": "invalid",
+    "tex": "\\begin{unknown}x\\end{unknown}",
+    "fail": true
+  },
+  {
+    "id": "BAD09",
+    "group": "invalid",
+    "tex": "\\frac{a}",
+    "fail": true
+  },
+  {
+    "id": "BAD10",
+    "group": "invalid",
+    "tex": "\\begin{array}{cc}a&b",
+    "fail": true
+  }
+]

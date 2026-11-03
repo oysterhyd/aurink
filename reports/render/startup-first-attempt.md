@@ -1,0 +1,3 @@
+# First real-window startup attempt
+
+The initial run used the default two-second service timeout. Start failed after 2000.909 ms (the first Render call took 2002.414 ms) with `unavailable: render.Start: timeout: webviewhost.Start: context deadline exceeded`. The one-minute failed-start cooldown then returned `CodeUnavailable` for the remaining requests, so that run did not produce valid corpus or budget measurements. The page was not measured as ready and the cause of that single startup timeout was not determined. The next fresh process succeeded; its raw data are retained separately as `results-second-run.json`. Subsequent runs do not erase this observation.

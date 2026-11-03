@@ -1,0 +1,3785 @@
+{
+  "Platform": "windows/amd64",
+  "Go": "go1.27.3",
+  "ColdStartMS": 908.8305,
+  "RestartMS": 402.6742,
+  "Formulas": [
+    {
+      "id": "F01",
+      "format": "svg",
+      "uncached_ms": 934.7323,
+      "cached_ms": 0.0015936,
+      "Width": 22,
+      "Height": 42,
+      "Ascent": 25.26125,
+      "Scale": 1,
+      "pixels": {
+        "X": 22,
+        "Y": 42
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F02",
+      "format": "svg",
+      "uncached_ms": 6.4146,
+      "cached_ms": 0.0020299,
+      "Width": 69,
+      "Height": 57,
+      "Ascent": 30.35,
+      "Scale": 1,
+      "pixels": {
+        "X": 69,
+        "Y": 57
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F03",
+      "format": "svg",
+      "uncached_ms": 8.3121,
+      "cached_ms": 0.0021206,
+      "parse_ms": 0.5195,
+      "Width": 208,
+      "Height": 53,
+      "Ascent": 37.15625,
+      "Scale": 1,
+      "pixels": {
+        "X": 208,
+        "Y": 53
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F04",
+      "format": "svg",
+      "uncached_ms": 7.4165,
+      "cached_ms": 0.0023918,
+      "parse_ms": 1.0232,
+      "Width": 182,
+      "Height": 55,
+      "Ascent": 32.78,
+      "Scale": 1,
+      "pixels": {
+        "X": 182,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F05",
+      "format": "svg",
+      "uncached_ms": 4.1315,
+      "cached_ms": 0.0026232,
+      "Width": 36,
+      "Height": 48,
+      "Ascent": 31.469585,
+      "Scale": 1,
+      "pixels": {
+        "X": 36,
+        "Y": 48
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F06",
+      "format": "svg",
+      "uncached_ms": 2.5893,
+      "cached_ms": 0.0015290999999999998,
+      "Width": 95,
+      "Height": 29,
+      "Ascent": 23.81,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 29
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F07",
+      "format": "svg",
+      "uncached_ms": 5.4344,
+      "cached_ms": 0.0010059000000000001,
+      "Width": 72,
+      "Height": 24,
+      "Ascent": 21.879168,
+      "Scale": 1,
+      "pixels": {
+        "X": 72,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F08",
+      "format": "svg",
+      "uncached_ms": 4.7498,
+      "cached_ms": 0.0010497,
+      "Width": 134,
+      "Height": 43,
+      "Ascent": 34.212917,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F09",
+      "format": "svg",
+      "uncached_ms": 5.2465,
+      "cached_ms": 0.0010073,
+      "Width": 83,
+      "Height": 56,
+      "Ascent": 37.92625,
+      "Scale": 1,
+      "pixels": {
+        "X": 83,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F10",
+      "format": "svg",
+      "uncached_ms": 7.0802,
+      "cached_ms": 0.0020478999999999996,
+      "parse_ms": 0.5181,
+      "Width": 169,
+      "Height": 64,
+      "Ascent": 35.34125,
+      "Scale": 1,
+      "pixels": {
+        "X": 169,
+        "Y": 64
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F11",
+      "format": "svg",
+      "uncached_ms": 4.6007,
+      "cached_ms": 0.0021006,
+      "Width": 123,
+      "Height": 64,
+      "Ascent": 35.34125,
+      "Scale": 1,
+      "pixels": {
+        "X": 123,
+        "Y": 64
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F12",
+      "format": "svg",
+      "uncached_ms": 4.1715,
+      "cached_ms": 0.0015577000000000002,
+      "Width": 95,
+      "Height": 64,
+      "Ascent": 35.349586,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 64
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F13",
+      "format": "svg",
+      "uncached_ms": 5.1967,
+      "cached_ms": 0.0016121,
+      "parse_ms": 0.5104,
+      "Width": 140,
+      "Height": 56,
+      "Ascent": 35.265835,
+      "Scale": 1,
+      "pixels": {
+        "X": 140,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F14",
+      "format": "svg",
+      "uncached_ms": 5.1946,
+      "cached_ms": 0.0020513,
+      "parse_ms": 0.5252,
+      "Width": 179,
+      "Height": 54,
+      "Ascent": 31.680836,
+      "Scale": 1,
+      "pixels": {
+        "X": 179,
+        "Y": 54
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F15",
+      "format": "svg",
+      "uncached_ms": 3.555,
+      "cached_ms": 0.002781,
+      "Width": 163,
+      "Height": 52,
+      "Ascent": 30.7825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 52
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F16",
+      "format": "svg",
+      "uncached_ms": 4.359,
+      "cached_ms": 0.0010074,
+      "Width": 86,
+      "Height": 52,
+      "Ascent": 30.786669,
+      "Scale": 1,
+      "pixels": {
+        "X": 86,
+        "Y": 52
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F17",
+      "format": "svg",
+      "uncached_ms": 6.7484,
+      "cached_ms": 0.0016481,
+      "Width": 80,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 80,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F18",
+      "format": "svg",
+      "uncached_ms": 6.8069,
+      "cached_ms": 0.0021078,
+      "Width": 110,
+      "Height": 86,
+      "Ascent": 48.63875,
+      "Scale": 1,
+      "pixels": {
+        "X": 110,
+        "Y": 86
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F19",
+      "format": "svg",
+      "uncached_ms": 5.3046,
+      "cached_ms": 0.0015787,
+      "Width": 163,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F20",
+      "format": "svg",
+      "uncached_ms": 5.2559,
+      "cached_ms": 0.0010313000000000002,
+      "Width": 105,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 105,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F21",
+      "format": "svg",
+      "uncached_ms": 4.1956,
+      "cached_ms": 0.0017334,
+      "parse_ms": 0.4255,
+      "Width": 93,
+      "Height": 53,
+      "Ascent": 31.67125,
+      "Scale": 1,
+      "pixels": {
+        "X": 93,
+        "Y": 53
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F22",
+      "format": "svg",
+      "uncached_ms": 3.1417,
+      "cached_ms": 0.0015601,
+      "Width": 94,
+      "Height": 53,
+      "Ascent": 31.67125,
+      "Scale": 1,
+      "pixels": {
+        "X": 94,
+        "Y": 53
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F23",
+      "format": "svg",
+      "uncached_ms": 3.8945,
+      "cached_ms": 0.0015106,
+      "Width": 93,
+      "Height": 53,
+      "Ascent": 31.67125,
+      "Scale": 1,
+      "pixels": {
+        "X": 93,
+        "Y": 53
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F24",
+      "format": "svg",
+      "uncached_ms": 4.6185,
+      "Width": 198,
+      "Height": 55,
+      "Ascent": 32.790836,
+      "Scale": 1,
+      "pixels": {
+        "X": 198,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F25",
+      "format": "svg",
+      "uncached_ms": 6.5792,
+      "cached_ms": 0.0010006,
+      "Width": 94,
+      "Height": 30,
+      "Ascent": 19.995,
+      "Scale": 1,
+      "pixels": {
+        "X": 94,
+        "Y": 30
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F26",
+      "format": "svg",
+      "uncached_ms": 2.8211,
+      "Width": 27,
+      "Height": 31,
+      "Ascent": 20.439585,
+      "Scale": 1,
+      "pixels": {
+        "X": 27,
+        "Y": 31
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F27",
+      "format": "svg",
+      "uncached_ms": 0,
+      "Width": 35,
+      "Height": 27,
+      "Ascent": 20.164167,
+      "Scale": 1,
+      "pixels": {
+        "X": 35,
+        "Y": 27
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F28",
+      "format": "svg",
+      "uncached_ms": 12.5987,
+      "cached_ms": 0.0010049999999999998,
+      "Width": 133,
+      "Height": 48,
+      "Ascent": 30.429169,
+      "Scale": 1,
+      "pixels": {
+        "X": 133,
+        "Y": 48
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F29",
+      "format": "svg",
+      "uncached_ms": 5.6518,
+      "Width": 162,
+      "Height": 46,
+      "Ascent": 13.189586,
+      "Scale": 1,
+      "pixels": {
+        "X": 162,
+        "Y": 46
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F30",
+      "format": "svg",
+      "uncached_ms": 10.4902,
+      "cached_ms": 0.001056,
+      "parse_ms": 0.5275,
+      "Width": 108,
+      "Height": 43,
+      "Ascent": 41.067085,
+      "Scale": 1,
+      "pixels": {
+        "X": 108,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F31",
+      "format": "svg",
+      "uncached_ms": 4.6864,
+      "cached_ms": 0.0010062,
+      "Width": 168,
+      "Height": 28,
+      "Ascent": 22.932919,
+      "Scale": 1,
+      "pixels": {
+        "X": 168,
+        "Y": 28
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F32",
+      "format": "svg",
+      "uncached_ms": 6.5635,
+      "cached_ms": 0.0020072,
+      "Width": 114,
+      "Height": 32,
+      "Ascent": 27.255835,
+      "Scale": 1,
+      "pixels": {
+        "X": 114,
+        "Y": 32
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F33",
+      "format": "svg",
+      "uncached_ms": 4.0001,
+      "cached_ms": 0.0020192,
+      "Width": 97,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 97,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F34",
+      "format": "svg",
+      "uncached_ms": 4.0153,
+      "cached_ms": 0.0024314,
+      "Width": 167,
+      "Height": 28,
+      "Ascent": 19.99625,
+      "Scale": 1,
+      "pixels": {
+        "X": 167,
+        "Y": 28
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F35",
+      "format": "svg",
+      "uncached_ms": 3.6555,
+      "cached_ms": 0.0016042,
+      "parse_ms": 0.5214,
+      "Width": 228,
+      "Height": 22,
+      "Ascent": 16.195,
+      "Scale": 1,
+      "pixels": {
+        "X": 228,
+        "Y": 22
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F36",
+      "format": "svg",
+      "uncached_ms": 3.1247,
+      "cached_ms": 0.0010366,
+      "parse_ms": 0.5314,
+      "Width": 176,
+      "Height": 22,
+      "Ascent": 19.98375,
+      "Scale": 1,
+      "pixels": {
+        "X": 176,
+        "Y": 22
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F37",
+      "format": "svg",
+      "uncached_ms": 4.6155,
+      "cached_ms": 0.0020794000000000003,
+      "parse_ms": 0.541,
+      "Width": 132,
+      "Height": 47,
+      "Ascent": 30.989586,
+      "Scale": 1,
+      "pixels": {
+        "X": 132,
+        "Y": 47
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F38",
+      "format": "svg",
+      "uncached_ms": 4.7276,
+      "cached_ms": 0.0015476,
+      "Width": 122,
+      "Height": 29,
+      "Ascent": 28.40625,
+      "Scale": 1,
+      "pixels": {
+        "X": 122,
+        "Y": 29
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F39",
+      "format": "svg",
+      "uncached_ms": 3.0999,
+      "cached_ms": 0.0016271,
+      "Width": 240,
+      "Height": 21,
+      "Ascent": 15.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 240,
+        "Y": 21
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F40",
+      "format": "svg",
+      "uncached_ms": 3.1516,
+      "cached_ms": 0.0017906,
+      "Width": 158,
+      "Height": 18,
+      "Ascent": 15.692084,
+      "Scale": 1,
+      "pixels": {
+        "X": 158,
+        "Y": 18
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F41",
+      "format": "svg",
+      "uncached_ms": 3.142,
+      "cached_ms": 0.0015641000000000001,
+      "Width": 243,
+      "Height": 22,
+      "Ascent": 16.192083,
+      "Scale": 1,
+      "pixels": {
+        "X": 243,
+        "Y": 22
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F42",
+      "format": "svg",
+      "uncached_ms": 3.1276,
+      "cached_ms": 0.0016619,
+      "Width": 199,
+      "Height": 25,
+      "Ascent": 19.995419,
+      "Scale": 1,
+      "pixels": {
+        "X": 199,
+        "Y": 25
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F43",
+      "format": "svg",
+      "uncached_ms": 3.7808,
+      "cached_ms": 0.0015746,
+      "Width": 113,
+      "Height": 45,
+      "Ascent": 25.282085,
+      "Scale": 1,
+      "pixels": {
+        "X": 113,
+        "Y": 45
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F44",
+      "format": "svg",
+      "uncached_ms": 3.68,
+      "cached_ms": 0.0021013,
+      "Width": 267,
+      "Height": 55,
+      "Ascent": 33.03,
+      "Scale": 1,
+      "pixels": {
+        "X": 267,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F45",
+      "format": "svg",
+      "uncached_ms": 5.9813,
+      "cached_ms": 0.0042811,
+      "parse_ms": 0.5256,
+      "Width": 362,
+      "Height": 64,
+      "Ascent": 35.34125,
+      "Scale": 1,
+      "pixels": {
+        "X": 362,
+        "Y": 64
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F46",
+      "format": "svg",
+      "uncached_ms": 2.1295,
+      "cached_ms": 0.0010474000000000002,
+      "parse_ms": 0.5235,
+      "Width": 105,
+      "Height": 22,
+      "Ascent": 19.98375,
+      "Scale": 1,
+      "pixels": {
+        "X": 105,
+        "Y": 22
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F47",
+      "format": "svg",
+      "uncached_ms": 3.2221,
+      "cached_ms": 0.0010573,
+      "Width": 107,
+      "Height": 23,
+      "Ascent": 16.954584,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 23
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F48",
+      "format": "png",
+      "uncached_ms": 34.989,
+      "cached_ms": 0.0005135,
+      "Width": 40,
+      "Height": 22,
+      "Ascent": 16.969584,
+      "Scale": 1,
+      "pixels": {
+        "X": 40,
+        "Y": 22
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F49",
+      "format": "png",
+      "uncached_ms": 11.084,
+      "cached_ms": 0.0010476,
+      "Width": 104,
+      "Height": 25,
+      "Ascent": 19.990417,
+      "Scale": 1,
+      "pixels": {
+        "X": 104,
+        "Y": 25
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F50",
+      "format": "png",
+      "uncached_ms": 10.019,
+      "cached_ms": 0.0010446,
+      "parse_ms": 0.5289,
+      "Width": 131,
+      "Height": 55,
+      "Ascent": 32.790836,
+      "Scale": 1,
+      "pixels": {
+        "X": 131,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F051",
+      "format": "svg",
+      "uncached_ms": 2.6312,
+      "cached_ms": 0.0010482,
+      "parse_ms": 0.5195,
+      "Width": 74,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 74,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F052",
+      "format": "svg",
+      "uncached_ms": 3.1296,
+      "cached_ms": 0.0015581,
+      "Width": 74,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 74,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F053",
+      "format": "svg",
+      "uncached_ms": 2.7123,
+      "cached_ms": 0.0015457000000000001,
+      "Width": 74,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 74,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F054",
+      "format": "svg",
+      "uncached_ms": 3.091,
+      "cached_ms": 0.0015817000000000001,
+      "Width": 48,
+      "Height": 31,
+      "Ascent": 19.836668,
+      "Scale": 1,
+      "pixels": {
+        "X": 48,
+        "Y": 31
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F055",
+      "format": "svg",
+      "uncached_ms": 3.1329,
+      "cached_ms": 0.0010417,
+      "Width": 74,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 74,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F056",
+      "format": "svg",
+      "uncached_ms": 3.2401,
+      "cached_ms": 0.0015687,
+      "Width": 74,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 74,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F057",
+      "format": "svg",
+      "uncached_ms": 2.7059,
+      "cached_ms": 0.0015741000000000002,
+      "parse_ms": 0.5238,
+      "Width": 74,
+      "Height": 51,
+      "Ascent": 30.59,
+      "Scale": 1,
+      "pixels": {
+        "X": 74,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F058",
+      "format": "svg",
+      "uncached_ms": 3.1347,
+      "cached_ms": 0.001564,
+      "Width": 48,
+      "Height": 31,
+      "Ascent": 19.659584,
+      "Scale": 1,
+      "pixels": {
+        "X": 48,
+        "Y": 31
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F059",
+      "format": "svg",
+      "uncached_ms": 2.6568,
+      "cached_ms": 0.0011056999999999998,
+      "Width": 83,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 83,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F060",
+      "format": "svg",
+      "uncached_ms": 2.5296,
+      "parse_ms": 1.005,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F061",
+      "format": "svg",
+      "uncached_ms": 3.9065,
+      "cached_ms": 0.0020004,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F062",
+      "format": "svg",
+      "uncached_ms": 2.5139,
+      "cached_ms": 0.0022634,
+      "Width": 56,
+      "Height": 31,
+      "Ascent": 19.659584,
+      "Scale": 1,
+      "pixels": {
+        "X": 56,
+        "Y": 31
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F063",
+      "format": "svg",
+      "uncached_ms": 1.0009,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F064",
+      "format": "svg",
+      "uncached_ms": 7.0305,
+      "cached_ms": 0.0010458000000000002,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.600418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F065",
+      "format": "svg",
+      "uncached_ms": 2.5994,
+      "cached_ms": 0.0015860000000000002,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F066",
+      "format": "svg",
+      "uncached_ms": 3.2026,
+      "cached_ms": 0.0015701,
+      "Width": 56,
+      "Height": 31,
+      "Ascent": 19.659584,
+      "Scale": 1,
+      "pixels": {
+        "X": 56,
+        "Y": 31
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F067",
+      "format": "svg",
+      "uncached_ms": 2.6121,
+      "cached_ms": 0.0015798000000000001,
+      "parse_ms": 0.5332,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.59,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F068",
+      "format": "svg",
+      "uncached_ms": 2.592,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F069",
+      "format": "svg",
+      "uncached_ms": 2.0118,
+      "cached_ms": 0.0015052000000000002,
+      "Width": 85,
+      "Height": 51,
+      "Ascent": 30.350418,
+      "Scale": 1,
+      "pixels": {
+        "X": 85,
+        "Y": 51
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F070",
+      "format": "svg",
+      "uncached_ms": 1.5453,
+      "cached_ms": 0.0028049,
+      "Width": 56,
+      "Height": 31,
+      "Ascent": 19.659584,
+      "Scale": 1,
+      "pixels": {
+        "X": 56,
+        "Y": 31
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F071",
+      "format": "svg",
+      "uncached_ms": 4.0932,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.53625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F072",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0059549,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.53625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F073",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.004602299999999999,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F074",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0015263,
+      "Width": 92,
+      "Height": 43,
+      "Ascent": 29.122917,
+      "Scale": 1,
+      "pixels": {
+        "X": 92,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F075",
+      "format": "svg",
+      "uncached_ms": 0,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F076",
+      "format": "svg",
+      "uncached_ms": 6.6928,
+      "cached_ms": 0.0010536,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F077",
+      "format": "svg",
+      "uncached_ms": 2.5962,
+      "cached_ms": 0.0010507,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F078",
+      "format": "svg",
+      "uncached_ms": 2.5937,
+      "cached_ms": 0.0010889,
+      "Width": 92,
+      "Height": 43,
+      "Ascent": 28.942919,
+      "Scale": 1,
+      "pixels": {
+        "X": 92,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F079",
+      "format": "svg",
+      "uncached_ms": 3.1973,
+      "cached_ms": 0.0010261,
+      "Width": 95,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 95,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F080",
+      "format": "svg",
+      "uncached_ms": 0,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F081",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.009023199999999999,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.53625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F082",
+      "format": "svg",
+      "uncached_ms": 2.0484,
+      "Width": 100,
+      "Height": 43,
+      "Ascent": 29.122917,
+      "Scale": 1,
+      "pixels": {
+        "X": 100,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F083",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0022214,
+      "parse_ms": 3.6217,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F084",
+      "format": "svg",
+      "uncached_ms": 2.5129,
+      "cached_ms": 0.0009995,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.53625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F085",
+      "format": "svg",
+      "uncached_ms": 3.0006,
+      "cached_ms": 0.0025107,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F086",
+      "format": "svg",
+      "uncached_ms": 2.5184,
+      "cached_ms": 0.0010944000000000001,
+      "Width": 100,
+      "Height": 43,
+      "Ascent": 28.942919,
+      "Scale": 1,
+      "pixels": {
+        "X": 100,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F087",
+      "format": "svg",
+      "uncached_ms": 3.5304,
+      "cached_ms": 0.0010051,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F088",
+      "format": "svg",
+      "uncached_ms": 3.0104,
+      "cached_ms": 0.0010106,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F089",
+      "format": "svg",
+      "uncached_ms": 2.5086,
+      "cached_ms": 0.0015681,
+      "Width": 107,
+      "Height": 56,
+      "Ascent": 38.28625,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F090",
+      "format": "svg",
+      "uncached_ms": 3.1149,
+      "cached_ms": 0.00103,
+      "Width": 100,
+      "Height": 43,
+      "Ascent": 28.942919,
+      "Scale": 1,
+      "pixels": {
+        "X": 100,
+        "Y": 43
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F091",
+      "format": "svg",
+      "uncached_ms": 4.0026,
+      "cached_ms": 0.0019993,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 39.11,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F092",
+      "format": "svg",
+      "uncached_ms": 3.1729,
+      "cached_ms": 0.0015725000000000001,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F093",
+      "format": "svg",
+      "uncached_ms": 4.254,
+      "cached_ms": 0.0010027,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F094",
+      "format": "svg",
+      "uncached_ms": 4.0128,
+      "cached_ms": 0.0016634,
+      "Width": 98,
+      "Height": 32,
+      "Ascent": 22.244583,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 32
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F095",
+      "format": "svg",
+      "uncached_ms": 2.9983,
+      "cached_ms": 0.0020695,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F096",
+      "format": "svg",
+      "uncached_ms": 3.4464,
+      "cached_ms": 0.0013623,
+      "parse_ms": 0.5235,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F097",
+      "format": "svg",
+      "uncached_ms": 3.6489,
+      "cached_ms": 0.0010425,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F098",
+      "format": "svg",
+      "uncached_ms": 3.6652,
+      "cached_ms": 0.0015748,
+      "Width": 98,
+      "Height": 32,
+      "Ascent": 22.244583,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 32
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F099",
+      "format": "svg",
+      "uncached_ms": 4.2618,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F100",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.003292,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F101",
+      "format": "svg",
+      "uncached_ms": 2.6203,
+      "cached_ms": 0.0040567,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 39.11,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F102",
+      "format": "svg",
+      "uncached_ms": 3.019,
+      "cached_ms": 0.0020894,
+      "Width": 98,
+      "Height": 32,
+      "Ascent": 22.244583,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 32
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F103",
+      "format": "svg",
+      "uncached_ms": 3.6739,
+      "cached_ms": 0.0010068999999999998,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F104",
+      "format": "svg",
+      "uncached_ms": 5.0152,
+      "cached_ms": 0.004474700000000001,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 39.089172,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F105",
+      "format": "svg",
+      "uncached_ms": 6.6155,
+      "cached_ms": 0.0020889000000000003,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F106",
+      "format": "svg",
+      "uncached_ms": 3.2488,
+      "Width": 98,
+      "Height": 32,
+      "Ascent": 22.244583,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 32
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F107",
+      "format": "svg",
+      "uncached_ms": 5.8645,
+      "cached_ms": 0.003822,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F108",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0032492999999999997,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F109",
+      "format": "svg",
+      "uncached_ms": 3.0469,
+      "cached_ms": 0.0043531,
+      "Width": 98,
+      "Height": 68,
+      "Ascent": 38.9225,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 68
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F110",
+      "format": "svg",
+      "uncached_ms": 4.077,
+      "cached_ms": 0.0020374,
+      "Width": 98,
+      "Height": 32,
+      "Ascent": 22.244583,
+      "Scale": 1,
+      "pixels": {
+        "X": 98,
+        "Y": 32
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F111",
+      "format": "svg",
+      "uncached_ms": 5.9825,
+      "parse_ms": 0.321,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F112",
+      "format": "svg",
+      "uncached_ms": 6.8335,
+      "cached_ms": 0.0010038,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F113",
+      "format": "svg",
+      "uncached_ms": 5.5786,
+      "cached_ms": 0.0020028000000000003,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F114",
+      "format": "svg",
+      "uncached_ms": 2.0053,
+      "cached_ms": 0.0023260999999999998,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F115",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0078427,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F116",
+      "format": "svg",
+      "uncached_ms": 4.5031,
+      "cached_ms": 0.0019992,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F117",
+      "format": "svg",
+      "uncached_ms": 3.6363,
+      "cached_ms": 0.0015076,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F118",
+      "format": "svg",
+      "uncached_ms": 3.1284,
+      "cached_ms": 0.0037094999999999997,
+      "Width": 81,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 81,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F119",
+      "format": "svg",
+      "uncached_ms": 3.3654,
+      "cached_ms": 0.0020012,
+      "parse_ms": 0.541,
+      "Width": 90,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 90,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F120",
+      "format": "svg",
+      "uncached_ms": 4.7716,
+      "cached_ms": 0.0017423,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F121",
+      "format": "svg",
+      "uncached_ms": 5.7658,
+      "cached_ms": 0.0010724,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F122",
+      "format": "svg",
+      "uncached_ms": 3.4342,
+      "cached_ms": 0.0015939,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F123",
+      "format": "svg",
+      "uncached_ms": 3.41,
+      "cached_ms": 0.0015864,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F124",
+      "format": "svg",
+      "uncached_ms": 4.7166,
+      "cached_ms": 0.001514,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F125",
+      "format": "svg",
+      "uncached_ms": 2.6915,
+      "cached_ms": 0.0025099,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F126",
+      "format": "svg",
+      "uncached_ms": 5.0895,
+      "cached_ms": 0.0011595,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F127",
+      "format": "svg",
+      "uncached_ms": 4.1956,
+      "cached_ms": 0.0022496,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F128",
+      "format": "svg",
+      "uncached_ms": 2.5241,
+      "cached_ms": 0.0010003,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F129",
+      "format": "svg",
+      "uncached_ms": 2.566,
+      "cached_ms": 0.0023298999999999998,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F130",
+      "format": "svg",
+      "uncached_ms": 2.1048,
+      "Width": 102,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F131",
+      "format": "svg",
+      "uncached_ms": 6.8103,
+      "cached_ms": 0.0015031,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F132",
+      "format": "svg",
+      "uncached_ms": 2.0074,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F133",
+      "format": "svg",
+      "uncached_ms": 6.6584,
+      "cached_ms": 0.0009993,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F134",
+      "format": "svg",
+      "uncached_ms": 1.9984,
+      "cached_ms": 0.0010045,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F135",
+      "format": "svg",
+      "uncached_ms": 3.5065,
+      "cached_ms": 0.0020013,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F136",
+      "format": "svg",
+      "uncached_ms": 3.3123,
+      "cached_ms": 0.0015833,
+      "parse_ms": 0.5219,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F137",
+      "format": "svg",
+      "uncached_ms": 3.4143,
+      "cached_ms": 0.0015518,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F138",
+      "format": "svg",
+      "uncached_ms": 3.1032,
+      "cached_ms": 0.0010046999999999999,
+      "Width": 107,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 107,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F139",
+      "format": "svg",
+      "uncached_ms": 2.5613,
+      "cached_ms": 0.0020949,
+      "Width": 118,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 118,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F140",
+      "format": "svg",
+      "uncached_ms": 3.2851,
+      "cached_ms": 0.0026819,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F141",
+      "format": "svg",
+      "uncached_ms": 3.1052,
+      "cached_ms": 0.0015068999999999998,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F142",
+      "format": "svg",
+      "uncached_ms": 1.5097,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F143",
+      "format": "svg",
+      "uncached_ms": 6.5112,
+      "cached_ms": 0.0029413,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F144",
+      "format": "svg",
+      "uncached_ms": 3.0896,
+      "cached_ms": 0.0009870999999999999,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F145",
+      "format": "svg",
+      "uncached_ms": 3.0424,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F146",
+      "format": "svg",
+      "uncached_ms": 5.5218,
+      "cached_ms": 0.0026336,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F147",
+      "format": "svg",
+      "uncached_ms": 4.0317,
+      "cached_ms": 0.0010007999999999998,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F148",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0043783,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F149",
+      "format": "svg",
+      "uncached_ms": 2.2047,
+      "cached_ms": 0.0041728,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F150",
+      "format": "svg",
+      "uncached_ms": 3.049,
+      "cached_ms": 0.0015078000000000001,
+      "Width": 129,
+      "Height": 55,
+      "Ascent": 32.801666,
+      "Scale": 1,
+      "pixels": {
+        "X": 129,
+        "Y": 55
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F151",
+      "format": "svg",
+      "uncached_ms": 1.0011,
+      "cached_ms": 0.0057881,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F152",
+      "format": "svg",
+      "uncached_ms": 2.1111,
+      "cached_ms": 0.0025799,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F153",
+      "format": "svg",
+      "uncached_ms": 4.6935,
+      "cached_ms": 0.0021057000000000003,
+      "parse_ms": 0.5302,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F154",
+      "format": "svg",
+      "uncached_ms": 2.6513,
+      "cached_ms": 0.0023187999999999998,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F155",
+      "format": "svg",
+      "uncached_ms": 4.9671,
+      "cached_ms": 0.0030771,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F156",
+      "format": "svg",
+      "uncached_ms": 2.0723,
+      "cached_ms": 0.003649,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F157",
+      "format": "svg",
+      "uncached_ms": 4.8065,
+      "cached_ms": 0.0030751,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F158",
+      "format": "svg",
+      "uncached_ms": 2.3309,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F159",
+      "format": "svg",
+      "uncached_ms": 8.721,
+      "cached_ms": 0.0015604,
+      "parse_ms": 0.5215,
+      "Width": 144,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F160",
+      "format": "svg",
+      "uncached_ms": 4.3846,
+      "cached_ms": 0.0010677,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F161",
+      "format": "svg",
+      "uncached_ms": 4.8816,
+      "cached_ms": 0.0026341999999999997,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F162",
+      "format": "svg",
+      "uncached_ms": 5.8059,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F163",
+      "format": "svg",
+      "uncached_ms": 6.101,
+      "cached_ms": 0.0029011999999999996,
+      "parse_ms": 2.0181,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F164",
+      "format": "svg",
+      "uncached_ms": 4.5675,
+      "cached_ms": 0.0010052000000000001,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F165",
+      "format": "svg",
+      "uncached_ms": 5.5621,
+      "cached_ms": 0.0020078,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F166",
+      "format": "svg",
+      "uncached_ms": 5.283,
+      "cached_ms": 0.0025855,
+      "parse_ms": 0.5263,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F167",
+      "format": "svg",
+      "uncached_ms": 4.1769,
+      "cached_ms": 0.0025078,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F168",
+      "format": "svg",
+      "uncached_ms": 5.5343,
+      "cached_ms": 0.0020072,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F169",
+      "format": "svg",
+      "uncached_ms": 4.5049,
+      "cached_ms": 0.0027841999999999997,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F170",
+      "format": "svg",
+      "uncached_ms": 4.5055,
+      "cached_ms": 0.0030175999999999996,
+      "Width": 163,
+      "Height": 56,
+      "Ascent": 33.1825,
+      "Scale": 1,
+      "pixels": {
+        "X": 163,
+        "Y": 56
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F171",
+      "format": "svg",
+      "uncached_ms": 5.058,
+      "cached_ms": 0.0015646,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F172",
+      "format": "svg",
+      "uncached_ms": 4.1262,
+      "cached_ms": 0.001572,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F173",
+      "format": "svg",
+      "uncached_ms": 3.1368,
+      "cached_ms": 0.0023355000000000003,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F174",
+      "format": "svg",
+      "uncached_ms": 3.6815,
+      "cached_ms": 0.001001,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F175",
+      "format": "svg",
+      "uncached_ms": 3.5995,
+      "cached_ms": 0.0015107999999999999,
+      "parse_ms": 1.0251,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F176",
+      "format": "svg",
+      "uncached_ms": 3.5896,
+      "cached_ms": 0.0018250999999999999,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F177",
+      "format": "svg",
+      "uncached_ms": 3.1323,
+      "cached_ms": 0.001601,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F178",
+      "format": "svg",
+      "uncached_ms": 2.6112,
+      "cached_ms": 0.0005262999999999999,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F179",
+      "format": "svg",
+      "uncached_ms": 3.9708,
+      "cached_ms": 0.0020069,
+      "Width": 120,
+      "Height": 24,
+      "Ascent": 19.318335,
+      "Scale": 1,
+      "pixels": {
+        "X": 120,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F180",
+      "format": "svg",
+      "uncached_ms": 6.2455,
+      "cached_ms": 0.0015723,
+      "parse_ms": 0.5255,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F181",
+      "format": "svg",
+      "uncached_ms": 3.139,
+      "cached_ms": 0.0010296,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F182",
+      "format": "svg",
+      "uncached_ms": 3.1188,
+      "cached_ms": 0.0010096,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F183",
+      "format": "svg",
+      "uncached_ms": 3.013,
+      "cached_ms": 0.0033556,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F184",
+      "format": "svg",
+      "uncached_ms": 0,
+      "cached_ms": 0.0035296,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F185",
+      "format": "svg",
+      "uncached_ms": 3.5311,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F186",
+      "format": "svg",
+      "uncached_ms": 5.5146,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F187",
+      "format": "svg",
+      "uncached_ms": 5.2528,
+      "cached_ms": 0.0025255,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F188",
+      "format": "svg",
+      "uncached_ms": 1.5468,
+      "parse_ms": 2.0133,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F189",
+      "format": "svg",
+      "uncached_ms": 8.1473,
+      "cached_ms": 0.0020448,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F190",
+      "format": "svg",
+      "uncached_ms": 3.5964,
+      "Width": 144,
+      "Height": 24,
+      "Ascent": 19.339169,
+      "Scale": 1,
+      "pixels": {
+        "X": 144,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F191",
+      "format": "png",
+      "uncached_ms": 7.2786,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.993334,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F192",
+      "format": "png",
+      "uncached_ms": 7.7986,
+      "cached_ms": 0.0010467999999999999,
+      "parse_ms": 2.6333,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.993334,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F193",
+      "format": "png",
+      "uncached_ms": 8.4116,
+      "cached_ms": 0.0009025,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F194",
+      "format": "png",
+      "uncached_ms": 10.7368,
+      "cached_ms": 0.0010525,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 18.862083,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F195",
+      "format": "png",
+      "uncached_ms": 7.468,
+      "cached_ms": 0.0016345,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F196",
+      "format": "png",
+      "uncached_ms": 8.5708,
+      "cached_ms": 0.0021135999999999998,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F197",
+      "format": "png",
+      "uncached_ms": 7.0897,
+      "cached_ms": 0.000518,
+      "parse_ms": 0.5256,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F198",
+      "format": "png",
+      "uncached_ms": 8.2247,
+      "cached_ms": 0.0010413,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 18.859167,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F199",
+      "format": "png",
+      "uncached_ms": 8.3652,
+      "cached_ms": 0.0010443,
+      "Width": 115,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 115,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F200",
+      "format": "png",
+      "uncached_ms": 8.5829,
+      "cached_ms": 0.0012758000000000001,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F201",
+      "format": "png",
+      "uncached_ms": 8.0475,
+      "cached_ms": 0.0010475,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.993334,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F202",
+      "format": "png",
+      "uncached_ms": 7.5886,
+      "cached_ms": 0.0015703,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 18.865,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F203",
+      "format": "png",
+      "uncached_ms": 9.2455,
+      "cached_ms": 0.0016174,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F204",
+      "format": "png",
+      "uncached_ms": 10.4881,
+      "cached_ms": 0.001045,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.993334,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F205",
+      "format": "png",
+      "uncached_ms": 8.6441,
+      "cached_ms": 0.0010475,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F206",
+      "format": "png",
+      "uncached_ms": 8.0905,
+      "cached_ms": 0.001616,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 18.859167,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F207",
+      "format": "png",
+      "uncached_ms": 8.5241,
+      "cached_ms": 0.0005641,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F208",
+      "format": "png",
+      "uncached_ms": 8.451,
+      "cached_ms": 0.0015843,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F209",
+      "format": "png",
+      "uncached_ms": 7.4437,
+      "cached_ms": 0.001722,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 19.9975,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "F210",
+      "format": "png",
+      "uncached_ms": 7.0145,
+      "cached_ms": 0.0010623,
+      "Width": 134,
+      "Height": 26,
+      "Ascent": 18.859167,
+      "Scale": 1,
+      "pixels": {
+        "X": 134,
+        "Y": 26
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "BAD01",
+      "expected_failure": true,
+      "uncached_ms": 3.2772,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing close brace"
+    },
+    {
+      "id": "BAD02",
+      "expected_failure": true,
+      "uncached_ms": 1.8853,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing close brace"
+    },
+    {
+      "id": "BAD03",
+      "expected_failure": true,
+      "uncached_ms": 3.7997,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing \\end{matrix}"
+    },
+    {
+      "id": "BAD04",
+      "expected_failure": true,
+      "uncached_ms": 3.0909,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Undefined control sequence \\notarealcommand"
+    },
+    {
+      "id": "BAD05",
+      "expected_failure": true,
+      "uncached_ms": 3.1982,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Extra \\left or missing \\right"
+    },
+    {
+      "id": "BAD06",
+      "expected_failure": true,
+      "uncached_ms": 2.5125,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing superscript or subscript argument"
+    },
+    {
+      "id": "BAD07",
+      "expected_failure": true,
+      "uncached_ms": 2.6446,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing \\begin{matrix} or extra \\end{matrix}"
+    },
+    {
+      "id": "BAD08",
+      "expected_failure": true,
+      "uncached_ms": 2.0692,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Unknown environment 'unknown'"
+    },
+    {
+      "id": "BAD09",
+      "expected_failure": true,
+      "uncached_ms": 2.2108,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing argument for \\frac"
+    },
+    {
+      "id": "BAD10",
+      "expected_failure": true,
+      "uncached_ms": 1.1715,
+      "Width": 0,
+      "Height": 0,
+      "Ascent": 0,
+      "Scale": 0,
+      "pixels": {
+        "X": 0,
+        "Y": 0
+      },
+      "Parsed": false,
+      "Ink": false,
+      "error": "render: render.Render: Missing \\end{array}"
+    }
+  ],
+  "Diagrams": [
+    {
+      "id": "flowchart",
+      "format": "png",
+      "uncached_ms": 112.324,
+      "Width": 487,
+      "Height": 111,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 487,
+        "Y": 111
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "sequence",
+      "format": "png",
+      "uncached_ms": 44.3817,
+      "parse_ms": 0.5286,
+      "Width": 450,
+      "Height": 275,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 450,
+        "Y": 275
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "class",
+      "format": "png",
+      "uncached_ms": 28.0987,
+      "Width": 102,
+      "Height": 238,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 102,
+        "Y": 238
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "state",
+      "format": "png",
+      "uncached_ms": 33.3571,
+      "parse_ms": 0.7373,
+      "Width": 221,
+      "Height": 289,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 221,
+        "Y": 289
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "er",
+      "format": "png",
+      "uncached_ms": 38.5657,
+      "parse_ms": 0.545,
+      "Width": 140,
+      "Height": 465,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 140,
+        "Y": 465
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "pie",
+      "format": "png",
+      "uncached_ms": 54.0273,
+      "parse_ms": 1.6201,
+      "Width": 546,
+      "Height": 450,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 546,
+        "Y": 450
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "cjk",
+      "format": "png",
+      "uncached_ms": 36.8725,
+      "parse_ms": 0.5252,
+      "Width": 156,
+      "Height": 412,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 156,
+        "Y": 412
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "large",
+      "format": "png",
+      "uncached_ms": 84.5941,
+      "parse_ms": 0.5083,
+      "Width": 3533,
+      "Height": 53,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 3533,
+        "Y": 53
+      },
+      "Parsed": true,
+      "Ink": true
+    }
+  ],
+  "PNGChecks": [
+    {
+      "id": "cjk-scale-1",
+      "format": "png",
+      "uncached_ms": 11.3497,
+      "Width": 133,
+      "Height": 24,
+      "Ascent": 18.865417,
+      "Scale": 1,
+      "pixels": {
+        "X": 133,
+        "Y": 24
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "cjk-scale-2",
+      "format": "png",
+      "uncached_ms": 7.2955,
+      "Width": 133,
+      "Height": 23.5,
+      "Ascent": 18.865417,
+      "Scale": 2,
+      "pixels": {
+        "X": 266,
+        "Y": 47
+      },
+      "Parsed": true,
+      "Ink": true
+    }
+  ],
+  "ThemeChecks": [
+    {
+      "id": "colored-svg",
+      "format": "svg",
+      "uncached_ms": 2.0554,
+      "Width": 62,
+      "Height": 21,
+      "Ascent": 18.85875,
+      "Scale": 1,
+      "pixels": {
+        "X": 62,
+        "Y": 21
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "colored-png",
+      "format": "png",
+      "uncached_ms": 10.1052,
+      "Width": 84,
+      "Height": 22,
+      "Ascent": 16.969584,
+      "Scale": 1,
+      "pixels": {
+        "X": 84,
+        "Y": 22
+      },
+      "Parsed": true,
+      "Ink": true
+    },
+    {
+      "id": "dark-diagram",
+      "format": "png",
+      "uncached_ms": 16.3827,
+      "Width": 156,
+      "Height": 53,
+      "Ascent": 0,
+      "Scale": 1,
+      "pixels": {
+        "X": 156,
+        "Y": 53
+      },
+      "Parsed": true,
+      "Ink": true
+    }
+  ],
+  "Uncached": {
+    "count": 210,
+    "P50": 3.68,
+    "P95": 8.6441,
+    "Max": 934.7323
+  },
+  "WithParse": {
+    "count": 210,
+    "P50": 3.9064,
+    "P95": 9.2425,
+    "Max": 934.7323
+  },
+  "Cached": {
+    "count": 210,
+    "P50": 0.0015681,
+    "P95": 0.0040567,
+    "Max": 0.009023199999999999
+  },
+  "Memory": [
+    {
+      "stage": "after_start",
+      "page_process_id": 42564,
+      "webview_processes": 6,
+      "working_set_bytes": 378732544,
+      "private_bytes": 205799424
+    },
+    {
+      "stage": "after_corpus",
+      "page_process_id": 42564,
+      "webview_processes": 6,
+      "working_set_bytes": 533454848,
+      "private_bytes": 345513984
+    },
+    {
+      "stage": "after_idle",
+      "page_process_id": 42564,
+      "webview_processes": 6,
+      "working_set_bytes": 358100992,
+      "private_bytes": 177774592
+    }
+  ],
+  "IdleStopped": true,
+  "NetworkResources": 0,
+  "Failures": null
+}

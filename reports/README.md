@@ -5,6 +5,8 @@ period of Phase 0. They are kept as history and no longer change.
 
 - `parity/` holds the Native screenshots compared with the design baseline.
 - `quality.md` holds the test and performance results of each stage.
+- `render/` holds BE-2.9's real-window run of the render service (`summary.md`,
+  `results.json`, images) and the card's report (`card-report.md`).
 
 Current status and open items are in `docs/05-delivery-plan.md` §6.
 

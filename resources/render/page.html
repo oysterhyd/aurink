@@ -1,0 +1,87 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' data:; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'">
+<style>body{margin:0;font-family:'Segoe UI','Microsoft YaHei',sans-serif}#stage{display:inline-block}svg{overflow:visible}</style>
+<script>
+window.MathJax = {startup:{typeset:false}, svg:{fontCache:'none'},
+  tex:{packages:['base','ams','newcommand','configmacros']}, options:{enableMenu:false}};
+</script>
+<script src="data:text/javascript;base64,{{MATHJAX}}"></script>
+<script src="data:text/javascript;base64,{{MERMAID}}"></script>
+</head><body><div id="stage"></div><script>
+window.aurink = (() => {
+  const stage = document.getElementById('stage');
+  let sequence = 0;
+  const ready = MathJax.startup.promise.then(() => true);
+  function serialize(svg, width, height, color) {
+    const copy = svg.cloneNode(true), rules = svg.querySelectorAll('[data-line]');
+    copy.querySelectorAll('[data-line]').forEach((line, i) => {
+      const css = getComputedStyle(rules[i]);
+      for (const property of ['stroke-width','stroke-dasharray','stroke-linecap'])
+        line.style.setProperty(property, css.getPropertyValue(property));
+    });
+    copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    copy.setAttribute('width', String(width)); copy.setAttribute('height', String(height));
+    copy.style.color = color; copy.style.maxWidth = 'none';
+    return new XMLSerializer().serializeToString(copy);
+  }
+  async function raster(svg, width, height, scale) {
+    const url = URL.createObjectURL(new Blob([svg], {type:'image/svg+xml;charset=utf-8'}));
+    try {
+      const img = new Image();
+      await new Promise((resolve,reject) => { img.onload=resolve; img.onerror=()=>reject(new Error('SVG image decode failed')); img.src=url; });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(width*scale); canvas.height = Math.round(height*scale);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('canvas unavailable');
+      ctx.drawImage(img,0,0,canvas.width,canvas.height);
+      return canvas.toDataURL('image/png').split(',')[1];
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function math(req, scale, color, fontSize) {
+    MathJax.texReset(); stage.style.fontSize = fontSize+'px'; stage.style.color = color;
+    const node = await MathJax.tex2svgPromise(req.source, {display:req.kind===2, em:fontSize, ex:fontSize/2, containerWidth:900});
+    const stylesheet = MathJax.svgStylesheet();
+    if (stylesheet && !stylesheet.isConnected) document.head.appendChild(stylesheet);
+    stage.replaceChildren(node);
+    const svg = node.querySelector('svg');
+    const error = svg && svg.querySelector('[data-mml-node="merror"]');
+    if (error) throw new Error(error.getAttribute('data-mjx-error') || error.getAttribute('title') || error.textContent || 'Invalid TeX');
+    if (!svg) throw new Error('MathJax returned no SVG');
+    const box = svg.getBoundingClientRect();
+    const vertical = parseFloat(getComputedStyle(svg).verticalAlign) || 0;
+    const ascent = Math.max(0, Math.min(box.height, box.height + vertical));
+    const width = Math.ceil(box.width*scale)/scale, height = Math.ceil(box.height*scale)/scale;
+    if (!(width>0 && height>0)) throw new Error('Empty formula');
+    const markup = serialize(svg,width,height,color);
+    if (svg.querySelector('text')) return {png:await raster(markup,width,height,scale),width,height,ascent,scale};
+    return {svg:markup,width,height,ascent,scale};
+  }
+  async function diagram(req, scale, color, fontSize) {
+    mermaid.initialize({startOnLoad:false,securityLevel:'strict',theme:req.dark?'dark':'default',
+      fontFamily:'Segoe UI, Microsoft YaHei, sans-serif',fontSize:fontSize+'px',
+      themeVariables:{textColor:color,primaryTextColor:color,lineColor:color},
+      flowchart:{htmlLabels:false,useMaxWidth:false}});
+    const {svg:markup} = await mermaid.render('aurinkdiagram'+(++sequence),req.source);
+    stage.innerHTML = markup;
+    const svg = stage.querySelector('svg');
+    if (!svg || svg.querySelector('foreignObject')) throw new Error('Unsupported Mermaid SVG');
+    const box = svg.viewBox.baseVal;
+    const width = Math.ceil(box.width*scale)/scale, height = Math.ceil(box.height*scale)/scale;
+    if (!(width>0 && height>0)) throw new Error('Empty diagram');
+    return {png:await raster(serialize(svg,width,height,color),width,height,scale),width,height,ascent:0,scale};
+  }
+  async function render(req) {
+    try {
+      await ready;
+      const scale = req.scale > 0 ? req.scale : 1;
+      const color = /^#[0-9a-f]{6}$/i.test(req.color) ? req.color : (req.dark?'#eeeeee':'#111111');
+      const fontSize = req.fontSize > 0 ? req.fontSize : 16;
+      if (req.kind===1 || req.kind===2) return await math(req,scale,color,fontSize);
+      if (req.kind===3 && req.lang.toLowerCase()==='mermaid') return await diagram(req,scale,color,fontSize);
+      throw new Error('Unsupported render kind or diagram language');
+    } catch (err) { return {error:String(err && err.message || err)}; }
+  }
+  return {ready,render};
+})();
+</script></body></html>
