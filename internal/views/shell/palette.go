@@ -124,7 +124,7 @@ func (s *Shell) paletteView(c *ui.Context, t *theme.Tokens) {
 		Files: locales.ShellPaletteFiles(), Commands: locales.ShellPaletteCommands(), Headings: locales.ShellPaletteHeadings(),
 		Placeholder: locales.ShellPalettePlaceholder(), Footer: locales.ShellPaletteFooter(),
 		Count: locales.ShellPaletteCount, Empty: locales.ShellPaletteEmpty(),
-	}, s.live)
+	}, s.live && !s.reduceMotion(c))
 	// Escape and a click outside leave the focus nowhere: give it to the document.
 	if was && !s.pal.IsOpen() {
 		s.focusNext = true

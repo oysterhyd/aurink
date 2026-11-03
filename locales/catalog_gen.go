@@ -2377,3 +2377,957 @@ func ShellHtmlFiles() string { return In(i18n.Locale()).ShellHtmlFiles() }
 func (msgs Messages) ShellHtmlFiles() string {
 	return Catalog.Format(msgs.locale, "shell_html_files", nil)
 }
+
+// SettingsTitle says "Settings"
+// in the language the app shows.
+//
+// The settings dialog's name.
+func SettingsTitle() string { return In(i18n.Locale()).SettingsTitle() }
+
+// SettingsTitle says "Settings"
+// in the language of msgs.
+//
+// The settings dialog's name.
+func (msgs Messages) SettingsTitle() string {
+	return Catalog.Format(msgs.locale, "settings_title", nil)
+}
+
+// SettingsOpen says "Settings"
+// in the language the app shows.
+//
+// The title bar button that opens settings.
+func SettingsOpen() string { return In(i18n.Locale()).SettingsOpen() }
+
+// SettingsOpen says "Settings"
+// in the language of msgs.
+//
+// The title bar button that opens settings.
+func (msgs Messages) SettingsOpen() string {
+	return Catalog.Format(msgs.locale, "settings_open", nil)
+}
+
+// SettingsClose says "Close Settings"
+// in the language the app shows.
+//
+// The settings dialog's close button.
+func SettingsClose() string { return In(i18n.Locale()).SettingsClose() }
+
+// SettingsClose says "Close Settings"
+// in the language of msgs.
+//
+// The settings dialog's close button.
+func (msgs Messages) SettingsClose() string {
+	return Catalog.Format(msgs.locale, "settings_close", nil)
+}
+
+// SettingsAppearance says "Appearance"
+// in the language the app shows.
+//
+// Settings category.
+func SettingsAppearance() string { return In(i18n.Locale()).SettingsAppearance() }
+
+// SettingsAppearance says "Appearance"
+// in the language of msgs.
+//
+// Settings category.
+func (msgs Messages) SettingsAppearance() string {
+	return Catalog.Format(msgs.locale, "settings_appearance", nil)
+}
+
+// SettingsEditor says "Editor"
+// in the language the app shows.
+//
+// Settings category.
+func SettingsEditor() string { return In(i18n.Locale()).SettingsEditor() }
+
+// SettingsEditor says "Editor"
+// in the language of msgs.
+//
+// Settings category.
+func (msgs Messages) SettingsEditor() string {
+	return Catalog.Format(msgs.locale, "settings_editor", nil)
+}
+
+// SettingsFiles says "Files"
+// in the language the app shows.
+//
+// Settings category.
+func SettingsFiles() string { return In(i18n.Locale()).SettingsFiles() }
+
+// SettingsFiles says "Files"
+// in the language of msgs.
+//
+// Settings category.
+func (msgs Messages) SettingsFiles() string {
+	return Catalog.Format(msgs.locale, "settings_files", nil)
+}
+
+// SettingsExtensions says "Extended Syntax"
+// in the language the app shows.
+//
+// Settings category.
+func SettingsExtensions() string { return In(i18n.Locale()).SettingsExtensions() }
+
+// SettingsExtensions says "Extended Syntax"
+// in the language of msgs.
+//
+// Settings category.
+func (msgs Messages) SettingsExtensions() string {
+	return Catalog.Format(msgs.locale, "settings_extensions", nil)
+}
+
+// SettingsShortcuts says "Shortcuts"
+// in the language the app shows.
+//
+// Settings category.
+func SettingsShortcuts() string { return In(i18n.Locale()).SettingsShortcuts() }
+
+// SettingsShortcuts says "Shortcuts"
+// in the language of msgs.
+//
+// Settings category.
+func (msgs Messages) SettingsShortcuts() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts", nil)
+}
+
+// SettingsThemeLight says "Light · Paper"
+// in the language the app shows.
+//
+// Theme card.
+func SettingsThemeLight() string { return In(i18n.Locale()).SettingsThemeLight() }
+
+// SettingsThemeLight says "Light · Paper"
+// in the language of msgs.
+//
+// Theme card.
+func (msgs Messages) SettingsThemeLight() string {
+	return Catalog.Format(msgs.locale, "settings_theme_light", nil)
+}
+
+// SettingsThemeDark says "Dark · Midnight Ink"
+// in the language the app shows.
+//
+// Theme card.
+func SettingsThemeDark() string { return In(i18n.Locale()).SettingsThemeDark() }
+
+// SettingsThemeDark says "Dark · Midnight Ink"
+// in the language of msgs.
+//
+// Theme card.
+func (msgs Messages) SettingsThemeDark() string {
+	return Catalog.Format(msgs.locale, "settings_theme_dark", nil)
+}
+
+// SettingsThemeSystem says "Match System"
+// in the language the app shows.
+//
+// Theme card.
+func SettingsThemeSystem() string { return In(i18n.Locale()).SettingsThemeSystem() }
+
+// SettingsThemeSystem says "Match System"
+// in the language of msgs.
+//
+// Theme card.
+func (msgs Messages) SettingsThemeSystem() string {
+	return Catalog.Format(msgs.locale, "settings_theme_system", nil)
+}
+
+// SettingsAccent says "Accent Color"
+// in the language the app shows.
+//
+// Setting.
+func SettingsAccent() string { return In(i18n.Locale()).SettingsAccent() }
+
+// SettingsAccent says "Accent Color"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsAccent() string {
+	return Catalog.Format(msgs.locale, "settings_accent", nil)
+}
+
+// SettingsAccentHint says "Only for the caret, the selection and where you are"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsAccentHint() string { return In(i18n.Locale()).SettingsAccentHint() }
+
+// SettingsAccentHint says "Only for the caret, the selection and where you are"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsAccentHint() string {
+	return Catalog.Format(msgs.locale, "settings_accent_hint", nil)
+}
+
+// SettingsHueTeal says "Aurora Teal"
+// in the language the app shows.
+//
+// Accent color name.
+func SettingsHueTeal() string { return In(i18n.Locale()).SettingsHueTeal() }
+
+// SettingsHueTeal says "Aurora Teal"
+// in the language of msgs.
+//
+// Accent color name.
+func (msgs Messages) SettingsHueTeal() string {
+	return Catalog.Format(msgs.locale, "settings_hue_teal", nil)
+}
+
+// SettingsHueIris says "Iris"
+// in the language the app shows.
+//
+// Accent color name.
+func SettingsHueIris() string { return In(i18n.Locale()).SettingsHueIris() }
+
+// SettingsHueIris says "Iris"
+// in the language of msgs.
+//
+// Accent color name.
+func (msgs Messages) SettingsHueIris() string {
+	return Catalog.Format(msgs.locale, "settings_hue_iris", nil)
+}
+
+// SettingsHueEmber says "Ember"
+// in the language the app shows.
+//
+// Accent color name.
+func SettingsHueEmber() string { return In(i18n.Locale()).SettingsHueEmber() }
+
+// SettingsHueEmber says "Ember"
+// in the language of msgs.
+//
+// Accent color name.
+func (msgs Messages) SettingsHueEmber() string {
+	return Catalog.Format(msgs.locale, "settings_hue_ember", nil)
+}
+
+// SettingsHueMoss says "Moss"
+// in the language the app shows.
+//
+// Accent color name.
+func SettingsHueMoss() string { return In(i18n.Locale()).SettingsHueMoss() }
+
+// SettingsHueMoss says "Moss"
+// in the language of msgs.
+//
+// Accent color name.
+func (msgs Messages) SettingsHueMoss() string {
+	return Catalog.Format(msgs.locale, "settings_hue_moss", nil)
+}
+
+// SettingsBodyFont says "Body Font"
+// in the language the app shows.
+//
+// Setting.
+func SettingsBodyFont() string { return In(i18n.Locale()).SettingsBodyFont() }
+
+// SettingsBodyFont says "Body Font"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsBodyFont() string {
+	return Catalog.Format(msgs.locale, "settings_body_font", nil)
+}
+
+// SettingsSans says "Sans Serif"
+// in the language the app shows.
+//
+// Font choice.
+func SettingsSans() string { return In(i18n.Locale()).SettingsSans() }
+
+// SettingsSans says "Sans Serif"
+// in the language of msgs.
+//
+// Font choice.
+func (msgs Messages) SettingsSans() string {
+	return Catalog.Format(msgs.locale, "settings_sans", nil)
+}
+
+// SettingsSerif says "Serif"
+// in the language the app shows.
+//
+// Font choice.
+func SettingsSerif() string { return In(i18n.Locale()).SettingsSerif() }
+
+// SettingsSerif says "Serif"
+// in the language of msgs.
+//
+// Font choice.
+func (msgs Messages) SettingsSerif() string {
+	return Catalog.Format(msgs.locale, "settings_serif", nil)
+}
+
+// SettingsFontSize says "Font Size"
+// in the language the app shows.
+//
+// Setting.
+func SettingsFontSize() string { return In(i18n.Locale()).SettingsFontSize() }
+
+// SettingsFontSize says "Font Size"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsFontSize() string {
+	return Catalog.Format(msgs.locale, "settings_font_size", nil)
+}
+
+// SettingsLineHeight says "Line Height"
+// in the language the app shows.
+//
+// Setting.
+func SettingsLineHeight() string { return In(i18n.Locale()).SettingsLineHeight() }
+
+// SettingsLineHeight says "Line Height"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsLineHeight() string {
+	return Catalog.Format(msgs.locale, "settings_line_height", nil)
+}
+
+// SettingsLineHeightHint says "Default 1.75"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsLineHeightHint() string { return In(i18n.Locale()).SettingsLineHeightHint() }
+
+// SettingsLineHeightHint says "Default 1.75"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsLineHeightHint() string {
+	return Catalog.Format(msgs.locale, "settings_line_height_hint", nil)
+}
+
+// SettingsContentWidth says "Content Width"
+// in the language the app shows.
+//
+// Setting.
+func SettingsContentWidth() string { return In(i18n.Locale()).SettingsContentWidth() }
+
+// SettingsContentWidth says "Content Width"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsContentWidth() string {
+	return Catalog.Format(msgs.locale, "settings_content_width", nil)
+}
+
+// SettingsReduceMotion says "Reduce Motion"
+// in the language the app shows.
+//
+// Setting.
+func SettingsReduceMotion() string { return In(i18n.Locale()).SettingsReduceMotion() }
+
+// SettingsReduceMotion says "Reduce Motion"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsReduceMotion() string {
+	return Catalog.Format(msgs.locale, "settings_reduce_motion", nil)
+}
+
+// SettingsReduceMotionHint says "No movement or scaling; short fades only"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsReduceMotionHint() string { return In(i18n.Locale()).SettingsReduceMotionHint() }
+
+// SettingsReduceMotionHint says "No movement or scaling; short fades only"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsReduceMotionHint() string {
+	return Catalog.Format(msgs.locale, "settings_reduce_motion_hint", nil)
+}
+
+// SettingsReduceTransparency says "Reduce Transparency"
+// in the language the app shows.
+//
+// Setting.
+func SettingsReduceTransparency() string { return In(i18n.Locale()).SettingsReduceTransparency() }
+
+// SettingsReduceTransparency says "Reduce Transparency"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsReduceTransparency() string {
+	return Catalog.Format(msgs.locale, "settings_reduce_transparency", nil)
+}
+
+// SettingsReduceTransparencyHint says "Solid colors in place of glass and the aurora"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsReduceTransparencyHint() string {
+	return In(i18n.Locale()).SettingsReduceTransparencyHint()
+}
+
+// SettingsReduceTransparencyHint says "Solid colors in place of glass and the aurora"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsReduceTransparencyHint() string {
+	return Catalog.Format(msgs.locale, "settings_reduce_transparency_hint", nil)
+}
+
+// SettingsLanguage says "Language"
+// in the language the app shows.
+//
+// Setting.
+func SettingsLanguage() string { return In(i18n.Locale()).SettingsLanguage() }
+
+// SettingsLanguage says "Language"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsLanguage() string {
+	return Catalog.Format(msgs.locale, "settings_language", nil)
+}
+
+// SettingsSystem says "Match System"
+// in the language the app shows.
+//
+// Choice that follows the system.
+func SettingsSystem() string { return In(i18n.Locale()).SettingsSystem() }
+
+// SettingsSystem says "Match System"
+// in the language of msgs.
+//
+// Choice that follows the system.
+func (msgs Messages) SettingsSystem() string {
+	return Catalog.Format(msgs.locale, "settings_system", nil)
+}
+
+// SettingsOn says "On"
+// in the language the app shows.
+//
+// Choice.
+func SettingsOn() string { return In(i18n.Locale()).SettingsOn() }
+
+// SettingsOn says "On"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsOn() string {
+	return Catalog.Format(msgs.locale, "settings_on", nil)
+}
+
+// SettingsOff says "Off"
+// in the language the app shows.
+//
+// Choice.
+func SettingsOff() string { return In(i18n.Locale()).SettingsOff() }
+
+// SettingsOff says "Off"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsOff() string {
+	return Catalog.Format(msgs.locale, "settings_off", nil)
+}
+
+// SettingsReveal says "Markdown Marks"
+// in the language the app shows.
+//
+// Setting.
+func SettingsReveal() string { return In(i18n.Locale()).SettingsReveal() }
+
+// SettingsReveal says "Markdown Marks"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsReveal() string {
+	return Catalog.Format(msgs.locale, "settings_reveal", nil)
+}
+
+// SettingsRevealHint says "How marks show where the caret is"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsRevealHint() string { return In(i18n.Locale()).SettingsRevealHint() }
+
+// SettingsRevealHint says "How marks show where the caret is"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsRevealHint() string {
+	return Catalog.Format(msgs.locale, "settings_reveal_hint", nil)
+}
+
+// SettingsRevealInline says "Inline"
+// in the language the app shows.
+//
+// Choice.
+func SettingsRevealInline() string { return In(i18n.Locale()).SettingsRevealInline() }
+
+// SettingsRevealInline says "Inline"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsRevealInline() string {
+	return Catalog.Format(msgs.locale, "settings_reveal_inline", nil)
+}
+
+// SettingsRevealBlock says "Block"
+// in the language the app shows.
+//
+// Choice.
+func SettingsRevealBlock() string { return In(i18n.Locale()).SettingsRevealBlock() }
+
+// SettingsRevealBlock says "Block"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsRevealBlock() string {
+	return Catalog.Format(msgs.locale, "settings_reveal_block", nil)
+}
+
+// SettingsRevealAlways says "Always"
+// in the language the app shows.
+//
+// Choice.
+func SettingsRevealAlways() string { return In(i18n.Locale()).SettingsRevealAlways() }
+
+// SettingsRevealAlways says "Always"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsRevealAlways() string {
+	return Catalog.Format(msgs.locale, "settings_reveal_always", nil)
+}
+
+// SettingsSoftBreak says "Soft Line Breaks"
+// in the language the app shows.
+//
+// Setting.
+func SettingsSoftBreak() string { return In(i18n.Locale()).SettingsSoftBreak() }
+
+// SettingsSoftBreak says "Soft Line Breaks"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsSoftBreak() string {
+	return Catalog.Format(msgs.locale, "settings_soft_break", nil)
+}
+
+// SettingsSoftBreakHint says "How a single line break in a paragraph shows"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsSoftBreakHint() string { return In(i18n.Locale()).SettingsSoftBreakHint() }
+
+// SettingsSoftBreakHint says "How a single line break in a paragraph shows"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsSoftBreakHint() string {
+	return Catalog.Format(msgs.locale, "settings_soft_break_hint", nil)
+}
+
+// SettingsSoftBreakLine says "Line Break"
+// in the language the app shows.
+//
+// Choice.
+func SettingsSoftBreakLine() string { return In(i18n.Locale()).SettingsSoftBreakLine() }
+
+// SettingsSoftBreakLine says "Line Break"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsSoftBreakLine() string {
+	return Catalog.Format(msgs.locale, "settings_soft_break_line", nil)
+}
+
+// SettingsSoftBreakSpace says "Space"
+// in the language the app shows.
+//
+// Choice.
+func SettingsSoftBreakSpace() string { return In(i18n.Locale()).SettingsSoftBreakSpace() }
+
+// SettingsSoftBreakSpace says "Space"
+// in the language of msgs.
+//
+// Choice.
+func (msgs Messages) SettingsSoftBreakSpace() string {
+	return Catalog.Format(msgs.locale, "settings_soft_break_space", nil)
+}
+
+// SettingsAutoPair says "Pair Brackets and Quotes"
+// in the language the app shows.
+//
+// Setting.
+func SettingsAutoPair() string { return In(i18n.Locale()).SettingsAutoPair() }
+
+// SettingsAutoPair says "Pair Brackets and Quotes"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsAutoPair() string {
+	return Catalog.Format(msgs.locale, "settings_auto_pair", nil)
+}
+
+// SettingsBullet says "Bullet Marker"
+// in the language the app shows.
+//
+// Setting.
+func SettingsBullet() string { return In(i18n.Locale()).SettingsBullet() }
+
+// SettingsBullet says "Bullet Marker"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsBullet() string {
+	return Catalog.Format(msgs.locale, "settings_bullet", nil)
+}
+
+// SettingsStrong says "Bold Marker"
+// in the language the app shows.
+//
+// Setting.
+func SettingsStrong() string { return In(i18n.Locale()).SettingsStrong() }
+
+// SettingsStrong says "Bold Marker"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsStrong() string {
+	return Catalog.Format(msgs.locale, "settings_strong", nil)
+}
+
+// SettingsEmphasis says "Italic Marker"
+// in the language the app shows.
+//
+// Setting.
+func SettingsEmphasis() string { return In(i18n.Locale()).SettingsEmphasis() }
+
+// SettingsEmphasis says "Italic Marker"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsEmphasis() string {
+	return Catalog.Format(msgs.locale, "settings_emphasis", nil)
+}
+
+// SettingsTabSize says "Indent Width"
+// in the language the app shows.
+//
+// Setting.
+func SettingsTabSize() string { return In(i18n.Locale()).SettingsTabSize() }
+
+// SettingsTabSize says "Indent Width"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsTabSize() string {
+	return Catalog.Format(msgs.locale, "settings_tab_size", nil)
+}
+
+// SettingsAutosave says "Autosave"
+// in the language the app shows.
+//
+// Setting.
+func SettingsAutosave() string { return In(i18n.Locale()).SettingsAutosave() }
+
+// SettingsAutosave says "Autosave"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsAutosave() string {
+	return Catalog.Format(msgs.locale, "settings_autosave", nil)
+}
+
+// SettingsAutosaveHint says "Saves a moment after you stop typing"
+// in the language the app shows.
+//
+// Setting's description.
+func SettingsAutosaveHint() string { return In(i18n.Locale()).SettingsAutosaveHint() }
+
+// SettingsAutosaveHint says "Saves a moment after you stop typing"
+// in the language of msgs.
+//
+// Setting's description.
+func (msgs Messages) SettingsAutosaveHint() string {
+	return Catalog.Format(msgs.locale, "settings_autosave_hint", nil)
+}
+
+// SettingsRestoreSession says "Reopen Last Tabs at Start"
+// in the language the app shows.
+//
+// Setting.
+func SettingsRestoreSession() string { return In(i18n.Locale()).SettingsRestoreSession() }
+
+// SettingsRestoreSession says "Reopen Last Tabs at Start"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsRestoreSession() string {
+	return Catalog.Format(msgs.locale, "settings_restore_session", nil)
+}
+
+// SettingsShowAllFiles says "Show Non-Markdown Files"
+// in the language the app shows.
+//
+// Setting.
+func SettingsShowAllFiles() string { return In(i18n.Locale()).SettingsShowAllFiles() }
+
+// SettingsShowAllFiles says "Show Non-Markdown Files"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsShowAllFiles() string {
+	return Catalog.Format(msgs.locale, "settings_show_all_files", nil)
+}
+
+// SettingsCopyImages says "Copy Inserted Images"
+// in the language the app shows.
+//
+// Setting.
+func SettingsCopyImages() string { return In(i18n.Locale()).SettingsCopyImages() }
+
+// SettingsCopyImages says "Copy Inserted Images"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsCopyImages() string {
+	return Catalog.Format(msgs.locale, "settings_copy_images", nil)
+}
+
+// SettingsImageDir says "Image Folder"
+// in the language the app shows.
+//
+// Setting.
+func SettingsImageDir() string { return In(i18n.Locale()).SettingsImageDir() }
+
+// SettingsImageDir says "Image Folder"
+// in the language of msgs.
+//
+// Setting.
+func (msgs Messages) SettingsImageDir() string {
+	return Catalog.Format(msgs.locale, "settings_image_dir", nil)
+}
+
+// SettingsExtHint says "Applies to documents opened after the change"
+// in the language the app shows.
+//
+// The extended syntax page's note.
+func SettingsExtHint() string { return In(i18n.Locale()).SettingsExtHint() }
+
+// SettingsExtHint says "Applies to documents opened after the change"
+// in the language of msgs.
+//
+// The extended syntax page's note.
+func (msgs Messages) SettingsExtHint() string {
+	return Catalog.Format(msgs.locale, "settings_ext_hint", nil)
+}
+
+// SettingsExtFrontMatter says "YAML Front Matter"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtFrontMatter() string { return In(i18n.Locale()).SettingsExtFrontMatter() }
+
+// SettingsExtFrontMatter says "YAML Front Matter"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtFrontMatter() string {
+	return Catalog.Format(msgs.locale, "settings_ext_front_matter", nil)
+}
+
+// SettingsExtFrontMatterHint says "Shown as the document's header"
+// in the language the app shows.
+//
+// Extension's description.
+func SettingsExtFrontMatterHint() string { return In(i18n.Locale()).SettingsExtFrontMatterHint() }
+
+// SettingsExtFrontMatterHint says "Shown as the document's header"
+// in the language of msgs.
+//
+// Extension's description.
+func (msgs Messages) SettingsExtFrontMatterHint() string {
+	return Catalog.Format(msgs.locale, "settings_ext_front_matter_hint", nil)
+}
+
+// SettingsExtHighlight says "==Highlight=="
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtHighlight() string { return In(i18n.Locale()).SettingsExtHighlight() }
+
+// SettingsExtHighlight says "==Highlight=="
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtHighlight() string {
+	return Catalog.Format(msgs.locale, "settings_ext_highlight", nil)
+}
+
+// SettingsExtSupSub says "^Superscript^ and ~Subscript~"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtSupSub() string { return In(i18n.Locale()).SettingsExtSupSub() }
+
+// SettingsExtSupSub says "^Superscript^ and ~Subscript~"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtSupSub() string {
+	return Catalog.Format(msgs.locale, "settings_ext_sup_sub", nil)
+}
+
+// SettingsExtTildeSub says "Single ~ Is Subscript"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtTildeSub() string { return In(i18n.Locale()).SettingsExtTildeSub() }
+
+// SettingsExtTildeSub says "Single ~ Is Subscript"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtTildeSub() string {
+	return Catalog.Format(msgs.locale, "settings_ext_tilde_sub", nil)
+}
+
+// SettingsExtTildeSubHint says "Off: a single ~ strikes through, as GFM does"
+// in the language the app shows.
+//
+// Extension's description.
+func SettingsExtTildeSubHint() string { return In(i18n.Locale()).SettingsExtTildeSubHint() }
+
+// SettingsExtTildeSubHint says "Off: a single ~ strikes through, as GFM does"
+// in the language of msgs.
+//
+// Extension's description.
+func (msgs Messages) SettingsExtTildeSubHint() string {
+	return Catalog.Format(msgs.locale, "settings_ext_tilde_sub_hint", nil)
+}
+
+// SettingsExtEmoji says ":Emoji: Shortcodes"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtEmoji() string { return In(i18n.Locale()).SettingsExtEmoji() }
+
+// SettingsExtEmoji says ":Emoji: Shortcodes"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtEmoji() string {
+	return Catalog.Format(msgs.locale, "settings_ext_emoji", nil)
+}
+
+// SettingsExtWiki says "[[Wiki Links]]"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtWiki() string { return In(i18n.Locale()).SettingsExtWiki() }
+
+// SettingsExtWiki says "[[Wiki Links]]"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtWiki() string {
+	return Catalog.Format(msgs.locale, "settings_ext_wiki", nil)
+}
+
+// SettingsExtToc says "[TOC]"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtToc() string { return In(i18n.Locale()).SettingsExtToc() }
+
+// SettingsExtToc says "[TOC]"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtToc() string {
+	return Catalog.Format(msgs.locale, "settings_ext_toc", nil)
+}
+
+// SettingsExtMath says "$Inline Math$"
+// in the language the app shows.
+//
+// Extension.
+func SettingsExtMath() string { return In(i18n.Locale()).SettingsExtMath() }
+
+// SettingsExtMath says "$Inline Math$"
+// in the language of msgs.
+//
+// Extension.
+func (msgs Messages) SettingsExtMath() string {
+	return Catalog.Format(msgs.locale, "settings_ext_math", nil)
+}
+
+// SettingsExtMathHint says "Uses the system WebView; shows source when it is missing"
+// in the language the app shows.
+//
+// Extension's description.
+func SettingsExtMathHint() string { return In(i18n.Locale()).SettingsExtMathHint() }
+
+// SettingsExtMathHint says "Uses the system WebView; shows source when it is missing"
+// in the language of msgs.
+//
+// Extension's description.
+func (msgs Messages) SettingsExtMathHint() string {
+	return Catalog.Format(msgs.locale, "settings_ext_math_hint", nil)
+}
+
+// SettingsShortcutsHint says "View only"
+// in the language the app shows.
+//
+// The shortcuts page's note.
+func SettingsShortcutsHint() string { return In(i18n.Locale()).SettingsShortcutsHint() }
+
+// SettingsShortcutsHint says "View only"
+// in the language of msgs.
+//
+// The shortcuts page's note.
+func (msgs Messages) SettingsShortcutsHint() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_hint", nil)
+}
+
+// SettingsAbout says "About Aurink"
+// in the language the app shows.
+//
+// The about dialog and its command.
+func SettingsAbout() string { return In(i18n.Locale()).SettingsAbout() }
+
+// SettingsAbout says "About Aurink"
+// in the language of msgs.
+//
+// The about dialog and its command.
+func (msgs Messages) SettingsAbout() string {
+	return Catalog.Format(msgs.locale, "settings_about", nil)
+}
+
+// SettingsVersion says "Version {version}"
+// in the language the app shows.
+//
+// The about dialog's version line.
+func SettingsVersion(version string) string { return In(i18n.Locale()).SettingsVersion(version) }
+
+// SettingsVersion says "Version {version}"
+// in the language of msgs.
+//
+// The about dialog's version line.
+func (msgs Messages) SettingsVersion(version string) string {
+	return Catalog.Format(msgs.locale, "settings_version", map[string]any{"version": version})
+}
+
+// SettingsLicenses says "Open Source"
+// in the language the app shows.
+//
+// The about dialog's list of bundled libraries.
+func SettingsLicenses() string { return In(i18n.Locale()).SettingsLicenses() }
+
+// SettingsLicenses says "Open Source"
+// in the language of msgs.
+//
+// The about dialog's list of bundled libraries.
+func (msgs Messages) SettingsLicenses() string {
+	return Catalog.Format(msgs.locale, "settings_licenses", nil)
+}

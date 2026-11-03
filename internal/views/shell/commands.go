@@ -69,6 +69,8 @@ func (s *Shell) Commands() []contract.Command {
 			s.o.Platform.OpenFolder(s.OpenFolder)
 			return nil
 		}},
+		{ID: contract.CmdAppSettings, Title: "settings", Run: func() error { s.OpenSettings(); return nil }},
+		{ID: contract.CmdAppAbout, Title: "about", Run: func() error { s.set.about = true; s.invalidate(); return nil }},
 		{ID: contract.CmdFileRename, Title: "rename", Enabled: s.canRenameActive, Run: func() error { s.renameActive(); return nil }},
 		{ID: contract.CmdViewFiles, Title: "files", Run: func() error { s.showPanel(panelFiles); return nil }},
 		{ID: contract.CmdViewOutline, Title: "outline", Run: func() error { s.showPanel(panelOutline); return nil }},
@@ -226,7 +228,7 @@ var editTitles = map[string]func() string{
 	"searchWorkspace": locales.ShellSearchInFolder, "rename": locales.ShellRename,
 	"copyMarkdown": locales.ShellCopyMarkdown, "copyHTML": locales.ShellCopyHtml, "pastePlain": locales.ShellPastePlain,
 	"find": locales.ShellFind, "replace": locales.ShellReplace, "findNext": locales.ShellFindNext,
-	"findPrev": locales.ShellFindPrev,
+	"findPrev": locales.ShellFindPrev, "settings": locales.SettingsTitle, "about": locales.SettingsAbout,
 }
 
 // showPanel opens the sidebar on a panel.

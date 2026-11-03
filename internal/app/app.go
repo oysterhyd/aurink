@@ -31,6 +31,30 @@ import (
 	"aurink/resources"
 )
 
+// FollowSettings returns what a settings change does to the services that
+// read the settings when built: the file tree's filter, the image importer
+// and the sessions (autosave). exts stays the parsing extensions until the
+// app renders them all.
+func FollowSettings(ws *workspace.Workspace, assets *workspace.Assets, sessions *docsession.Manager, exts contract.Extensions) func(contract.Settings) {
+	return func(v contract.Settings) {
+		ws.SetShowAll(v.Files.ShowAllFiles)
+		assets.SetFiles(v.Files.ImageDir, v.Files.CopyImages)
+		v.Editor.Exts = exts
+		sessions.SetSettings(v)
+	}
+}
+
+// licenses are the about dialog's lines: what ships inside the app.
+var licenses = []string{
+	"MyGo — MIT",
+	"MathJax 3.2.2 — Apache-2.0",
+	"Mermaid 10.9.3 — MIT",
+	"gemoji — MIT",
+	"Newsreader — OFL-1.1",
+	"Noto Serif SC — OFL-1.1",
+	"JetBrains Mono — OFL-1.1",
+}
+
 // m1Exts is what M1 renders (06 §2.1): the other extensions are off until their cards.
 const m1Exts = contract.ExtFrontMatter
 
@@ -114,18 +138,26 @@ func newApplication() (*application, error) {
 	a.sessions = sessions
 	registry := commands.New()
 	registry.SetDefaults(commands.DefaultBindings())
-	ws := workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{})
+	ws := workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{ShowAll: base.Files.ShowAllFiles})
+	assets := workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages)
 	index := newFileIndex(ws, dispatcher)
 	a.shell = shell.New(shell.Options{Files: index.Files,
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
 		Workspace: ws, Search: search.NewWorkspaceSearch(), Finder: search.NewFinder(),
-		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages),
+		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: assets,
 		WindowButtons: runtime.GOOS != "darwin",
 		SessionStore:  docsession.NewSessionStore(filepath.Join(data, "session.json"), files),
 		Recent:        systemRecent{workspace.NewRecent(filepath.Join(data, "recent.json"), dispatcher)},
 		ExportHTML:    ExportHTML(files, dispatcher, m1Exts),
+		SetLanguage:   mygo.App.SetLocale,
+		Version:       mygo.App.Version(),
+		Licenses:      licenses,
 	})
+	// The settings store is the language's source; files settings reach the
+	// sessions as they change.
+	mygo.App.SetLocale(base.Language)
+	store.Subscribe(FollowSettings(ws, assets, sessions, m1Exts))
 	if err := registry.Register(a.shell.Commands()...); err != nil {
 		return nil, err
 	}

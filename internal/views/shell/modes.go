@@ -59,6 +59,7 @@ func (s *Shell) typography() theme.Typography {
 	if a.ContentWidth > 0 {
 		ty.Column = a.ContentWidth
 	}
+	ty.Serif = a.ContentFont == theme.FontSerif
 	if s.reading {
 		ty.Serif = true
 		ty.Body++
@@ -172,4 +173,16 @@ func (s *Shell) escapeReading(c *ui.Context) {
 	if s.reading {
 		c.OnShortcut(0, ui.KeyEscape, func() { s.setReading(false) })
 	}
+}
+
+// reduceMotion reports whether motion is reduced: Appearance.ReduceMotion
+// "on" or "off" decides, "system" follows the system (D18).
+func (s *Shell) reduceMotion(c *ui.Context) bool {
+	switch s.o.Settings.Get().Appearance.ReduceMotion {
+	case "on":
+		return true
+	case "off":
+		return false
+	}
+	return c.Preferences().ReduceMotion
 }

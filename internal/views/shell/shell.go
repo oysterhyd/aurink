@@ -90,6 +90,13 @@ type Options struct {
 	// ExportHTML writes markdown as an HTML page at path off the main thread
 	// and calls done on it; nil leaves file.exportHTML out.
 	ExportHTML func(markdown, path string, opts contract.ExportOptions, done func(error))
+	// SetLanguage shows the interface in a language ("" for the system's);
+	// nil leaves the language setting stored only.
+	SetLanguage func(tag string)
+	// Version and Licenses fill the about dialog: the app's version, and a
+	// line for each bundled library with its license.
+	Version  string
+	Licenses []string
 }
 
 const maxNotices = 4
@@ -133,6 +140,7 @@ type Shell struct {
 	// zoom in steps of zoomStep.
 	reading bool
 	zoom    int
+	set     settingsView
 
 	// drag is the tab the pointer drags, and how far it is from its slot.
 	drag struct {
@@ -430,7 +438,7 @@ func (s *Shell) View(c *ui.Context) {
 		s.live = true
 		over := ui.Box(c.Key("new")).Absolute().Fill()
 		a := s.o.Settings.Get().Appearance
-		if a.ReduceTransparency || s.cpu || c.Preferences().ReduceMotion {
+		if a.ReduceTransparency || s.cpu || s.reduceMotion(c) {
 			over = over.Opacity(progress)
 		} else {
 			w, h := c.Size()
@@ -476,6 +484,7 @@ func (s *Shell) window(c *ui.Context, t *theme.Tokens) {
 			s.sheet(c, t, read, dim)
 		})
 		s.paletteView(c, t)
+		s.settingsView(c, t)
 	})
 }
 
@@ -515,6 +524,9 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 		if theme.Clicked() {
 			r := theme.Bounds()
 			s.ToggleTheme(ui.Point{X: r.X + r.W/2, Y: r.Y + r.H/2})
+		}
+		if kit.IconButton(c.Key("settings"), t, kit.IconSliders, locales.SettingsOpen(), 30, 16).Clicked() {
+			s.OpenSettings()
 		}
 		if s.o.WindowButtons {
 			s.windowButtons(c, t)
@@ -788,6 +800,8 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 			s.readDoc(d)
 		}
 		d.live.SetTypography(s.typography())
+		ed := s.o.Settings.Get().Editor
+		d.live.SetReveal(ed.Reveal, ed.SoftBreak)
 		if s.focusNext {
 			s.focusNext = false
 			d.live.Focus()

@@ -57,6 +57,22 @@ func (e *Editor) SetTypography(ty theme.Typography) {
 	e.invalidate()
 }
 
+// Reveal returns how marks and soft breaks show.
+func (e *Editor) Reveal() (contract.RevealMode, contract.SoftBreakMode) {
+	return e.revealMode, e.softBreak
+}
+
+// SetReveal changes how marks and soft breaks show (Settings.Editor). Every
+// row is projected and laid out again.
+func (e *Editor) SetReveal(m contract.RevealMode, sb contract.SoftBreakMode) {
+	if m == e.revealMode && sb == e.softBreak {
+		return
+	}
+	e.revealMode, e.softBreak = m, sb
+	e.relayAll()
+	e.invalidate()
+}
+
 // FocusMode reports whether rows other than the caret's are dimmed.
 func (e *Editor) FocusMode() bool { return e.focusMode }
 

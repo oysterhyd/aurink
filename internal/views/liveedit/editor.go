@@ -182,6 +182,9 @@ type Editor struct {
 	focusMode  bool
 	ty         theme.Typography
 	typewriter bool
+	// revealMode and softBreak are Settings.Editor's Reveal and SoftBreak.
+	revealMode contract.RevealMode
+	softBreak  contract.SoftBreakMode
 	find       []contract.Range
 	findCur    int
 
@@ -583,7 +586,7 @@ func (e *Editor) isLead(r int, b *contract.Block) bool {
 
 func (e *Editor) project(b *contract.Block, leaf int, k revealKey) contract.BlockProjection {
 	e.Stats.Projects++
-	rv := contract.Reveal{Mode: contract.RevealInline, Caret: -1, ObjectLangs: e.opts.ObjectLangs, Exts: e.opts.Exts}
+	rv := contract.Reveal{Mode: e.revealMode, Caret: -1, SoftBreak: e.softBreak, ObjectLangs: e.opts.ObjectLangs, Exts: e.opts.Exts}
 	if e.mode == editorapi.ModeRead {
 		rv.Mode = contract.RevealNone
 	}

@@ -11,7 +11,9 @@ const DefaultHue = 182
 const (
 	Serif = "Newsreader, Noto Serif SC, Georgia, SimSun"
 	Sans  = "Segoe UI Variable, Microsoft YaHei UI, SF Pro Text, PingFang SC, Cantarell, Noto Sans CJK SC"
-	Mono  = "JetBrains Mono, Cascadia Code, SF Mono, DejaVu Sans Mono"
+	// FontSerif is Appearance.ContentFont's value for the serif body.
+	FontSerif = "serif"
+	Mono      = "JetBrains Mono, Cascadia Code, SF Mono, DejaVu Sans Mono"
 )
 
 // Sizes of §3 and §4.

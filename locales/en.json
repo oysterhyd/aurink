@@ -728,5 +728,282 @@
   "shell_html_files": "HTML Files",
   "@shell_html_files": {
     "description": "Name of the file type in the export dialog."
+  },
+  "settings_title": "Settings",
+  "@settings_title": {
+    "description": "The settings dialog's name."
+  },
+  "settings_open": "Settings",
+  "@settings_open": {
+    "description": "The title bar button that opens settings."
+  },
+  "settings_close": "Close Settings",
+  "@settings_close": {
+    "description": "The settings dialog's close button."
+  },
+  "settings_appearance": "Appearance",
+  "@settings_appearance": {
+    "description": "Settings category."
+  },
+  "settings_editor": "Editor",
+  "@settings_editor": {
+    "description": "Settings category."
+  },
+  "settings_files": "Files",
+  "@settings_files": {
+    "description": "Settings category."
+  },
+  "settings_extensions": "Extended Syntax",
+  "@settings_extensions": {
+    "description": "Settings category."
+  },
+  "settings_shortcuts": "Shortcuts",
+  "@settings_shortcuts": {
+    "description": "Settings category."
+  },
+  "settings_theme_light": "Light · Paper",
+  "@settings_theme_light": {
+    "description": "Theme card."
+  },
+  "settings_theme_dark": "Dark · Midnight Ink",
+  "@settings_theme_dark": {
+    "description": "Theme card."
+  },
+  "settings_theme_system": "Match System",
+  "@settings_theme_system": {
+    "description": "Theme card."
+  },
+  "settings_accent": "Accent Color",
+  "@settings_accent": {
+    "description": "Setting."
+  },
+  "settings_accent_hint": "Only for the caret, the selection and where you are",
+  "@settings_accent_hint": {
+    "description": "Setting's description."
+  },
+  "settings_hue_teal": "Aurora Teal",
+  "@settings_hue_teal": {
+    "description": "Accent color name."
+  },
+  "settings_hue_iris": "Iris",
+  "@settings_hue_iris": {
+    "description": "Accent color name."
+  },
+  "settings_hue_ember": "Ember",
+  "@settings_hue_ember": {
+    "description": "Accent color name."
+  },
+  "settings_hue_moss": "Moss",
+  "@settings_hue_moss": {
+    "description": "Accent color name."
+  },
+  "settings_body_font": "Body Font",
+  "@settings_body_font": {
+    "description": "Setting."
+  },
+  "settings_sans": "Sans Serif",
+  "@settings_sans": {
+    "description": "Font choice."
+  },
+  "settings_serif": "Serif",
+  "@settings_serif": {
+    "description": "Font choice."
+  },
+  "settings_font_size": "Font Size",
+  "@settings_font_size": {
+    "description": "Setting."
+  },
+  "settings_line_height": "Line Height",
+  "@settings_line_height": {
+    "description": "Setting."
+  },
+  "settings_line_height_hint": "Default 1.75",
+  "@settings_line_height_hint": {
+    "description": "Setting's description."
+  },
+  "settings_content_width": "Content Width",
+  "@settings_content_width": {
+    "description": "Setting."
+  },
+  "settings_reduce_motion": "Reduce Motion",
+  "@settings_reduce_motion": {
+    "description": "Setting."
+  },
+  "settings_reduce_motion_hint": "No movement or scaling; short fades only",
+  "@settings_reduce_motion_hint": {
+    "description": "Setting's description."
+  },
+  "settings_reduce_transparency": "Reduce Transparency",
+  "@settings_reduce_transparency": {
+    "description": "Setting."
+  },
+  "settings_reduce_transparency_hint": "Solid colors in place of glass and the aurora",
+  "@settings_reduce_transparency_hint": {
+    "description": "Setting's description."
+  },
+  "settings_language": "Language",
+  "@settings_language": {
+    "description": "Setting."
+  },
+  "settings_system": "Match System",
+  "@settings_system": {
+    "description": "Choice that follows the system."
+  },
+  "settings_on": "On",
+  "@settings_on": {
+    "description": "Choice."
+  },
+  "settings_off": "Off",
+  "@settings_off": {
+    "description": "Choice."
+  },
+  "settings_reveal": "Markdown Marks",
+  "@settings_reveal": {
+    "description": "Setting."
+  },
+  "settings_reveal_hint": "How marks show where the caret is",
+  "@settings_reveal_hint": {
+    "description": "Setting's description."
+  },
+  "settings_reveal_inline": "Inline",
+  "@settings_reveal_inline": {
+    "description": "Choice."
+  },
+  "settings_reveal_block": "Block",
+  "@settings_reveal_block": {
+    "description": "Choice."
+  },
+  "settings_reveal_always": "Always",
+  "@settings_reveal_always": {
+    "description": "Choice."
+  },
+  "settings_soft_break": "Soft Line Breaks",
+  "@settings_soft_break": {
+    "description": "Setting."
+  },
+  "settings_soft_break_hint": "How a single line break in a paragraph shows",
+  "@settings_soft_break_hint": {
+    "description": "Setting's description."
+  },
+  "settings_soft_break_line": "Line Break",
+  "@settings_soft_break_line": {
+    "description": "Choice."
+  },
+  "settings_soft_break_space": "Space",
+  "@settings_soft_break_space": {
+    "description": "Choice."
+  },
+  "settings_auto_pair": "Pair Brackets and Quotes",
+  "@settings_auto_pair": {
+    "description": "Setting."
+  },
+  "settings_bullet": "Bullet Marker",
+  "@settings_bullet": {
+    "description": "Setting."
+  },
+  "settings_strong": "Bold Marker",
+  "@settings_strong": {
+    "description": "Setting."
+  },
+  "settings_emphasis": "Italic Marker",
+  "@settings_emphasis": {
+    "description": "Setting."
+  },
+  "settings_tab_size": "Indent Width",
+  "@settings_tab_size": {
+    "description": "Setting."
+  },
+  "settings_autosave": "Autosave",
+  "@settings_autosave": {
+    "description": "Setting."
+  },
+  "settings_autosave_hint": "Saves a moment after you stop typing",
+  "@settings_autosave_hint": {
+    "description": "Setting's description."
+  },
+  "settings_restore_session": "Reopen Last Tabs at Start",
+  "@settings_restore_session": {
+    "description": "Setting."
+  },
+  "settings_show_all_files": "Show Non-Markdown Files",
+  "@settings_show_all_files": {
+    "description": "Setting."
+  },
+  "settings_copy_images": "Copy Inserted Images",
+  "@settings_copy_images": {
+    "description": "Setting."
+  },
+  "settings_image_dir": "Image Folder",
+  "@settings_image_dir": {
+    "description": "Setting."
+  },
+  "settings_ext_hint": "Applies to documents opened after the change",
+  "@settings_ext_hint": {
+    "description": "The extended syntax page's note."
+  },
+  "settings_ext_front_matter": "YAML Front Matter",
+  "@settings_ext_front_matter": {
+    "description": "Extension."
+  },
+  "settings_ext_front_matter_hint": "Shown as the document's header",
+  "@settings_ext_front_matter_hint": {
+    "description": "Extension's description."
+  },
+  "settings_ext_highlight": "==Highlight==",
+  "@settings_ext_highlight": {
+    "description": "Extension."
+  },
+  "settings_ext_sup_sub": "^Superscript^ and ~Subscript~",
+  "@settings_ext_sup_sub": {
+    "description": "Extension."
+  },
+  "settings_ext_tilde_sub": "Single ~ Is Subscript",
+  "@settings_ext_tilde_sub": {
+    "description": "Extension."
+  },
+  "settings_ext_tilde_sub_hint": "Off: a single ~ strikes through, as GFM does",
+  "@settings_ext_tilde_sub_hint": {
+    "description": "Extension's description."
+  },
+  "settings_ext_emoji": ":Emoji: Shortcodes",
+  "@settings_ext_emoji": {
+    "description": "Extension."
+  },
+  "settings_ext_wiki": "[[Wiki Links]]",
+  "@settings_ext_wiki": {
+    "description": "Extension."
+  },
+  "settings_ext_toc": "[TOC]",
+  "@settings_ext_toc": {
+    "description": "Extension."
+  },
+  "settings_ext_math": "$Inline Math$",
+  "@settings_ext_math": {
+    "description": "Extension."
+  },
+  "settings_ext_math_hint": "Uses the system WebView; shows source when it is missing",
+  "@settings_ext_math_hint": {
+    "description": "Extension's description."
+  },
+  "settings_shortcuts_hint": "View only",
+  "@settings_shortcuts_hint": {
+    "description": "The shortcuts page's note."
+  },
+  "settings_about": "About Aurink",
+  "@settings_about": {
+    "description": "The about dialog and its command."
+  },
+  "settings_version": "Version {version}",
+  "@settings_version": {
+    "description": "The about dialog's version line.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_licenses": "Open Source",
+  "@settings_licenses": {
+    "description": "The about dialog's list of bundled libraries."
   }
 }

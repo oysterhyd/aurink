@@ -101,6 +101,9 @@ type app struct {
 	// until the test calls it, and skip the automatic restore.
 	holdRoot bool
 	heldRoot func()
+	// lang is the language the shell last set.
+	lang   string
+	assets *workspace.Assets
 }
 
 // heldWorkspace keeps SetRoot's answer until the test lets it through.
@@ -188,6 +191,8 @@ func (a *app) boot() {
 	if a.holdRoot {
 		ws = heldWorkspace{a.ws, a}
 	}
+	a.assets = workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages)
+	store.Subscribe(aurinkapp.FollowSettings(a.ws, a.assets, a.sessions, contract.ExtFrontMatter))
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
@@ -195,7 +200,8 @@ func (a *app) boot() {
 		Files: func() []string { return a.files }, Workspace: ws, Search: search.NewWorkspaceSearch(),
 		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
 		Recent:       workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q),
-		ExportHTML:   aurinkapp.ExportHTML(files, a.q, contract.ExtFrontMatter)})
+		ExportHTML:   aurinkapp.ExportHTML(files, a.q, contract.ExtFrontMatter),
+		SetLanguage:  func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"}})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}
