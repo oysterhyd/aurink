@@ -96,6 +96,7 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		rc.paintObjects()
 		rc.paintContainers()
 		w.front(&rc)
+		rc.paintPreview()
 		if i == e.caretRow && e.focused {
 			p.TextLayout(e.label(marginTag(&l.proj), theme.UIBadge), ox-theme.MarginLabel, y+2, t.Muted)
 		}

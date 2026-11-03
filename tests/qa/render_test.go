@@ -45,7 +45,7 @@ func (f *fakeRenderer) Render(ctx context.Context, req contract.RenderRequest) (
 	if req.Source == fail {
 		return contract.RenderResult{}, contract.E(contract.CodeRender, "fake", fmt.Errorf("bad TeX"))
 	}
-	w, h := float32(10*len(req.Source)), float32(20)
+	w, h := float32(10*len(req.Source)), float32(5*len(req.Source))
 	if req.Kind == contract.RenderDiagram {
 		h = 120
 	}
@@ -122,7 +122,7 @@ func TestRenderSkeletonThenRest(t *testing.T) {
 	}
 	// The light moves across the skeleton from one frame to the next.
 	p := a.s.ActiveLive().RowText(0)
-	box := image.Rect(int(p.X+a.s.SheetLeft()), int(p.Y+46), int(p.X+a.s.SheetLeft()+400), int(p.Y+46+40))
+	box := image.Rect(int(p.X+a.s.SheetLeft()), int(p.Y+46), int(p.X+a.s.SheetLeft()+a.s.ActiveLive().ColumnWidth()), int(p.Y+46+40))
 	snap := func() []uint32 {
 		img, out := a.tt.Image(), []uint32(nil)
 		for y := box.Min.Y; y < box.Max.Y; y++ {
@@ -234,5 +234,125 @@ func TestRenderUnavailableSaysSoOnce(t *testing.T) {
 	a.animate()
 	if a.shows(locales.ShellRenderUnavailable()) {
 		t.Fatal("the notice came back for the next document")
+	}
+}
+
+// With the caret in a math block its source shows, and its rendering stays
+// under it, following the typing (02 §5.9, as Typora does).
+func TestMathPreviewUnderTheSource(t *testing.T) {
+	a := newApp(t)
+	a.open("m.md", "$$\nx+1\n$$\n\nend\n")
+	a.caret(len(a.text()) - 1)
+	a.until("the formula renders", func() bool { return a.renderState("x+1") == "rendered" })
+	l := a.s.ActiveLive()
+	a.caret(6) // at the end of the TeX
+	a.animate()
+	if l.Display(0) == "￼" {
+		t.Fatal("the source did not show")
+	}
+	with := l.RowHeight(0)
+	// Without the service there is no preview: the row is the source alone.
+	b := newApp(t)
+	b.render.mu.Lock()
+	b.render.available = false
+	b.render.mu.Unlock()
+	b.open("m.md", "$$\nx+1\n$$\n\nend\n")
+	b.caret(3)
+	b.animate()
+	without := b.s.ActiveLive().RowHeight(0)
+	if with < without+15+2*10 {
+		t.Fatalf("the row is %v high with the preview, %v without", with, without)
+	}
+	// Typing renders the new source; the last rendering stays meanwhile.
+	hold := make(chan struct{})
+	a.render.mu.Lock()
+	a.render.hold = hold
+	a.render.mu.Unlock()
+	a.typed("2")
+	a.animate()
+	if a.renderState("x+12") != "loading" || l.RowHeight(0) != with {
+		t.Fatalf("while x+12 renders the row is %v high, was %v (%q)", l.RowHeight(0), with, a.renderState("x+12"))
+	}
+	close(hold)
+	a.until("the new source renders", func() bool { return a.renderState("x+12") == "rendered" })
+	if h := l.RowHeight(0); h <= with {
+		t.Fatalf("the longer formula's preview did not grow the row: %v", h)
+	}
+}
+
+func TestMathPreviewShowsTheError(t *testing.T) {
+	a := newApp(t)
+	a.render.fail = "frac{"
+	a.open("m.md", "$$\nfrac{\n$$\n\nend\n")
+	a.caret(3)
+	a.until("the formula fails", func() bool { return a.renderState("frac{") == "failed" })
+	a.animate()
+	// The error takes a line under the source: the row is taller than the
+	// source alone, as it shows without the service.
+	b := newApp(t)
+	b.render.mu.Lock()
+	b.render.available = false
+	b.render.mu.Unlock()
+	b.open("m.md", "$$\nfrac{\n$$\n\nend\n")
+	b.caret(3)
+	b.animate()
+	if with, without := a.s.ActiveLive().RowHeight(0), b.s.ActiveLive().RowHeight(0); with < without+20 {
+		t.Fatalf("no room for the error: %v with it, %v without", with, without)
+	}
+}
+
+func TestDiagramPreviewUnderTheSource(t *testing.T) {
+	a := newApp(t)
+	a.open("d.md", "```mermaid\ngraph TD; A-->B\n```\n\nend\n")
+	a.caret(len("```mermaid\n"))
+	a.until("the diagram renders", func() bool { return a.renderState("graph TD; A-->B") == "rendered" })
+	a.animate()
+	l := a.s.ActiveLive()
+	h := l.RowHeight(0)
+	if h < 120+2*10+40 {
+		t.Fatalf("the code card with its preview is %v high", h)
+	}
+	// The card ends above the preview: beside the diagram is the sheet.
+	p := l.RowText(0)
+	img := a.tt.Image()
+	x := int(p.X + a.s.SheetLeft() + 20)
+	top := l.RowText(0).Y + 46 - 30 // the card's top, above its header
+	sheet := img.At(x, int(top+h+30))
+	if got := img.At(x, int(top+h-60)); got != sheet {
+		t.Fatalf("beside the preview is %v, not the sheet %v", got, sheet)
+	}
+	if got := img.At(x, int(top+10)); got == sheet {
+		t.Fatal("no code card over the source")
+	}
+}
+
+// A rendered block centres on the column, on the bare sheet: a diagram is
+// not inside its source's code card.
+func TestRenderedBlocksCentre(t *testing.T) {
+	a := newApp(t)
+	a.open("d.md", "$$\nx+1\n$$\n\n```mermaid\ngraph TD; A-->B\n```\n\nend\n")
+	a.caret(len(a.text()) - 1)
+	a.until("both render", func() bool {
+		return a.renderState("x+1") == "rendered" && a.renderState("graph TD; A-->B") == "rendered"
+	})
+	a.animate()
+	l := a.s.ActiveLive()
+	img := a.tt.Image()
+	sheet := img.At(int(a.s.SheetLeft()+l.RowText(0).X-60), int(l.RowText(0).Y+46+5))
+	for _, r := range []int{0, 1} {
+		p := l.RowText(r)
+		h := int(l.RowHeight(r))
+		mid := int(p.X + a.s.SheetLeft() + l.ColumnWidth()/2)
+		// The left 60 of the column is sheet; the middle is the result.
+		for y := int(p.Y + 46); y < int(p.Y+46)+h/2; y++ {
+			for x := int(p.X + a.s.SheetLeft()); x < int(p.X+a.s.SheetLeft()+60); x++ {
+				if img.At(x, y) != sheet {
+					t.Fatalf("row %d: (%d,%d) is %v, not the sheet", r, x, y, img.At(x, y))
+				}
+			}
+		}
+		if img.At(mid, int(p.Y+46+8)) == sheet {
+			t.Fatalf("row %d: nothing in the middle of the column", r)
+		}
 	}
 }

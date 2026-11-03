@@ -172,6 +172,9 @@ type Editor struct {
 	renders       map[renderKey]*renderState
 	renderOff     bool
 	slash         slashMenu
+	// previews holds each block's last good rendering, which its preview
+	// keeps while the source being typed renders.
+	previews map[contract.BlockID]*renderState
 	// frameNow is the frame's clock, which the work started between frames
 	// keeps its times by: the paint compares them with its own.
 	frameNow    time.Time

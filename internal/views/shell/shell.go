@@ -126,11 +126,13 @@ type Shell struct {
 	// renderWarned is set once the notice that math and diagrams cannot
 	// render has shown.
 	renderWarned bool
-	docs         []*doc
-	active       *doc
-	sidebar      bool
-	off          func()
-	offSet       func()
+	// opening is the document on its way, for the skeleton.
+	opening opening
+	docs    []*doc
+	active  *doc
+	sidebar bool
+	off     func()
+	offSet  func()
 
 	dark      bool
 	themeSet  bool
@@ -782,6 +784,7 @@ func (s *Shell) sheet(c *ui.Context, t *theme.Tokens, read, dim float32) {
 				s.capsule(c, t, d)
 			}
 		}
+		s.loading(c, t)
 		s.noticeStack(c, t)
 	})
 }
@@ -1007,7 +1010,9 @@ func errorText(err error) string {
 
 // Open opens a file, or shows its tab if it is open.
 func (s *Shell) Open(path string) {
+	s.startOpening(path)
 	s.o.Sessions.Open(path, func(x contract.Session, err error) {
+		s.doneOpening(path)
 		if err != nil {
 			s.fail(err)
 			return

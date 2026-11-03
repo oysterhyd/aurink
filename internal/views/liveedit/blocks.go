@@ -20,6 +20,9 @@ type rowMetrics struct {
 	x             float32 // the text's left, from the column's left
 	width         float32 // the width the text wraps at
 	muted, struck bool
+	// preview is the room at the bottom of the row for the live preview of
+	// a math block or diagram whose source shows; it is part of below.
+	preview float32
 }
 
 // widget is one entry of the block registry (03 §6.5): new syntax adds an entry and
@@ -69,6 +72,11 @@ var widgets = map[contract.BlockKind]widget{
 // widgetOf picks a row's widget by its projection's kind, which differs from the
 // block's while a lone marker waits for its space (a "#" is a paragraph).
 func widgetOf(b *contract.Block, p *contract.BlockProjection) widget {
+	// A block shown as its object (a diagram, a header) is not its source's
+	// card: the object paints itself.
+	if o := blockObject(p); o != nil && o.Kind != contract.ObjImage {
+		return plainWidget{}
+	}
 	kind := b.Kind
 	if p.Block == b.ID {
 		kind = p.Kind
@@ -121,6 +129,10 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 		m.above, m.below = ty.Body*.25, ty.Body*.6
 	}
 	m.width = max(m.width-m.x, 1)
+	if h := e.previewHeight(b, e.previewObject(b, p)); h > 0 {
+		m.preview = h
+		m.below += h
+	}
 	return m
 }
 
@@ -181,8 +193,9 @@ func (codeWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) {
 }
 
 func (codeWidget) back(rc *rowContext) {
-	rc.p.Fill(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: rc.height - rc.e.ty.Body + 12}, rc.t.CodeBg, 10)
-	rc.p.Stroke(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: rc.height - rc.e.ty.Body + 12}, rc.t.Border, 10, 1)
+	h := rc.height - rc.l.m.preview - rc.e.ty.Body + 12
+	rc.p.Fill(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: h}, rc.t.CodeBg, 10)
+	rc.p.Stroke(ui.Rect{X: rc.ox, Y: rc.top, W: rc.e.width, H: h}, rc.t.Border, 10, 1)
 }
 
 func (codeWidget) front(rc *rowContext) {

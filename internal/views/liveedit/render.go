@@ -3,6 +3,8 @@ package liveedit
 import (
 	"context"
 	"fmt"
+	"maps"
+	"slices"
 	"time"
 
 	"aurink/internal/contract"
@@ -24,6 +26,8 @@ const (
 	fadeIn        = 220 * time.Millisecond
 	blockMathH    = 56
 	diagramH      = 220
+	// maxRenders bounds the renderings an editor keeps.
+	maxRenders = 512
 )
 
 type renderKey struct {
@@ -74,8 +78,18 @@ func (e *Editor) rendered(o *contract.ObjectRef, size float32) *renderState {
 	if st != nil {
 		return st
 	}
-	if e.renders == nil {
-		e.renders = map[renderKey]*renderState{}
+	if e.renders == nil || len(e.renders) >= maxRenders {
+		// Typing in a formula leaves a rendering per keystroke: past the
+		// bound they go, but for those on their way and the previews'. The
+		// rest come back from the service's cache when asked again.
+		keep := map[renderKey]*renderState{}
+		shown := slices.Collect(maps.Values(e.previews))
+		for k, v := range e.renders {
+			if v.loading || slices.Contains(shown, v) {
+				keep[k] = v
+			}
+		}
+		e.renders = keep
 	}
 	st = &renderState{}
 	e.renders[k] = st
@@ -172,9 +186,11 @@ func (e *Editor) renderedSize(o *contract.ObjectRef, m *rowMetrics) (w, h, desce
 		if w > m.width {
 			w, h = m.width, h*m.width/w
 		}
-		if !o.Display {
-			descent = max(0, st.res.Height-st.res.Ascent)
+		if o.Display {
+			// The row's width: the result centres on the column.
+			return m.width, h, 0, true
 		}
+		descent = max(0, st.res.Height-st.res.Ascent)
 		return w, h, descent, true
 	case st.failed:
 		l := e.shaped(sourceLine(o), e.ty.CodeFont())
