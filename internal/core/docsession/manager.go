@@ -48,6 +48,7 @@ type Manager struct {
 	events     listeners[contract.SessionsEvent]
 	jobs       []func()
 	busy       bool
+	idle       []func()
 }
 
 var _ contract.Sessions = (*Manager)(nil)
@@ -216,13 +217,43 @@ func (m *Manager) delay() time.Duration {
 	return time.Duration(m.settings.Files.AutosaveDelayMs) * time.Millisecond
 }
 
+// Idle posts done to the dispatcher after the running job and all jobs already
+// queued finish, including their background work and completions. Jobs added
+// before the queue drains may also delay done. Timers that have not fired are
+// not jobs; a timer that fires later can queue more work. Call Idle on the
+// dispatcher thread; done is always posted to a later dispatcher turn.
+func (m *Manager) Idle(done func()) {
+	if !m.busy && len(m.jobs) == 0 {
+		m.postIdle(done)
+		return
+	}
+	m.idle = append(m.idle, done)
+}
+
+func (m *Manager) postIdle(done func()) {
+	m.dispatcher.Post(func() {
+		if done != nil {
+			defer logPanic()
+			done()
+		}
+	})
+}
+
 func (m *Manager) enqueue(start func()) {
 	m.jobs = append(m.jobs, start)
 	m.startNext()
 }
 
 func (m *Manager) startNext() {
-	if m.busy || len(m.jobs) == 0 {
+	if m.busy {
+		return
+	}
+	if len(m.jobs) == 0 {
+		idle := m.idle
+		m.idle = nil
+		for _, done := range idle {
+			m.postIdle(done)
+		}
 		return
 	}
 	start := m.jobs[0]

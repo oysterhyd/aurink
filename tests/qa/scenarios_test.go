@@ -143,6 +143,9 @@ func (a *app) idle() {
 	done := false
 	a.s.SaveSession(false, func(error) { done = true })
 	a.pumpUntil("the session saved", &done)
+	done = false
+	a.sessions.Idle(func() { done = true })
+	a.pumpUntil("the document sessions idle", &done)
 }
 
 // pumpUntil runs what is posted until *done.
