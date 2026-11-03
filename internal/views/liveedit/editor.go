@@ -190,6 +190,8 @@ type Editor struct {
 	// reduceMotion is the shell's reading of Appearance.ReduceMotion.
 	reduceMotion bool
 	fmtBar       formatBar
+	smoothCaret  bool
+	caret        caretMotion
 
 	services   ui.Services
 	hasView    bool

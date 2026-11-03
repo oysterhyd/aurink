@@ -406,6 +406,11 @@ func (s *Shell) editorPage(c *ui.Context, t *theme.Tokens) {
 			s.update(func(v *contract.Settings) { v.Editor.AutoPair = on })
 		})
 	})
+	s.row(c, t, "smoothCaret", locales.SettingsSmoothCaret(), locales.SettingsSmoothCaretHint(), func() {
+		s.toggle(c, t, "smoothCaret", locales.SettingsSmoothCaret(), e.SmoothCaret, func(on bool) {
+			s.update(func(v *contract.Settings) { v.Editor.SmoothCaret = on })
+		})
+	})
 	marks := func(key, label string, options []string, cur string, set func(v *contract.Settings, x string)) {
 		s.row(c, t, key, label, "", func() {
 			if i := s.choice(c, t, key, options, max(0, slices.Index(options, cur))); i >= 0 {

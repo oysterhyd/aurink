@@ -246,5 +246,7 @@
   "liveedit_body": "正文",
   "liveedit_heading_n": "标题 {level}",
   "liveedit_quote": "引用",
-  "liveedit_link_address": "链接地址"
+  "liveedit_link_address": "链接地址",
+  "settings_smooth_caret": "平滑光标",
+  "settings_smooth_caret_hint": "光标滑动到新位置，带微弱辉光"
 }

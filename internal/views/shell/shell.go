@@ -803,6 +803,7 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 		ed := s.o.Settings.Get().Editor
 		d.live.SetReveal(ed.Reveal, ed.SoftBreak)
 		d.live.SetReduceMotion(s.reduceMotion(c))
+		d.live.SetSmoothCaret(ed.SmoothCaret)
 		if s.focusNext {
 			s.focusNext = false
 			d.live.Focus()

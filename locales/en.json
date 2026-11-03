@@ -1058,5 +1058,13 @@
   "liveedit_link_address": "Link address",
   "@liveedit_link_address": {
     "description": "The format bar's address field, its placeholder."
+  },
+  "settings_smooth_caret": "Smooth caret",
+  "@settings_smooth_caret": {
+    "description": "Editor setting: the caret glides and glows."
+  },
+  "settings_smooth_caret_hint": "The caret glides to where it goes, with a faint glow",
+  "@settings_smooth_caret_hint": {
+    "description": "Hint under the smooth caret setting."
   }
 }

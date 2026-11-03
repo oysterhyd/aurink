@@ -3501,3 +3501,31 @@ func LiveeditLinkAddress() string { return In(i18n.Locale()).LiveeditLinkAddress
 func (msgs Messages) LiveeditLinkAddress() string {
 	return Catalog.Format(msgs.locale, "liveedit_link_address", nil)
 }
+
+// SettingsSmoothCaret says "Smooth caret"
+// in the language the app shows.
+//
+// Editor setting: the caret glides and glows.
+func SettingsSmoothCaret() string { return In(i18n.Locale()).SettingsSmoothCaret() }
+
+// SettingsSmoothCaret says "Smooth caret"
+// in the language of msgs.
+//
+// Editor setting: the caret glides and glows.
+func (msgs Messages) SettingsSmoothCaret() string {
+	return Catalog.Format(msgs.locale, "settings_smooth_caret", nil)
+}
+
+// SettingsSmoothCaretHint says "The caret glides to where it goes, with a faint glow"
+// in the language the app shows.
+//
+// Hint under the smooth caret setting.
+func SettingsSmoothCaretHint() string { return In(i18n.Locale()).SettingsSmoothCaretHint() }
+
+// SettingsSmoothCaretHint says "The caret glides to where it goes, with a faint glow"
+// in the language of msgs.
+//
+// Hint under the smooth caret setting.
+func (msgs Messages) SettingsSmoothCaretHint() string {
+	return Catalog.Format(msgs.locale, "settings_smooth_caret_hint", nil)
+}

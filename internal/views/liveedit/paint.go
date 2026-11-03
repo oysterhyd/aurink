@@ -101,11 +101,8 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		}
 	}
 	if e.focused && selFrom == selTo && !e.readOnly() {
-		const blink = 530 * time.Millisecond
-		if phase := p.Now().Sub(e.blinkStart); (phase/blink)%2 == 0 || phase < 0 {
-			cx, cy, ch := e.caretRect()
-			p.Fill(ui.Rect{X: r.X + cx, Y: r.Y + cy, W: max(1/p.Scale(), 1.5), H: ch}, t.Accent, 0)
-		}
+		cx, cy, ch := e.caretRect()
+		e.paintCaret(p, r, cx, cy, ch)
 	}
 }
 
