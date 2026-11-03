@@ -64,6 +64,10 @@ type Options struct {
 	WindowButtons bool
 	// Exts are the syntax extensions M1 renders.
 	Exts contract.Extensions
+	// ObjectLangs are the code languages shown as diagrams; Renderer renders
+	// them and math (nil shows their source).
+	ObjectLangs []string
+	Renderer    contract.Renderer
 	// Fuzzy ranks the palette's rows; nil matches by substring.
 	Fuzzy contract.Fuzzy
 	// Files lists the workspace's files for quick open; nil lists open and closed tabs only.
@@ -118,12 +122,15 @@ type doc struct {
 
 // Shell is one window's interface.
 type Shell struct {
-	o       Options
-	docs    []*doc
-	active  *doc
-	sidebar bool
-	off     func()
-	offSet  func()
+	o Options
+	// renderWarned is set once the notice that math and diagrams cannot
+	// render has shown.
+	renderWarned bool
+	docs         []*doc
+	active       *doc
+	sidebar      bool
+	off          func()
+	offSet       func()
 
 	dark      bool
 	themeSet  bool
@@ -243,7 +250,7 @@ func (s *Shell) attach(x contract.Session) *doc {
 	}
 	d := &doc{s: x, mode: editorapi.ModeLive, counted: ^contract.Version(0)}
 	d.live = liveedit.New(liveedit.Options{Session: x, Projector: s.o.Projector, Editing: s.o.Editing,
-		Prefs: s.prefs, Exts: s.o.Exts, Theme: s.palette(s.dark), Dispatcher: s.o.Dispatcher,
+		Prefs: s.prefs, Exts: s.o.Exts, ObjectLangs: s.o.ObjectLangs, Renderer: s.o.Renderer, Theme: s.palette(s.dark), Dispatcher: s.o.Dispatcher,
 		DocDir: func() string {
 			if p := x.State().Path; p != "" {
 				return filepath.Dir(p)
@@ -812,6 +819,11 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 			d.live.Focus()
 		}
 		d.live.View(c.Key("live"))
+		if !s.renderWarned && d.live.RenderUnavailable() {
+			// Once a run: math and diagrams show as source (02 §5.9).
+			s.renderWarned = true
+			s.Notify(contract.Notice{Level: contract.NoticeWarning, Message: locales.ShellRenderUnavailable()})
+		}
 		// The rail stays in reading mode, as Reading.png has it.
 		if !d.live.FocusMode() || s.reading {
 			d.live.Rail(c.Key("rail"))

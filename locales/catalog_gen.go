@@ -2336,6 +2336,22 @@ func (msgs Messages) ShellExportHtml() string {
 	return Catalog.Format(msgs.locale, "shell_export_html", nil)
 }
 
+// ShellRenderUnavailable says "Math and diagrams show as source: the renderer is not available"
+// in the language the app shows.
+//
+// Notice, once a run, when the WebView that renders math and diagrams is
+// not there.
+func ShellRenderUnavailable() string { return In(i18n.Locale()).ShellRenderUnavailable() }
+
+// ShellRenderUnavailable says "Math and diagrams show as source: the renderer is not available"
+// in the language of msgs.
+//
+// Notice, once a run, when the WebView that renders math and diagrams is
+// not there.
+func (msgs Messages) ShellRenderUnavailable() string {
+	return Catalog.Format(msgs.locale, "shell_render_unavailable", nil)
+}
+
 // ShellExported says "Exported"
 // in the language the app shows.
 //
@@ -3598,4 +3614,46 @@ func LiveeditCloseLightbox() string { return In(i18n.Locale()).LiveeditCloseLigh
 // Lightbox button.
 func (msgs Messages) LiveeditCloseLightbox() string {
 	return Catalog.Format(msgs.locale, "liveedit_close_lightbox", nil)
+}
+
+// LiveeditTocEmpty says "Table of contents: no headings yet"
+// in the language the app shows.
+//
+// Shown by a [TOC] block in a document without headings.
+func LiveeditTocEmpty() string { return In(i18n.Locale()).LiveeditTocEmpty() }
+
+// LiveeditTocEmpty says "Table of contents: no headings yet"
+// in the language of msgs.
+//
+// Shown by a [TOC] block in a document without headings.
+func (msgs Messages) LiveeditTocEmpty() string {
+	return Catalog.Format(msgs.locale, "liveedit_toc_empty", nil)
+}
+
+// LiveeditRenderingMath says "Starting math rendering"
+// in the language the app shows.
+//
+// Shown in a formula's placeholder while it renders.
+func LiveeditRenderingMath() string { return In(i18n.Locale()).LiveeditRenderingMath() }
+
+// LiveeditRenderingMath says "Starting math rendering"
+// in the language of msgs.
+//
+// Shown in a formula's placeholder while it renders.
+func (msgs Messages) LiveeditRenderingMath() string {
+	return Catalog.Format(msgs.locale, "liveedit_rendering_math", nil)
+}
+
+// LiveeditRenderingDiagram says "Rendering diagram"
+// in the language the app shows.
+//
+// Shown in a diagram's placeholder while it renders.
+func LiveeditRenderingDiagram() string { return In(i18n.Locale()).LiveeditRenderingDiagram() }
+
+// LiveeditRenderingDiagram says "Rendering diagram"
+// in the language of msgs.
+//
+// Shown in a diagram's placeholder while it renders.
+func (msgs Messages) LiveeditRenderingDiagram() string {
+	return Catalog.Format(msgs.locale, "liveedit_rendering_diagram", nil)
 }

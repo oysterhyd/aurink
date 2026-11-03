@@ -33,6 +33,8 @@ type Options struct {
 	Prefs       func() contract.EditPrefs
 	Exts        contract.Extensions
 	ObjectLangs []string
+	// Renderer renders math and diagrams; nil shows their source.
+	Renderer contract.Renderer
 	// Theme is the first palette; nil uses Paper.
 	Theme *theme.Tokens
 	// DocDir returns the folder relative images resolve against, "" for none.
@@ -166,17 +168,23 @@ type Editor struct {
 	linkDefs      map[string]contract.LinkDef
 	footnotes     map[string]int
 	labels        map[labelKey]*ui.TextLayout
-	t             *theme.Tokens
-	images        map[string]*imageState
-	codeState     uint64
-	copiedBlock   contract.BlockID
-	copiedAt      time.Time
-	tickBlock     contract.BlockID
-	tickStart     time.Time
-	hoverLink     string
-	hoverNote     string
-	hoverX        float32
-	hoverY        float32
+	texts         map[textKey]*ui.TextLayout
+	renders       map[renderKey]*renderState
+	renderOff     bool
+	// frameNow is the frame's clock, which the work started between frames
+	// keeps its times by: the paint compares them with its own.
+	frameNow    time.Time
+	t           *theme.Tokens
+	images      map[string]*imageState
+	codeState   uint64
+	copiedBlock contract.BlockID
+	copiedAt    time.Time
+	tickBlock   contract.BlockID
+	tickStart   time.Time
+	hoverLink   string
+	hoverNote   string
+	hoverX      float32
+	hoverY      float32
 
 	mode       editorapi.Mode
 	focusMode  bool
@@ -301,6 +309,7 @@ func (e *Editor) View(c *ui.Context) ui.Element {
 		Role(ui.RoleTextField).Label("Editor").
 		HandleTextInput(e).HandleInput(e.input).Draw(e.paint).PopoverMenu(e.tableMenu)
 	e.services, e.hasView = c.Services(), true
+	e.frameNow = c.Now()
 	// MyGo does not say where files were dropped, and the pointer's last place
 	// may be from before the drag: dropped images go in at the caret.
 	if files := box.DroppedFiles(); len(files) > 0 {

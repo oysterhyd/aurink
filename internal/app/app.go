@@ -16,6 +16,7 @@ import (
 	"aurink/internal/adapters/richpaste"
 	"aurink/internal/adapters/trash"
 	"aurink/internal/adapters/watch"
+	"aurink/internal/adapters/webviewhost"
 	"aurink/internal/contract"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
@@ -23,12 +24,14 @@ import (
 	"aurink/internal/core/editing"
 	"aurink/internal/core/fsstore"
 	"aurink/internal/core/projection"
+	"aurink/internal/core/render"
 	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
 	"aurink/internal/core/workspace"
 	"aurink/internal/views/shell"
 	"aurink/locales"
 	"aurink/resources"
+	renderpage "aurink/resources/render"
 )
 
 // FollowSettings returns what a settings change does to the services that
@@ -55,8 +58,8 @@ var licenses = []string{
 	"JetBrains Mono — OFL-1.1",
 }
 
-// m1Exts is what M1 renders (06 §2.1): the other extensions are off until their cards.
-const m1Exts = contract.ExtFrontMatter
+// objectLangs are the code languages shown as diagrams.
+var objectLangs = []string{"mermaid"}
 
 // windowDispatcher brings work back to the window's thread and draws afterwards.
 type windowDispatcher struct{ w *mygo.Window }
@@ -133,7 +136,9 @@ func newApplication() (*application, error) {
 		return nil, err
 	}
 	base := store.Get()
-	base.Editor.Exts = m1Exts
+	// The extensions apply to documents opened after they change (Typora's way).
+	exts := base.Editor.Exts
+	renderer := &lateRenderer{}
 	sessions := docsession.New(files, document.Factory{}, dispatcher, filepath.Join(data, "recovery"), docsession.Options{Settings: &base})
 	a.sessions = sessions
 	registry := commands.New()
@@ -143,13 +148,13 @@ func newApplication() (*application, error) {
 	index := newFileIndex(ws, dispatcher)
 	a.shell = shell.New(shell.Options{Files: index.Files,
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: m1Exts, Fuzzy: search.NewFuzzy(),
+		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: exts, ObjectLangs: objectLangs, Renderer: renderer, Fuzzy: search.NewFuzzy(),
 		Workspace: ws, Search: search.NewWorkspaceSearch(), Finder: search.NewFinder(),
-		Clip: clipHTML(m1Exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: assets,
+		Clip: clipHTML(exts), Converter: richpaste.New(), Clipboard: clipboard.New(), Assets: assets,
 		WindowButtons: runtime.GOOS != "darwin",
 		SessionStore:  docsession.NewSessionStore(filepath.Join(data, "session.json"), files),
 		Recent:        systemRecent{workspace.NewRecent(filepath.Join(data, "recent.json"), dispatcher)},
-		ExportHTML:    ExportHTML(files, dispatcher, m1Exts),
+		ExportHTML:    ExportHTML(files, dispatcher, exts),
 		SetLanguage:   mygo.App.SetLocale,
 		Version:       mygo.App.Version(),
 		Licenses:      licenses,
@@ -157,7 +162,7 @@ func newApplication() (*application, error) {
 	// The settings store is the language's source; files settings reach the
 	// sessions as they change.
 	mygo.App.SetLocale(base.Language)
-	store.Subscribe(FollowSettings(ws, assets, sessions, m1Exts))
+	store.Subscribe(FollowSettings(ws, assets, sessions, exts))
 	if err := registry.Register(a.shell.Commands()...); err != nil {
 		return nil, err
 	}
@@ -168,6 +173,8 @@ func newApplication() (*application, error) {
 	}
 	a.window = mygo.NewWindow(style)
 	dispatcher.w = a.window
+	renderer.set(render.New(webviewhost.New(a.window), render.Options{
+		Page: renderpage.Page(), CacheDir: filepath.Join(data, "render-cache")}))
 	a.window.OnClose(func(e *mygo.CloseEvent) {
 		if a.closing {
 			return

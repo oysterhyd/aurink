@@ -165,6 +165,7 @@
   "shell_session_unreadable": "无法读取上次的会话",
   "shell_export_html": "导出为 HTML…",
   "shell_exported": "已导出",
+  "shell_render_unavailable": "公式和图表以源码显示：渲染组件不可用",
   "shell_exporting": "正在导出…",
   "shell_html_files": "HTML 文件",
   "settings_title": "设置",
@@ -253,5 +254,8 @@
   "liveedit_zoom_out": "缩小",
   "liveedit_zoom_in": "放大",
   "liveedit_fit": "适应",
-  "liveedit_close_lightbox": "关闭"
+  "liveedit_close_lightbox": "关闭",
+  "liveedit_toc_empty": "目录：还没有标题",
+  "liveedit_rendering_math": "正在启动公式渲染",
+  "liveedit_rendering_diagram": "正在渲染图表"
 }

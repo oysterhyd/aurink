@@ -717,6 +717,10 @@
   "@shell_export_html": {
     "description": "Command: writes the document as an HTML page."
   },
+  "shell_render_unavailable": "Math and diagrams show as source: the renderer is not available",
+  "@shell_render_unavailable": {
+    "description": "Notice, once a run, when the WebView that renders math and diagrams is not there."
+  },
   "shell_exported": "Exported",
   "@shell_exported": {
     "description": "Notice after an export finished; the file's name is shown under it."
@@ -1086,5 +1090,17 @@
   "liveedit_close_lightbox": "Close",
   "@liveedit_close_lightbox": {
     "description": "Lightbox button."
+  },
+  "liveedit_toc_empty": "Table of contents: no headings yet",
+  "@liveedit_toc_empty": {
+    "description": "Shown by a [TOC] block in a document without headings."
+  },
+  "liveedit_rendering_math": "Starting math rendering",
+  "@liveedit_rendering_math": {
+    "description": "Shown in a formula's placeholder while it renders."
+  },
+  "liveedit_rendering_diagram": "Rendering diagram",
+  "@liveedit_rendering_diagram": {
+    "description": "Shown in a diagram's placeholder while it renders."
   }
 }

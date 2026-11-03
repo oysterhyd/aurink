@@ -82,7 +82,7 @@ func (p *platform) IsMaximized() bool { return false }
 func (p *platform) Close()            { p.closes++ }
 
 // qaExts are the extensions the app parses with, as internal/app has them.
-const qaExts = contract.ExtFrontMatter
+const qaExts = contract.ExtDefault
 
 type app struct {
 	t        *testing.T
@@ -107,6 +107,7 @@ type app struct {
 	// lang is the language the shell last set.
 	lang   string
 	assets *workspace.Assets
+	render *fakeRenderer
 }
 
 // heldWorkspace keeps SetRoot's answer until the test lets it through.
@@ -122,7 +123,7 @@ func (w heldWorkspace) SetRoot(path string, done func(error)) {
 func newApp(t *testing.T) *app {
 	t.Helper()
 	dir := t.TempDir()
-	a := &app{t: t, dir: dir, data: filepath.Join(dir, "data"), q: make(pump, 4096), p: &platform{}}
+	a := &app{t: t, dir: dir, data: filepath.Join(dir, "data"), q: make(pump, 4096), p: &platform{}, render: &fakeRenderer{available: true}}
 	if err := os.MkdirAll(a.data, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -202,7 +203,7 @@ func (a *app) boot() {
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: qaExts, Fuzzy: search.NewFuzzy(),
+		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: qaExts, ObjectLangs: []string{"mermaid"}, Renderer: a.render, Fuzzy: search.NewFuzzy(),
 		Files: func() []string { return a.files }, Workspace: ws, Search: search.NewWorkspaceSearch(),
 		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
 		Recent:       workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q),

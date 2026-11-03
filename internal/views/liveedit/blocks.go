@@ -113,7 +113,13 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 			m.muted = true
 		}
 	}
-	widgetOf(b, p).metrics(e, r, b, &m)
+	// A block shown as its object (a header, a table of contents) is not
+	// source: it takes the plain row.
+	if o := blockObject(p); o == nil || o.Kind == contract.ObjImage {
+		widgetOf(b, p).metrics(e, r, b, &m)
+	} else {
+		m.above, m.below = ty.Body*.25, ty.Body*.6
+	}
 	m.width = max(m.width-m.x, 1)
 	return m
 }
@@ -585,7 +591,7 @@ func (e *Editor) styled(text string, seg *contract.Segment, m *rowMetrics) ui.Sp
 			s.Radius = 4
 		}
 	}
-	if st&contract.StyleLink != 0 {
+	if st&(contract.StyleLink|contract.StyleWikiLink) != 0 {
 		s.Color = t.Accent
 		s.Underline = true
 		s.DecorationColor = t.Accent.Alpha(.5)

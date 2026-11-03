@@ -1,6 +1,7 @@
 package liveedit
 
 import (
+	"path"
 	"strings"
 	"time"
 
@@ -82,10 +83,29 @@ func (e *Editor) linkAt(x, y float32) string {
 	src := e.opts.Projector.ToSource(&l.proj, pos.Index, contract.Downstream)
 	for i := range l.proj.Segments {
 		if s := &l.proj.Segments[i]; s.Link != "" && src >= s.Src.Start && src < s.Src.End {
+			if s.Style&contract.StyleWikiLink != 0 {
+				return wikiPath(s.Link)
+			}
 			return s.Link
 		}
 	}
 	return ""
+}
+
+// wikiPath is the file a wiki link names: [[Note]] is Note.md next to the
+// document, [[Note#Part]] the same file.
+func wikiPath(target string) string {
+	if k := strings.IndexByte(target, '#'); k >= 0 {
+		target = target[:k]
+	}
+	target = strings.TrimSpace(target)
+	if target == "" {
+		return ""
+	}
+	if path.Ext(target) == "" {
+		target += ".md"
+	}
+	return target
 }
 
 func openable(link string) bool {
@@ -99,6 +119,9 @@ func (e *Editor) rowCommand(ev ui.InputEvent) bool {
 	r := e.rowAtPoint(ev.X, ev.Y)
 	if r < 0 {
 		return false
+	}
+	if e.tocClick(r, ev.X, ev.Y) {
+		return true
 	}
 	if c := e.taskBoxAt(r, ev.X, ev.Y); c != nil {
 		e.toggleTask(c)
@@ -117,10 +140,8 @@ func (e *Editor) rowCommand(ev ui.InputEvent) bool {
 		}
 	}
 	if ev.Mods&ui.Cmd != 0 {
-		if link := e.linkAt(ev.X, ev.Y); openable(link) {
-			if e.hasView {
-				e.services.OpenURL(link)
-			}
+		if link := e.linkAt(ev.X, ev.Y); link != "" && !strings.HasPrefix(link, "#") {
+			e.openLink(link)
 			return true
 		}
 	}
