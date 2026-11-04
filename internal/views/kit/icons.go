@@ -34,6 +34,12 @@ var (
 	IconSliders   = icon(`<path d="M2.5 5h6.5M12.5 5h1M2.5 11h1M7 11h6.5"/><circle cx="10.7" cy="5" r="1.7"/><circle cx="5.3" cy="11" r="1.7"/>`)
 	IconLink      = icon(`<path d="M6.8 9.2a2.6 2.6 0 003.7 0l2-2a2.6 2.6 0 00-3.7-3.7l-.9.9"/><path d="M9.2 6.8a2.6 2.6 0 00-3.7 0l-2 2a2.6 2.6 0 003.7 3.7l.9-.9"/>`)
 	IconWarn      = icon(`<path d="M8 2.8l5.8 10H2.2z"/><path d="M8 6.5v3M8 11.2v.1"/>`)
+	// The table toolbar's, as Typora's: size, the three alignments, more.
+	IconGrid        = icon(`<rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/>`)
+	IconAlignLeft   = icon(`<path d="M2.5 4h11M2.5 8h7M2.5 12h11"/>`)
+	IconAlignCenter = icon(`<path d="M2.5 4h11M4.5 8h7M2.5 12h11"/>`)
+	IconAlignRight  = icon(`<path d="M2.5 4h11M6.5 8h7M2.5 12h11"/>`)
+	IconMore        = icon(`<circle cx="8" cy="3.5" r=".6" fill="currentColor"/><circle cx="8" cy="8" r=".6" fill="currentColor"/><circle cx="8" cy="12.5" r=".6" fill="currentColor"/>`)
 )
 
 // Brand is the Aurink mark of the design (Main, the title bar): an arch in

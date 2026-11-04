@@ -1640,6 +1640,48 @@ func (msgs Messages) LiveeditTableBar() string {
 	return Catalog.Format(msgs.locale, "liveedit_table_bar", nil)
 }
 
+// LiveeditTableSize says "Table Size"
+// in the language the app shows.
+//
+// The table toolbar's button that opens the size grid, as Typora's.
+func LiveeditTableSize() string { return In(i18n.Locale()).LiveeditTableSize() }
+
+// LiveeditTableSize says "Table Size"
+// in the language of msgs.
+//
+// The table toolbar's button that opens the size grid, as Typora's.
+func (msgs Messages) LiveeditTableSize() string {
+	return Catalog.Format(msgs.locale, "liveedit_table_size", nil)
+}
+
+// LiveeditTableMore says "More"
+// in the language the app shows.
+//
+// The table toolbar's menu of row and column commands.
+func LiveeditTableMore() string { return In(i18n.Locale()).LiveeditTableMore() }
+
+// LiveeditTableMore says "More"
+// in the language of msgs.
+//
+// The table toolbar's menu of row and column commands.
+func (msgs Messages) LiveeditTableMore() string {
+	return Catalog.Format(msgs.locale, "liveedit_table_more", nil)
+}
+
+// LiveeditDeleteTable says "Delete Table"
+// in the language the app shows.
+//
+// Deletes the whole table holding the caret.
+func LiveeditDeleteTable() string { return In(i18n.Locale()).LiveeditDeleteTable() }
+
+// LiveeditDeleteTable says "Delete Table"
+// in the language of msgs.
+//
+// Deletes the whole table holding the caret.
+func (msgs Messages) LiveeditDeleteTable() string {
+	return Catalog.Format(msgs.locale, "liveedit_delete_table", nil)
+}
+
 // LiveeditRow says "Row"
 // in the language the app shows.
 //

@@ -172,6 +172,12 @@ type Editor struct {
 	renders       map[renderKey]*renderState
 	renderOff     bool
 	slash         slashMenu
+	// The table toolbar's size grid: open, and the size it shows lit.
+	tableGrid          bool
+	gridRows, gridCols int
+	// tableMenuOpen is set while the toolbar's More menu shows: it takes the
+	// focus from the document, and the toolbar holding it stays.
+	tableMenuOpen bool
 	// previews holds each block's last good rendering, which its preview
 	// keeps while the source being typed renders.
 	previews map[contract.BlockID]*renderState

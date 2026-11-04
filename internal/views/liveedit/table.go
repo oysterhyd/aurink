@@ -1,8 +1,11 @@
 package liveedit
 
 import (
+	"strconv"
+
 	"aurink/internal/contract"
 	"aurink/internal/views/effects"
+	"aurink/internal/views/kit"
 	"aurink/internal/views/theme"
 	"aurink/locales"
 	"github.com/egoist/mygo/ui"
@@ -22,47 +25,155 @@ func (e *Editor) tableEdit(cmd contract.EditCommand) {
 	e.invalidate()
 }
 
-// TableBar shows the glass toolbar over the table holding the caret (02 §5.8):
-// a row below, a column right, and Format, which alone reflows the table.
+// tableShape is the table holding the caret: its body rows (header not
+// counted), its columns, the caret's column and that column's alignment.
+func (e *Editor) tableShape() (rows, cols, col int, align contract.Align, ok bool) {
+	if !e.inTable() {
+		return 0, 0, 0, 0, false
+	}
+	b := e.block(e.caretRow)
+	tr := e.ast.Block(b.Parent)
+	if tr == nil || tr.Parent < 0 {
+		return 0, 0, 0, 0, false
+	}
+	tbl := e.ast.Block(tr.Parent)
+	for i := tr.Parent + 1; i < e.ast.Len(); i++ {
+		x := e.ast.Block(i)
+		if x.Range.Start >= tbl.Range.End {
+			break
+		}
+		if x.Kind == contract.BlockTableRow && x.Parent == tr.Parent {
+			rows++
+		}
+	}
+	col, cols = e.rows[e.caretRow].col, e.rows[e.caretRow].cols
+	if col < len(tbl.Align) {
+		align = tbl.Align[col]
+	}
+	return rows - 1, cols, col, align, true
+}
+
+// TableBar shows Typora's table toolbar over the table holding the caret: on
+// the left the size grid and the alignment of the caret's column, on the
+// right a menu of the row and column commands and Delete Table.
 func (e *Editor) TableBar(c *ui.Context) {
-	if !e.focused || e.readOnly() || !e.inTable() {
+	// The More menu takes the focus while it shows; it marks itself built in
+	// each frame it shows, and the toolbar stays for it.
+	menu := e.tableMenuOpen
+	e.tableMenuOpen = false
+	if !e.focused && !menu || e.readOnly() || !e.inTable() {
+		e.tableGrid = false
 		return
 	}
 	first, last, ok := e.tableRows(e.caretRow)
-	if !ok {
+	rows, cols, _, align, shaped := e.tableShape()
+	if !ok || !shaped {
 		return
 	}
-	t := e.t
 	top := float32(e.rowTop(first)-e.scroll) + tableGap
 	bottom := float32(e.rowTop(last)-e.scroll) + e.rows[last].h - tableGap
 	if bottom < 40 || top > e.viewH {
 		return
 	}
 	// Above the table, kept in view while the table is.
-	y := max(top-38, 6)
-	bar := ui.Row(c).Absolute().Top(y).Right(e.viewW-e.contentX()-e.width).Height(30).Padding(0, 4).Gap(2).
-		AlignItems(ui.Center).Radius(9).Border(1, t.Border).Shadow(0, 6, 18, 0, t.ShadowColor).
-		Material(effects.Glass(t, effects.Chip)).Label(locales.LiveeditTableBar())
-	bar.Children(func() {
-		e.barButton(c.Key("row"), "+ "+locales.LiveeditRow(), locales.LiveeditRowBelow(), contract.CmdTableRowBelow)
-		e.barButton(c.Key("col"), "+ "+locales.LiveeditColumn(), locales.LiveeditColRight(), contract.CmdTableColRight)
-		ui.Box(c).Size(1, 16).Background(t.Border)
-		e.barButton(c.Key("format"), locales.LiveeditFormatTable(), locales.LiveeditFormatTable(), contract.CmdTableFormat)
+	y := max(top-32, 4)
+	left, right := e.contentX(), e.viewW-e.contentX()-e.width
+	ui.Row(c.Key("tableLeft")).Absolute().Left(left - 4).Top(y).Height(28).Gap(2).AlignItems(ui.Center).
+		Label(locales.LiveeditTableBar()).Children(func() {
+		if e.tableTool(c.Key("size"), kit.IconGrid, locales.LiveeditTableSize(), e.tableGrid).Clicked() {
+			e.tableGrid = !e.tableGrid
+			e.gridRows, e.gridCols = rows+1, cols
+		}
+		for _, a := range []struct {
+			key   string
+			icon  *ui.SVG
+			label string
+			align contract.Align
+		}{
+			{"left", kit.IconAlignLeft, locales.LiveeditAlignLeft(), contract.AlignLeft},
+			{"center", kit.IconAlignCenter, locales.LiveeditAlignCenter(), contract.AlignCenter},
+			{"right", kit.IconAlignRight, locales.LiveeditAlignRight(), contract.AlignRight},
+		} {
+			// As in Typora, the lit alignment clicked again goes back to none.
+			if e.tableTool(c.Key(a.key), a.icon, a.label, align == a.align).Clicked() {
+				to := a.align
+				if align == a.align {
+					to = contract.AlignNone
+				}
+				e.tableEdit(contract.EditCommand{ID: contract.CmdTableAlign, Align: to})
+			}
+		}
 	})
+	ui.Row(c.Key("tableRight")).Absolute().Right(right - 4).Top(y).Height(28).Gap(2).AlignItems(ui.Center).Children(func() {
+		e.tableTool(c.Key("more"), kit.IconMore, locales.LiveeditTableMore(), menu).PopoverMenuButton(func(m *ui.Menu) {
+			e.tableMenuOpen = true
+			e.tableMenu(m)
+		})
+		if e.tableTool(c.Key("delete"), kit.IconTrash, locales.LiveeditDeleteTable(), false).Clicked() {
+			e.tableEdit(contract.EditCommand{ID: contract.CmdTableDelete})
+		}
+	})
+	if e.tableGrid {
+		e.tableSizeGrid(c, left-4, y+30)
+	}
 }
 
-func (e *Editor) barButton(c *ui.Context, text, label string, id contract.CommandID) {
+// tableTool is an icon button of the table toolbar; it leaves the focus in the
+// document, so the caret stays in its cell.
+func (e *Editor) tableTool(c *ui.Context, icon *ui.SVG, label string, on bool) ui.Element {
 	t := e.t
-	b := ui.Row(c).Height(24).Padding(0, 8).Radius(6).AlignItems(ui.Center).Role(ui.RoleButton).Label(label).KeepFocus()
-	if b.Hovered() {
+	b := ui.Row(c).Size(28, 28).Justify(ui.Center).AlignItems(ui.Center).Radius(6).
+		Role(ui.RoleButton).Label(label).Tooltip(label).KeepFocus()
+	color := t.Muted
+	switch {
+	case on:
+		b.Background(t.AccentSoft)
+		color = t.Accent
+	case b.Hovered():
 		b.Background(t.Hover)
+		color = t.Text
 	}
-	b.Children(func() {
-		ui.Text(c, text).FontSize(theme.UIBadge + 1).TextColor(t.Text)
+	b.Children(func() { ui.Icon(c, icon).Size(16, 16).TextColor(color) })
+	return b
+}
+
+// tableSizeGrid is the size grid under the size button: the table's size lit,
+// the size under the pointer lit as it moves, a click resizes to it.
+func (e *Editor) tableSizeGrid(c *ui.Context, x, y float32) {
+	t := e.t
+	const cell, gap = 18, 3
+	maxR, maxC := min(max(8, e.gridRows+2), 16), min(max(8, e.gridCols+2), 12)
+	panel := ui.Column(c.Key("tableGrid")).Absolute().Left(x).Top(y).Padding(10).Gap(8).Radius(10).
+		Border(1, t.Border).Shadow(0, 12, 32, 0, t.ShadowColor).Material(effects.Glass(t, effects.Panel)).
+		Label(locales.LiveeditTableSize())
+	panel.Children(func() {
+		ui.Text(c, locales.LiveeditSlashSizeN(strconv.Itoa(e.gridRows), strconv.Itoa(e.gridCols))).
+			FontSize(theme.UIBadge).TextColor(t.Muted)
+		ui.Column(c).Gap(gap).Children(func() {
+			for r := 1; r <= maxR; r++ {
+				ui.Row(c.Key(r)).Gap(gap).Children(func() {
+					for k := 1; k <= maxC; k++ {
+						b := ui.Box(c.Key(k)).Size(cell, cell).Radius(3).KeepFocus().Role(ui.RoleButton).
+							Label(locales.LiveeditSlashSizeN(strconv.Itoa(r), strconv.Itoa(k)))
+						if r <= e.gridRows && k <= e.gridCols {
+							b.Background(t.AccentSoft).Border(1, t.Accent.Alpha(.6))
+						} else {
+							b.Background(t.Surface).Border(1, t.Border)
+						}
+						// The header row counts: a table has at least it.
+						if b.Hovered() && (e.gridRows != r || e.gridCols != k) {
+							e.gridRows, e.gridCols = r, k
+							e.invalidate()
+						}
+						if b.Clicked() {
+							e.tableGrid = false
+							e.tableEdit(contract.EditCommand{ID: contract.CmdTableResize, Rows: r - 1, Cols: k})
+						}
+					}
+				})
+			}
+		})
 	})
-	if b.Clicked() {
-		e.tableEdit(contract.EditCommand{ID: id})
-	}
 }
 
 // tableMenu fills the context menu of a table cell (02 §5.8): insert, delete,

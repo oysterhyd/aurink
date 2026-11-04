@@ -523,6 +523,18 @@
   "@liveedit_table_bar": {
     "description": "The toolbar over the table holding the caret."
   },
+  "liveedit_table_size": "Table Size",
+  "@liveedit_table_size": {
+    "description": "The table toolbar's button that opens the size grid, as Typora's."
+  },
+  "liveedit_table_more": "More",
+  "@liveedit_table_more": {
+    "description": "The table toolbar's menu of row and column commands."
+  },
+  "liveedit_delete_table": "Delete Table",
+  "@liveedit_delete_table": {
+    "description": "Deletes the whole table holding the caret."
+  },
   "liveedit_row": "Row",
   "@liveedit_row": {
     "description": "The table toolbar button adding a row (after \"+ \")."
