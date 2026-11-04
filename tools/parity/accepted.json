@@ -44,8 +44,8 @@
   "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
  },
  "bs-quote-second-line": {
-  "kind": "pending",
-  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+  "kind": "deviation",
+  "why": "Typora merges the paragraphs and leaves a stray '>' line after them ('> abcd\n>'); Aurink merges without it ('> abcd')."
  },
  "bs-after-rule": {
   "kind": "pending",
