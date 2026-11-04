@@ -163,22 +163,20 @@ func (sourceWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) 
 	m.muted = true
 }
 
-// breakWidget is the section break "···"; its source shows with the caret on it.
+// breakWidget is the thematic break: a thin rule across the column, as
+// Typora's; its source shows with the caret on it.
 type breakWidget struct{ plainWidget }
 
 func (breakWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) {
-	m.above, m.below = e.ty.Body, e.ty.Body*1.5
+	m.above, m.below = e.ty.Body*.6, e.ty.Body*.6
 }
 
 func (breakWidget) front(rc *rowContext) {
 	if rc.l.display != "" {
 		return
 	}
-	cx := rc.ox + rc.e.width/2
 	cy := rc.textY() + rc.l.h/2
-	for k := float32(-1); k <= 1; k++ {
-		rc.p.Fill(ui.Rect{X: cx + k*14 - 1.5, Y: cy - 1.5, W: 3, H: 3}, rc.t.Muted, 2)
-	}
+	rc.p.Fill(ui.Rect{X: rc.ox, Y: cy - 1, W: rc.e.width, H: 2}, rc.t.Faint.Alpha(.35), 0)
 }
 
 // codeWidget is a code block: a tinted card with its language, a copy button and
