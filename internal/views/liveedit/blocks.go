@@ -390,17 +390,23 @@ func (rc *rowContext) paintQuoteBar(c *contract.ContainerDecor, x float32) {
 	rc.p.Fill(ui.Rect{X: x, Y: top, W: quoteBar, H: bottom - top}, rc.t.Faint.Alpha(.35), 0)
 }
 
-// lastInQuote reports whether row r is the quote's last: the next row starts
-// past the quote's end.
+// lastInQuote reports whether row r is the quote's last: the next row is not
+// inside it. The next row's ancestry says so, not its range: the empty line
+// Enter leaves at the quote's end has an empty range at the quote's end.
 func (e *Editor) lastInQuote(r int, quote contract.BlockID) bool {
-	b := e.block(r)
-	for b != nil && b.ID != quote {
+	if r+1 >= len(e.rows) {
+		return true
+	}
+	for b := e.block(r + 1); b != nil; {
+		if b.ID == quote {
+			return false
+		}
 		if b.Parent < 0 {
-			return true
+			break
 		}
 		b = e.ast.Block(b.Parent)
 	}
-	return b == nil || r+1 >= len(e.rows) || e.block(r+1).Range.Start >= b.Range.End
+	return true
 }
 
 // taskBoxAt returns the task container whose checkbox holds a point of the element.
