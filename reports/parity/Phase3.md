@@ -17,7 +17,7 @@ Phase 3 新增 8 张截图：Reading、Focus、Settings、Format、Slash、Light
 |---|---|---|---|
 | 专注模式只淡化了正文默认色；引用、已勾选任务、代码高亮、表格、脚注还是满色 | 负责人 | 真问题 | 已修：每个非当前行盖一层 1−0.28 的纸张色，表格单元格各盖自己那一列。测试 `TestFocusModeDimsEveryOtherBlock` |
 | 标签多时，视图菜单"实时"被挤成两行 | 复核 | 真问题（中文 Conflict、Render、Loading 三张） | 已修：视图菜单不再收缩。测试器里的字体度量复现不了，用真窗口截图确认 |
-| 状态胶囊没有滚动进度环；未保存时是实心点 | 复核 | 真问题，02 §3、§5.5 都写了（M1 记作小差异） | 已补：进度环从 12 点开始顺时针走，未保存时是空心点。测试 `TestCapsuleRingFollowsTheScroll`、`TestCapsuleUnsavedDotIsHollow`，两条变异都被抓住。悬停展开「约 X 分钟 · 第 N 块」还没做 |
+| 状态胶囊没有滚动进度环；未保存时是实心点 | 复核 | 真问题，02 §3、§5.5 都写了（M1 记作小差异） | 已补：进度环从 12 点开始顺时针走，未保存时是空心点。测试 `TestCapsuleRingFollowsTheScroll`、`TestCapsuleUnsavedDotIsHollow`，两条变异都被抓住。悬停时展开「约 X 分钟 · 第 N/总数 块」（按每分钟 300 字计算），测试 `TestCapsuleHoverShowsReadingTime`；为了能响应悬停，胶囊不再是 pass-through |
 | 中文 Find 截图里格式条压在 H1 上 | 复核 | 截图脚本的焦点时序造成的：真实操作（Ctrl+F、输入、回车）焦点在查找框里，格式条不出现 | 加了测试 `TestFindShowsNoFormatBar` 防止回归 |
 | 第一个标签被硬裁成 "EADME.md"，没有渐隐 | 两边都发现了 | 属实：标签条可以横向滚动，但边缘没有渐隐 | 记为差异，未做 |
 | Settings 少了"跟随系统强调色"开关 | 两边都发现了 | 属实：02 §5.15 没写这一项，只在基线里有。MyGo 能读到系统强调色，但补它要改 Settings 契约 | 留给用户决定 |

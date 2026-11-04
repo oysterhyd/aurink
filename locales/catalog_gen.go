@@ -510,6 +510,24 @@ func (msgs Messages) ShellWords(count int) string {
 	return Catalog.Format(msgs.locale, "shell_words", map[string]any{"count": count})
 }
 
+// ShellCapsuleDetail says "About {minutes} min · block {n} of {total}"
+// in the language the app shows.
+//
+// The status capsule, hovered: the reading time in minutes and the caret's
+// block of all blocks.
+func ShellCapsuleDetail(minutes int, n int, total int) string {
+	return In(i18n.Locale()).ShellCapsuleDetail(minutes, n, total)
+}
+
+// ShellCapsuleDetail says "About {minutes} min · block {n} of {total}"
+// in the language of msgs.
+//
+// The status capsule, hovered: the reading time in minutes and the caret's
+// block of all blocks.
+func (msgs Messages) ShellCapsuleDetail(minutes int, n int, total int) string {
+	return Catalog.Format(msgs.locale, "shell_capsule_detail", map[string]any{"minutes": minutes, "n": n, "total": total})
+}
+
 // ShellReopenClosed says "Reopen Closed Tab"
 // in the language the app shows.
 //

@@ -146,6 +146,21 @@
       }
     }
   },
+  "shell_capsule_detail": "About {minutes} min · block {n} of {total}",
+  "@shell_capsule_detail": {
+    "description": "The status capsule, hovered: the reading time in minutes and the caret's block of all blocks.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      },
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "shell_reopen_closed": "Reopen Closed Tab",
   "@shell_reopen_closed": {
     "description": "Opens the tab closed last again."

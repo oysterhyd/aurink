@@ -34,6 +34,7 @@
   "shell_cancel": "取消",
   "shell_markdown_files": "Markdown 文档",
   "shell_words": "{count} 字",
+  "shell_capsule_detail": "约 {minutes} 分钟 · 第 {n}/{total} 块",
   "shell_reopen_closed": "重新打开关闭的标签",
   "shell_next_tab": "下一个标签",
   "shell_prev_tab": "上一个标签",

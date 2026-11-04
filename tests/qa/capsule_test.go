@@ -72,3 +72,24 @@ func TestCapsuleUnsavedDotIsHollow(t *testing.T) {
 	}
 	_ = ui.KeyEnter
 }
+
+// Hovered, the capsule opens to the reading time and the caret's block (02 §3).
+func TestCapsuleHoverShowsReadingTime(t *testing.T) {
+	a := newApp(t)
+	a.open("a.md", "# A\n\none\n\ntwo\n")
+	a.caret(len("# A\n\non"))
+	a.animate()
+	want := locales.ShellCapsuleDetail(1, 2, 3)
+	if a.shows(want) {
+		t.Fatal("the detail shows before a hover")
+	}
+	r, ok := a.tt.Find(locales.ShellSaved())
+	if !ok {
+		t.Fatal("no capsule")
+	}
+	a.tt.Move(r.X+r.W/2, r.Y+r.H/2)
+	a.tt.Frame()
+	if !a.shows(want) {
+		t.Fatalf("hovered, the capsule does not say %q", want)
+	}
+}

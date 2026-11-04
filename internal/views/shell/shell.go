@@ -885,8 +885,11 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 
 func (s *Shell) capsule(c *ui.Context, t *theme.Tokens, d *doc) {
 	label, tone := s.status(d, t)
-	capsule := kit.Capsule(c, t).Absolute().Bottom(16).Right(16).PassThrough()
+	// Not pass-through: hovered, it opens to the reading time and the block
+	// the caret is in (02 §3).
+	capsule := kit.Capsule(c.Key("capsule"), t).Absolute().Bottom(16).Right(16)
 	edited := d.s.State().Edited && tone == t.Warning
+	hovered := capsule.Hovered()
 	capsule.Children(func() {
 		// The scroll progress ring (02 §3): a faint circle, the part read in
 		// the accent from the top. It reads the fraction when it paints, so
@@ -908,9 +911,18 @@ func (s *Shell) capsule(c *ui.Context, t *theme.Tokens, d *doc) {
 			ui.Box(c).Size(7, 7).Radius(4).Background(tone)
 		}
 		ui.Text(c, label).FontSize(theme.UIStatus)
-		ui.Text(c, locales.ShellWords(s.wordCount(c, d))).FontSize(theme.UIStatus).TextColor(t.Muted)
+		words := s.wordCount(c, d)
+		ui.Text(c, locales.ShellWords(words)).FontSize(theme.UIStatus).TextColor(t.Muted)
+		if hovered && d.mode == editorapi.ModeLive {
+			n, total := d.live.CaretBlock()
+			ui.Text(c, locales.ShellCapsuleDetail(readingMinutes(words), n, total)).FontSize(theme.UIStatus).TextColor(t.Muted)
+		}
 	})
 }
+
+// readingMinutes is the time to read a document of so many words, at 300 a
+// minute (CJK characters count as words), never less than a minute.
+func readingMinutes(words int) int { return max(1, (words+299)/300) }
 
 // ringFromTop is a circle drawn clockwise from twelve o'clock, so a trimmed
 // part of it grows the way a clock's hand goes.
