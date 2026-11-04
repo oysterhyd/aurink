@@ -26,3 +26,5 @@
 ## Phase 3（批次 8）
 
 动效规则（02 §4.4）的逐条对照见 [Motion.md](Motion.md)：7 条中 6 条做到或由框架保证。标记淡入和 `Stagger` 还没做。
+
+Phase 3 的基线截图对照（新增 8 张，含独立复核的对比）见 [Phase3.md](Phase3.md)。

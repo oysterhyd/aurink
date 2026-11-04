@@ -645,7 +645,8 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 	case s.active.live.Typewriter():
 		label = locales.ShellViewTypewriter()
 	}
-	b := ui.Row(c.Key("view")).Height(30).Padding(0, 8).Gap(4).AlignItems(ui.Center).Radius(theme.RadiusButton).Role(ui.RoleButton).Label(label)
+	// The tabs give way to it: it keeps its one line however many are open.
+	b := ui.Row(c.Key("view")).Shrink(0).Height(30).Padding(0, 8).Gap(4).AlignItems(ui.Center).Radius(theme.RadiusButton).Role(ui.RoleButton).Label(label)
 	if b.Hovered() {
 		b.Background(t.Hover)
 	}
@@ -885,11 +886,42 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 func (s *Shell) capsule(c *ui.Context, t *theme.Tokens, d *doc) {
 	label, tone := s.status(d, t)
 	capsule := kit.Capsule(c, t).Absolute().Bottom(16).Right(16).PassThrough()
+	edited := d.s.State().Edited && tone == t.Warning
 	capsule.Children(func() {
-		ui.Box(c).Size(7, 7).Radius(4).Background(tone)
+		// The scroll progress ring (02 §3): a faint circle, the part read in
+		// the accent from the top. It reads the fraction when it paints, so
+		// it follows the scroll without a rebuild.
+		if d.mode == editorapi.ModeLive {
+			live := d.live
+			ui.Box(c.Key("ring")).Size(12, 12).Draw(func(p *ui.Painter, r ui.Rect) {
+				cx, cy, rad := r.X+r.W/2, r.Y+r.H/2, r.W/2-1
+				p.StrokePath(new(ui.Path).Circle(cx, cy, rad), 1.5, t.Border)
+				if f := live.ScrollFraction(); f > 0 {
+					p.StrokePath(ringFromTop(cx, cy, rad).Trim(0, min(f, 1)).Cap(ui.RoundCap), 1.5, t.Accent)
+				}
+			})
+		}
+		// Unsaved is a hollow dot (02 §5.5); the other states a filled one.
+		if edited {
+			ui.Box(c).Size(7, 7).Radius(4).Border(1.5, tone)
+		} else {
+			ui.Box(c).Size(7, 7).Radius(4).Background(tone)
+		}
 		ui.Text(c, label).FontSize(theme.UIStatus)
 		ui.Text(c, locales.ShellWords(s.wordCount(c, d))).FontSize(theme.UIStatus).TextColor(t.Muted)
 	})
+}
+
+// ringFromTop is a circle drawn clockwise from twelve o'clock, so a trimmed
+// part of it grows the way a clock's hand goes.
+func ringFromTop(cx, cy, r float32) *ui.Path {
+	const k = 0.5522847498
+	p := new(ui.Path).MoveTo(cx, cy-r)
+	p.CubeTo(cx+r*k, cy-r, cx+r, cy-r*k, cx+r, cy)
+	p.CubeTo(cx+r, cy+r*k, cx+r*k, cy+r, cx, cy+r)
+	p.CubeTo(cx-r*k, cy+r, cx-r, cy+r*k, cx-r, cy)
+	p.CubeTo(cx-r, cy-r*k, cx-r*k, cy-r, cx, cy-r)
+	return p
 }
 
 func (s *Shell) status(d *doc, t *theme.Tokens) (string, ui.Color) {

@@ -176,3 +176,17 @@ func TestReplaceAllAtScale(t *testing.T) {
 	a.s.ActiveSession().Model().Undo()
 	a.want(a.text(), doc)
 }
+
+// Find selects its matches, but the format bar stays away: the selection is
+// the search's, not one the user made to format (Phase 3 batch 10 review).
+func TestFindShowsNoFormatBar(t *testing.T) {
+	a := newApp(t)
+	a.open("a.md", "# Title\n\nalpha beta alpha\n")
+	a.run(contract.CmdEditFind)
+	a.typed("alpha")
+	a.key(0, ui.KeyEnter)
+	a.animate()
+	if a.formatBar() {
+		t.Fatal("the format bar shows over a find match")
+	}
+}
