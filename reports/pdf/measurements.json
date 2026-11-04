@@ -1,0 +1,22 @@
+[
+  {
+    "size": "A4",
+    "pages": 7,
+    "bytes": 497722,
+    "export_ms": 942,
+    "print_ms": 634,
+    "render_calls": 6,
+    "render_failures": 0,
+    "text_verified": true
+  },
+  {
+    "size": "Letter",
+    "pages": 8,
+    "bytes": 499878,
+    "export_ms": 2,
+    "print_ms": 558,
+    "render_calls": 6,
+    "render_failures": 0,
+    "text_verified": true
+  }
+]

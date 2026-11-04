@@ -12,7 +12,7 @@ import (
 
 func (r *renderer) imageURL(dest string) string {
 	dest = safeURL(dest, true)
-	if dest == "" || !r.opts.EmbedImages {
+	if dest == "" || !r.opts.EmbedImages || r.opts.BaseDir == "" {
 		return dest
 	}
 	path := dest
@@ -46,11 +46,7 @@ func (r *renderer) imageURL(dest string) string {
 	if path == "" {
 		return dest
 	}
-	base := r.opts.BaseDir
-	if base == "" {
-		base = "."
-	}
-	base, err := filepath.Abs(base)
+	base, err := filepath.Abs(r.opts.BaseDir)
 	if err != nil {
 		return dest
 	}

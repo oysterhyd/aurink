@@ -92,8 +92,8 @@ func TestFootnotesAndExtensions(t *testing.T) {
 		"```mermaid\ngraph A-->B\n```\n\n$$\nx < y\n$$\n"
 	out := fragment(t, src, contract.ExportOptions{})
 	for _, want := range []string{`id="fnref-a"`, `id="fnref-a-2"`, `id="fnref-a-3"`,
-		`href="#fnref-a-3"`, `id="fn-b"`, `<pre class="mermaid">graph A--&gt;B`,
-		`<code class="math">x &lt; y</code>`} {
+		`href="#fnref-a-3"`, `id="fn-b"`, `<pre><code class="language-mermaid">graph A--&gt;B`,
+		`<div class="math">x &lt; y</div>`} {
 		if !strings.Contains(out, want) {
 			t.Errorf("missing %q in %s", want, out)
 		}
@@ -153,7 +153,7 @@ func TestOptionalASTNodes(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, want := range []string{`<nav class="toc">`, `href="#head"`, "<mark>marked</mark>",
-		"<sup>up</sup>", "<sub>down</sub>", "😀", `<a href="Page">alias</a>`, `<code class="math">x &lt; y</code>`} {
+		"<sup>up</sup>", "<sub>down</sub>", "😀", `<a class="wikilink" href="Page.md">alias</a>`, `<span class="math">x &lt; y</span>`} {
 		if !strings.Contains(out.String(), want) {
 			t.Errorf("missing %q in %s", want, out.String())
 		}

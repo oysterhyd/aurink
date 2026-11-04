@@ -3,7 +3,10 @@ package export
 import (
 	"bufio"
 	"bytes"
+	"net/url"
+	"path"
 	"strconv"
+	"strings"
 
 	"aurink/internal/contract"
 )
@@ -35,7 +38,9 @@ func (r *renderer) inline(in []contract.Inline, from, end int, raw *rawHTML) {
 				r.escaped(n.Text)
 			}
 		case contract.InlineSoftBreak:
-			if visible {
+			if markup && r.opts.SoftBreak != contract.SoftBreakSpace {
+				r.write("<br />\n")
+			} else if visible {
 				r.write("\n")
 			}
 		case contract.InlineLineBreak:
@@ -44,13 +49,21 @@ func (r *renderer) inline(in []contract.Inline, from, end int, raw *rawHTML) {
 			} else if visible {
 				r.write("\n")
 			}
-		case contract.InlineCode, contract.InlineMath:
+		case contract.InlineMath:
 			if markup {
-				if n.Kind == contract.InlineMath {
-					r.write("<code class=\"math\">")
+				r.write("<span class=\"math\">")
+				if result, ok := r.renderObject(contract.RenderMathInline, n.Text, ""); ok {
+					r.renderImage(result, true)
 				} else {
-					r.write("<code>")
+					r.escaped(n.Text)
 				}
+				r.write("</span>")
+			} else if visible {
+				r.escaped(n.Text)
+			}
+		case contract.InlineCode:
+			if markup {
+				r.write("<code>")
 			}
 			if visible {
 				r.escaped(n.Text)
@@ -75,8 +88,14 @@ func (r *renderer) inline(in []contract.Inline, from, end int, raw *rawHTML) {
 			}
 		case contract.InlineLink, contract.InlineWikiLink:
 			if markup {
-				r.write("<a href=\"")
-				r.escaped(safeURL(n.Dest, false))
+				dest := safeURL(n.Dest, false)
+				if n.Kind == contract.InlineWikiLink {
+					r.write("<a class=\"wikilink\" href=\"")
+					dest = wikiURL(n.Dest)
+				} else {
+					r.write("<a href=\"")
+				}
+				r.escaped(dest)
 				r.write("\"")
 				if n.Title != "" {
 					r.write(" title=\"")
@@ -86,7 +105,13 @@ func (r *renderer) inline(in []contract.Inline, from, end int, raw *rawHTML) {
 				r.write(">")
 				raw.beginContainer()
 			}
-			r.inline(in, i+1, next, raw)
+			if n.Kind == contract.InlineWikiLink && next == i+1 {
+				if visible {
+					r.escaped(n.Dest)
+				}
+			} else {
+				r.inline(in, i+1, next, raw)
+			}
 			if markup {
 				raw.endContainer()
 				r.write("</a>")
@@ -116,6 +141,27 @@ func (r *renderer) inline(in []contract.Inline, from, end int, raw *rawHTML) {
 		}
 		i = next
 	}
+}
+
+func wikiURL(target string) string {
+	page, fragment, hasFragment := strings.Cut(target, "#")
+	page = strings.TrimSpace(page)
+	if page != "" && path.Ext(page) == "" {
+		page += ".md"
+	}
+	// Preserve folder separators, while preventing a target from becoming a scheme.
+	parts := strings.Split(page, "/")
+	for i, part := range parts {
+		parts[i] = strings.ReplaceAll(url.PathEscape(part), ":", "%3A")
+	}
+	link := strings.Join(parts, "/")
+	if strings.HasPrefix(link, "//") {
+		link = "%2F" + link[1:]
+	}
+	if hasFragment {
+		link += "#" + slug(fragment)
+	}
+	return link
 }
 
 func (r *renderer) noteRef(label string) {

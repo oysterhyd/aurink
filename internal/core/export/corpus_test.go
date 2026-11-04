@@ -16,10 +16,10 @@ import (
 	"github.com/egoist/mygo/ui/markdown/parser"
 )
 
-var mathBlock = regexp.MustCompile(`(?s)<pre><code class="math">.*?</code></pre>\n?`)
+var mathBlock = regexp.MustCompile(`(?s)<div class="math">.*?</div>\n?`)
 
 // Intentional whole-file differences: front matter is omitted, math uses a
-// pre/code fallback, and the two JSON files contain raw HTML embedded in JSON
+// div fallback, and the two JSON files contain raw HTML embedded in JSON
 // strings; treating each entire JSON file as Markdown triggers script/style
 // removal. Their actual Markdown examples are also checked individually below.
 var rawJSONStructure = map[string][2]string{

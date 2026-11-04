@@ -15,9 +15,13 @@ import (
 
 // ExportHTML writes a document as an HTML page off the main thread (INT-2.1)
 // and answers on it.
-func ExportHTML(files contract.FileStore, d contract.Dispatcher, exts contract.Extensions) func(string, string, contract.ExportOptions, func(error)) {
+func ExportHTML(files contract.FileStore, d contract.Dispatcher, exts contract.Extensions, stores ...contract.SettingsStore) func(string, string, contract.ExportOptions, func(error)) {
 	ex := export.New()
 	return func(md, path string, opts contract.ExportOptions, done func(error)) {
+		// SettingsStore.Get belongs to the UI thread, before the worker starts.
+		if len(stores) > 0 && stores[0] != nil {
+			opts.SoftBreak = stores[0].Get().Editor.SoftBreak
+		}
 		go func() {
 			err := writeHTML(ex, files, exts, md, path, opts)
 			d.Post(func() { done(err) })

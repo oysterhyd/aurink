@@ -84,6 +84,7 @@ type ExportOptions struct {
 	Dark        bool
 	TOC         bool
 	EmbedImages bool
+	SoftBreak   SoftBreakMode // 单个换行：SoftBreakNewline 为 <br />，SoftBreakSpace 为空格
 	// Fragment 为 true 时只输出正文片段（复制为 HTML）。
 	Fragment bool
 	BaseDir  string     // 解析相对图片路径
@@ -114,6 +115,7 @@ type CodeToken struct {
 //     重复的依次加 -1、-2。为空时用 "section"。TOC 为 true 时正文前有
 //     <nav class="toc">，链接指向这些 id。
 //   - 代码块为 <pre><code class="language-x">，有 Highlight 时内含记号 span。
+//   - 段落内软换行按 SoftBreak 输出：默认 <br />，SoftBreakSpace 输出换行空白。
 //   - 脚注引用为 <sup class="footnote-ref"><a href="#fn-标签">，定义集中在正文末尾的
 //     <section class="footnotes">，带回链。
 //   - 原始 HTML 按 02 的安全范围：不输出 <script>、<iframe>、<object>、<embed>、

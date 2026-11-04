@@ -14,12 +14,19 @@ import (
 
 // Exporter writes HTML from immutable text and AST snapshots. Its zero value is
 // ready to use; Export is blocking and must run off the UI thread.
-type Exporter struct{}
+type Exporter struct {
+	// ObjectLangs are additional fenced code languages rendered as diagrams.
+	// Mermaid is always recognized. Configure this before concurrent exports.
+	ObjectLangs []string
+}
 
 var _ contract.Exporter = (*Exporter)(nil)
 
 // New returns an exporter.
 func New() *Exporter { return &Exporter{} }
+
+// ObjectLanguages returns the additional diagram languages configured here.
+func (e *Exporter) ObjectLanguages() []string { return append([]string(nil), e.ObjectLangs...) }
 
 // Export writes a complete HTML document or a body fragment.
 func (e *Exporter) Export(ctx context.Context, t contract.Text, ast contract.AST, opts contract.ExportOptions, w io.Writer) error {
@@ -41,13 +48,22 @@ func (e *Exporter) Export(ctx context.Context, t contract.Text, ast contract.AST
 		ctx: ctx, text: t, ast: ast, opts: opts, out: bufio.NewWriter(w),
 		headings: make(map[int]heading), definitions: make(map[string]int),
 		noteIndex: make(map[string]*note), usedNoteIDs: make(map[string]bool),
+		objectLangs: e.ObjectLangs, rendered: make(map[contract.RenderRequest]rendered),
 	}
 	r.raw.r = &r
 	r.progress(0)
 	r.prepare()
 	if !opts.Fragment {
 		r.write("<!DOCTYPE html>\n<html><head><meta charset=\"utf-8\"><title>")
-		r.escaped(opts.Title)
+		title := opts.Title
+		if title == "" {
+			if front, ok := ast.FrontMatter(); ok {
+				if meta := parseFrontMatter(t.Slice(front.Content)); meta != nil {
+					title = meta.Kicker
+				}
+			}
+		}
+		r.escaped(title)
 		r.write("</title><style>\n")
 		if opts.Dark {
 			r.write(darkCSS)
@@ -55,6 +71,9 @@ func (e *Exporter) Export(ctx context.Context, t contract.Text, ast contract.AST
 			r.write(lightCSS)
 		}
 		r.write(commonCSS)
+		if opts.Dark {
+			r.write(darkPrintCSS)
+		}
 		r.write("</style></head><body>\n")
 	}
 	if opts.TOC {
@@ -78,6 +97,9 @@ func (e *Exporter) Export(ctx context.Context, t contract.Text, ast contract.AST
 	if r.err != nil {
 		if ctx.Err() != nil {
 			return contract.E(contract.CodeCanceled, op, ctx.Err())
+		}
+		if contract.CodeOf(r.err) == contract.CodeCanceled {
+			return contract.E(contract.CodeCanceled, op, r.err)
 		}
 		return contract.E(contract.CodeIO, op, r.err)
 	}
@@ -112,6 +134,8 @@ type renderer struct {
 	noteIndex   map[string]*note
 	usedNoteIDs map[string]bool
 	raw         rawHTML
+	objectLangs []string
+	rendered    map[contract.RenderRequest]rendered
 }
 
 func (r *renderer) write(s string) {
@@ -217,15 +241,34 @@ func plain(in []contract.Inline) string {
 }
 
 func (r *renderer) toc() {
-	r.write("<nav class=\"toc\"><ol>\n")
+	r.write("<nav class=\"toc\"><ul>\n")
+	var levels []int
 	for _, h := range r.outline {
+		if len(levels) > 0 && h.level > levels[len(levels)-1] {
+			r.write("<ul>\n")
+		} else if len(levels) > 0 {
+			r.write("</li>\n")
+			levels = levels[:len(levels)-1]
+			for len(levels) > 0 && h.level <= levels[len(levels)-1] {
+				r.write("</ul></li>\n")
+				levels = levels[:len(levels)-1]
+			}
+		}
 		r.write("<li class=\"toc-level-" + strconv.Itoa(h.level) + "\"><a href=\"#")
 		r.escaped(h.id)
 		r.write("\">")
 		r.escaped(h.text)
-		r.write("</a></li>\n")
+		r.write("</a>")
+		levels = append(levels, h.level)
 	}
-	r.write("</ol></nav>\n")
+	for len(levels) > 1 {
+		r.write("</li></ul>\n")
+		levels = levels[:len(levels)-1]
+	}
+	if len(levels) == 1 {
+		r.write("</li>\n")
+	}
+	r.write("</ul></nav>\n")
 }
 
 func (r *renderer) blocks(parent int) {
@@ -274,11 +317,14 @@ func (r *renderer) block(i int) {
 		r.write("<hr />\n")
 	case contract.BlockCode:
 		code := r.lines(b)
-		if strings.EqualFold(b.Lang, "mermaid") {
-			r.write("<pre class=\"mermaid\">")
-			r.escaped(code)
-			r.write("</pre>\n")
-			break
+		if r.diagramLang(b.Lang) {
+			result, ok := r.renderObject(contract.RenderDiagram, strings.TrimSuffix(code, "\n"), b.Lang)
+			if ok {
+				r.write("<figure class=\"diagram\">")
+				r.renderImage(result, false)
+				r.write("</figure>\n")
+				break
+			}
 		}
 		r.write("<pre><code")
 		if b.Lang != "" {
@@ -290,9 +336,14 @@ func (r *renderer) block(i int) {
 		r.code(b.Lang, code)
 		r.write("</code></pre>\n")
 	case contract.BlockMath:
-		r.write("<pre><code class=\"math\">")
-		r.escaped(strings.TrimSuffix(r.lines(b), "\n"))
-		r.write("</code></pre>\n")
+		source := strings.TrimSuffix(r.lines(b), "\n")
+		r.write("<div class=\"math\">")
+		if result, ok := r.renderObject(contract.RenderMathBlock, source, ""); ok {
+			r.renderImage(result, false)
+		} else {
+			r.escaped(source)
+		}
+		r.write("</div>\n")
 	case contract.BlockHTML:
 		r.raw.scan(r.lines(b))
 	case contract.BlockQuote:
