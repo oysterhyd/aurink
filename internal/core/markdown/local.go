@@ -2,6 +2,7 @@ package markdown
 
 import (
 	"reflect"
+	"strings"
 
 	"aurink/internal/contract"
 	"aurink/internal/core/text"
@@ -28,6 +29,10 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 			break
 		}
 		lo = j
+	}
+	if lo > 0 && old.entries[tops[lo]].start == first && strings.ContainsAny(source[cs[0].NewStart:cs[0].NewEnd], "\r\n") {
+		// An inserted separator changes the preceding leaf's trailer too.
+		lo--
 	}
 	lo = max(0, lo-1)
 	for lo > 0 && (synthetic(old.entries[tops[lo]].data.block.Kind) || windowStart(old, tops[lo]) < old.Block(tops[lo-1]).Range.End) {

@@ -9,6 +9,9 @@ func (Editor) FollowUp(ctx contract.EditContext) (contract.Transaction, bool) {
 	}
 	p := ctx.Selection.Primary().Head
 	l := lineAt(ctx, p)
+	if tx, ok := fenceFollowUp(ctx); ok {
+		return tx, true
+	}
 	if rawAt(ctx, p) || ancestor(ctx, p, contract.BlockTable) != nil {
 		return contract.Transaction{}, false
 	}

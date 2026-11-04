@@ -1,8 +1,4 @@
 {
- "enter-twice": {
-  "kind": "pending",
-  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
- },
  "enter-heading-start": {
   "kind": "pending",
   "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
@@ -16,10 +12,6 @@
   "why": "Typora writes the new item with the number before it (1., 1.); Aurink counts on (2.). Both show 1, 2."
  },
  "enter-nested-exit": {
-  "kind": "pending",
-  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
- },
- "enter-quote": {
   "kind": "pending",
   "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
  },
@@ -212,10 +204,6 @@
   "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
  },
  "bs-empty-item": {
-  "kind": "pending",
-  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
- },
- "enter-empty-heading": {
   "kind": "pending",
   "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
  },

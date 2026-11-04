@@ -126,7 +126,13 @@ func deletion(ctx contract.EditContext, in contract.Intent) contract.Transaction
 	s, p := ctx.Text.String(), r.Start
 	back := in.Kind == contract.IntentDeleteBackward
 	if in.Gran == contract.GranChar {
+		if tx, ok := deleteEmptyParagraph(ctx, p, back); ok {
+			return tx
+		}
 		if back {
+			if tx, ok := deleteEmptyFenceCloser(ctx, p); ok {
+				return tx
+			}
 			l := lineAt(ctx, p)
 			if _, marker, ok := pendingLine(ctx, l); ok && p > marker.Start && p <= marker.End {
 				return replace(contract.Range{Start: previousGrapheme(s, p), End: p}, "", contract.OriginUser, "delete")

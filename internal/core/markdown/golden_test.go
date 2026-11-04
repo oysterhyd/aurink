@@ -140,11 +140,15 @@ func TestFrontMatterAndDisabledExtensions(t *testing.T) {
 		checkCoverage(t, s)
 	}
 	p := mustNew(t, "---\r\nx: y\r\n---\r\n# body\n", 1, contract.ExtFrontMatter)
-	for _, src := range []string{"---\n---\n\n", "---\n---\n\n\n", "---\n---\n\n\n# h\n"} {
-		s := mustNew(t, src, 1, contract.ExtFrontMatter).Snapshot()
+	for _, tc := range []struct{ src, trailer string }{
+		{"---\n---\n\n", "\n"},
+		{"---\n---\n\n\n", "\n"},
+		{"---\n---\n\n\n# h\n", "\n\n"},
+	} {
+		s := mustNew(t, tc.src, 1, contract.ExtFrontMatter).Snapshot()
 		checkCoverage(t, s)
-		if s.text.Slice(s.Block(1).Trailer) != "\n" {
-			t.Fatal("Front Matter trailer absorbed extra separators")
+		if got := s.text.Slice(s.Block(1).Trailer); got != tc.trailer {
+			t.Fatalf("source %q: Front Matter trailer %q, want %q", tc.src, got, tc.trailer)
 		}
 	}
 	for _, e := range []contract.TextEdit{{Range: contract.Range{Start: 8, End: 8}, Text: "中文"}, {Range: contract.Range{End: 3}, Text: "+++"}, {Range: contract.Range{End: 3}, Text: "---"}, {Range: contract.Range{}, Text: "\n"}, {Range: contract.Range{End: 1}, Text: ""}} {
@@ -196,7 +200,7 @@ func TestBlankGolden(t *testing.T) {
 		{"- a\n- b\n", []contract.BlockKind{contract.BlockParagraph, contract.BlockParagraph}},
 		{"> a\n>\n> b\n", []contract.BlockKind{contract.BlockParagraph, contract.BlockParagraph}},
 		{"- a\n- \n", []contract.BlockKind{contract.BlockParagraph, contract.BlockBlank}},
-		{"a\n\n\n\nb\n", []contract.BlockKind{contract.BlockParagraph, contract.BlockBlank, contract.BlockBlank, contract.BlockParagraph}},
+		{"a\n\n\n\nb\n", []contract.BlockKind{contract.BlockParagraph, contract.BlockBlank, contract.BlockParagraph}},
 		{"a\n\n", []contract.BlockKind{contract.BlockParagraph, contract.BlockBlank}},
 		{"a\r\n\r\nb\r\n", []contract.BlockKind{contract.BlockParagraph, contract.BlockParagraph}},
 		{"", []contract.BlockKind{contract.BlockBlank}},

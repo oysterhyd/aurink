@@ -30,6 +30,7 @@ func (a *adapted) coveredBlocks() []contract.Block {
 	c := a.cover()
 	a.coverQuoteEnds(c)
 	c.revealGaps()
+	a.collapseBlankLines(c)
 	byOrigin := make(map[int]coverLeaf, len(c.leaves))
 	var additions []contract.Block
 	for _, l := range c.leaves {
@@ -37,18 +38,7 @@ func (a *adapted) coveredBlocks() []contract.Block {
 			byOrigin[l.origin] = l
 			continue
 		}
-		parent := l.parent
-		if parent == 0 {
-			j := sort.Search(len(a.blocks), func(i int) bool { return a.blocks[i].Range.Start > l.Range.Start }) - 1
-			for j > 0 {
-				b := a.blocks[j]
-				if !isLeaf(b.Kind) && b.Range.End >= l.Range.End {
-					parent = j
-					break
-				}
-				j = b.Parent
-			}
-		}
+		parent := a.coverParent(l)
 		additions = append(additions, contract.Block{Kind: l.Kind, Parent: parent, Range: l.Range, Content: l.Range, Lead: l.Lead, Trailer: l.Trailer})
 	}
 	for i, l := range byOrigin {
@@ -56,6 +46,65 @@ func (a *adapted) coveredBlocks() []contract.Block {
 		b.Kind, b.Range, b.Lead, b.Trailer = l.Kind, l.Range, l.Lead, l.Trailer
 	}
 	return insertBlocks(a.blocks, additions)
+}
+
+func (a *adapted) coverParent(l coverLeaf) int {
+	if l.parent != 0 {
+		return l.parent
+	}
+	j := sort.Search(len(a.blocks), func(i int) bool { return a.blocks[i].Range.Start > l.Range.Start }) - 1
+	for j > 0 {
+		b := a.blocks[j]
+		if !isLeaf(b.Kind) && b.Range.End >= l.Range.End {
+			return j
+		}
+		j = b.Parent
+	}
+	return 0
+}
+
+// collapseBlankLines leaves one editor row for each pair of separator lines.
+// Container blanks keep their own rows. Removed rows remain in a neighbour's
+// coverage so LeafAt still has an owner for every source offset.
+func (a *adapted) collapseBlankLines(c *coverage) {
+	isTopBlank := func(l coverLeaf) bool {
+		return l.Kind == kindBlank && l.origin == 0 && a.coverParent(l) == 0 &&
+			!strings.Contains(c.src[l.Lead.Start:l.Trailer.End], ">")
+	}
+	var out []coverLeaf
+	for i := 0; i < len(c.leaves); {
+		if !isTopBlank(c.leaves[i]) {
+			out = append(out, c.leaves[i])
+			i++
+			continue
+		}
+		j := i
+		for j < len(c.leaves) && isTopBlank(c.leaves[j]) {
+			j++
+		}
+		run := append([]coverLeaf(nil), c.leaves[i:j]...)
+		last := run[len(run)-1]
+		if j == len(c.leaves) && last.Trailer.End == len(c.src) && last.Range.Start < len(c.src) && last.Trailer.End > last.Range.End {
+			end := contract.Range{Start: len(c.src), End: len(c.src)}
+			run = append(run, coverLeaf{Kind: kindBlank, Lead: end, Range: end, Trailer: end})
+		}
+		// The first row of an otherwise empty document remains editable.
+		for k, l := range run {
+			keep := k%2 == 0 && (j == len(c.leaves) || k+1 < len(run))
+			if i == 0 && len(out) == 0 && k == 0 {
+				keep = true
+			}
+			if keep {
+				out = append(out, l)
+			} else if len(out) > 0 {
+				out[len(out)-1].Trailer.End = l.Trailer.End
+			} else if j < len(c.leaves) {
+				c.leaves[j].Lead.Start = l.Lead.Start
+			}
+		}
+		i = j
+	}
+	c.leaves = out
 }
 
 func (c *coverage) revealGaps() {

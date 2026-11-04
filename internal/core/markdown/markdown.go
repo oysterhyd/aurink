@@ -97,7 +97,8 @@ func (p *Parser) Update(next contract.Text, changes []contract.Change) (Update, 
 		p.current = s
 		return Update{Snapshot: s}, nil
 	}
-	if s, dirty, ok := old.typing(source, next.Version(), changes); ok {
+	dollarEdit := touchesDollarLine(old.text.String(), source, changes)
+	if s, dirty, ok := old.typing(source, next.Version(), changes); ok && !dollarEdit {
 		p.current = s
 		return Update{Snapshot: s, Dirty: dirty, Stats: Stats{AdaptedBlocks: len(dirty)}}, nil
 	}
@@ -106,6 +107,9 @@ func (p *Parser) Update(next contract.Text, changes []contract.Change) (Update, 
 	switch {
 	case at != old.bodyAt || touchesFront(changes, old.bodyAt):
 		stats.FrontMatterFallbacks++
+	case dollarEdit:
+		// A closer can make a distant, formerly literal opener into a block.
+		stats.BoundaryFallbacks++
 	case ambiguousCaretLabel(old.text.String()) || ambiguousCaretLabel(source):
 		stats.ReferenceFallbacks++
 	default:
@@ -244,7 +248,8 @@ func (s *Snapshot) Leaves() iter.Seq[int] {
 // LeafCount returns the number of editor rows.
 func (s *Snapshot) LeafCount() int { return len(s.leaves) }
 
-// LeafAt returns the owner of offset, clamped to the source boundaries.
+// LeafAt returns the owner of offset, clamped to the source boundaries. A
+// separator without its own row belongs to the preceding leaf's trailer.
 func (s *Snapshot) LeafAt(offset int) int {
 	j := sort.Search(len(s.leaves), func(j int) bool { e := &s.entries[s.leaves[j]]; return e.start+e.data.block.Trailer.End > offset })
 	return s.leaves[min(j, len(s.leaves)-1)]

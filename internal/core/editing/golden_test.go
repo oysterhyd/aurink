@@ -108,13 +108,13 @@ func TestIntentGoldens(t *testing.T) {
 	back := contract.Intent{Kind: contract.IntentDeleteBackward}
 	forward := contract.Intent{Kind: contract.IntentDeleteForward}
 	intentGoldens(t, "typing", insert("中"), golden{"a¦b", "a中¦b"}, golden{"¦ab¦c", "中¦c"}, golden{"- 父\n  - ¦字", "- 父\n  - 中¦字"})
-	intentGoldens(t, "paragraph", enter, golden{"a¦b", "a\n\n¦b"}, golden{"中文¦", "中文\n\n¦"}, golden{"a\n\n¦", "a\n\n\n¦"})
+	intentGoldens(t, "paragraph", enter, golden{"a¦b", "a\n\n¦b"}, golden{"中文¦", "中文\n\n¦"}, golden{"a\n\n¦", "a\n\n\n\n¦"})
 	intentGoldens(t, "heading", enter, golden{"# a¦", "# a\n\n¦"}, golden{"## 中¦文", "## 中\n\n¦文"}, golden{"### a¦\n\nx", "### a\n\n¦\n\nx"})
 	intentGoldens(t, "bullet", enter, golden{"+  中文¦", "+  中文\n+  ¦"}, golden{"- a\n  * b¦", "- a\n  * b\n  * ¦"}, golden{"> - a¦b", "> - a\n> - ¦b"})
 	intentGoldens(t, "ordered", enter, golden{"9)  中文¦", "9)  中文\n10)  ¦"}, golden{"1. a\n   3. b¦", "1. a\n   3. b\n   4. ¦"}, golden{"> 8. a¦\n> 2. keep", "> 8. a\n> 9. ¦\n> 2. keep"})
 	intentGoldens(t, "task", enter, golden{"- [X] 中文¦", "- [X] 中文\n- [ ] ¦"}, golden{"- 父\n  + [ ] 子¦", "- 父\n  + [ ] 子\n  + [ ] ¦"}, golden{"> 9) [x]  a¦", "> 9) [x]  a\n> 10) [ ]  ¦"})
 	intentGoldens(t, "empty item", enter, golden{"- a\n- ¦", "- a\n\n¦"}, golden{"1. 中文\n2. ¦", "1. 中文\n\n¦"}, golden{"- 父\n  - ¦", "- 父\n- ¦"})
-	intentGoldens(t, "quote", enter, golden{"> 中文¦", "> 中文\n> ¦"}, golden{"> > a¦", "> > a\n> > ¦"}, golden{"- a\n  > b¦", "- a\n  > b\n  > ¦"})
+	intentGoldens(t, "quote", enter, golden{"> 中文¦", "> 中文\n>\n> ¦"}, golden{"> > a¦", "> > a\n> >\n> > ¦"}, golden{"- a\n  > b¦", "- a\n  > b\n  >\n  > ¦"})
 	intentGoldens(t, "empty quote", enter, golden{"> a\n> ¦", "> a\n\n¦"}, golden{"> 中文\n> ¦", "> 中文\n\n¦"}, golden{"> > ¦", "> \n> ¦"})
 	intentGoldens(t, "code newline", enter, golden{"```go\n  中文¦\n```", "```go\n  中文\n  ¦\n```"}, golden{"~~~\na¦b\n~~~", "~~~\na\n¦b\n~~~"}, golden{"    中文¦", "    中文\n    ¦"})
 	intentGoldens(t, "fence opens", enter, golden{"```go¦", "```go\n¦\n```"}, golden{"~~~~¦", "~~~~\n¦\n~~~~"}, golden{"> ```js¦", "> ```js\n> ¦\n> ```"})

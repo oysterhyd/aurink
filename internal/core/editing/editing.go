@@ -155,14 +155,14 @@ func handleIntent(ctx contract.EditContext, in contract.Intent) (contract.Transa
 		}
 		if ctx.Prefs.AutoPair && !strings.ContainsAny(in.Text, "\r\n") {
 			if tx, ok := pair(ctx, in.Text); ok {
-				return tx, true
+				return closeFenceWithTyping(ctx, in, tx), true
 			}
 		}
 		tx := replace(r, normalizeNewlines(in.Text, eol(ctx)), contract.OriginUser, "typing")
 		if !strings.ContainsAny(in.Text, "\r\n") {
 			tx.Coalesce = "typing"
 		}
-		return tx, true
+		return closeFenceWithTyping(ctx, in, tx), true
 	case contract.IntentNewline:
 		return newline(ctx), true
 	case contract.IntentLineBreak:

@@ -4,8 +4,25 @@ import (
 	"sort"
 	"strings"
 
+	"aurink/internal/contract"
 	"github.com/egoist/mygo/ui/markdown/parser"
 )
+
+// Dollar delimiters can change the interpretation of blocks far before the
+// edited line, so a local suffix anchor alone cannot certify such an edit.
+func touchesDollarLine(old, next string, changes []contract.Change) bool {
+	contains := func(src string, start, end int) bool {
+		first := strings.LastIndexAny(src[:start], "\r\n") + 1
+		last, _ := lineEnd(src, end)
+		return strings.Contains(src[first:last], "$$")
+	}
+	for _, c := range changes {
+		if contains(old, c.OldStart, c.OldEnd) || contains(next, c.NewStart, c.NewEnd) {
+			return true
+		}
+	}
+	return false
+}
 
 // parserInput records temporary bytes used to guide block parsing. The parser
 // sees ordinary inline content there; public ranges and text map back to the
@@ -91,7 +108,7 @@ func (p parserInput) escapeMultilineMath(in []parser.Inline) (parserInput, bool)
 func parserDocument(src string, ext parser.Extensions) (*parser.Document, parserInput) {
 	d := parser.New(ext)
 	input := parserInput{source: src, text: src}
-	checkMath := ext&parser.ExtDollarMath != 0 && strings.Contains(src, "$$")
+	checkMath := strings.Contains(src, "$$")
 	checkTasks := ext&parser.ExtTaskLists != 0 &&
 		(strings.Contains(src, "[ ] ") || strings.Contains(src, "[ ]\t") ||
 			strings.Contains(src, "[x] ") || strings.Contains(src, "[x]\t") ||
@@ -154,7 +171,8 @@ func parserDocument(src string, ext parser.Extensions) (*parser.Document, parser
 					continue
 				}
 				end, next := lineEnd(src, start)
-				if strings.Trim(src[start:end], " \t") != "$$" || next == end {
+				validLine := strings.Trim(src[start:end], " \t") == "$$" && next != end
+				if b.Open || validLine && !dollarBlockClosed(d, input, i, start, next) || ext&parser.ExtDollarMath != 0 && !validLine {
 					add(start)
 					// An invalid opener can swallow many following lines. Find
 					// further candidate openers in those lines in the same pass.
@@ -181,4 +199,40 @@ func parserDocument(src string, ext parser.Extensions) (*parser.Document, parser
 		positions = append(positions, added...)
 		sort.Ints(positions)
 	}
+}
+
+// Open only describes a parser block still open at EOF. A container may end
+// earlier without a closing delimiter, so inspect the omitted closing line too.
+func dollarBlockClosed(d *parser.Document, input parserInput, index, start, afterOpen int) bool {
+	src := input.source
+	end := input.offset(d.Block(index).End)
+	if end > afterOpen {
+		lineStart := strings.LastIndexAny(src[:end], "\r\n") + 1
+		if strings.HasSuffix(strings.TrimRight(src[max(lineStart, afterOpen):end], " \t"), "$$") {
+			return true
+		}
+	}
+	lineEndAt, next := lineEnd(src, end)
+	if strings.HasSuffix(strings.TrimRight(src[end:lineEndAt], " \t"), "$$") {
+		return true
+	}
+	if next >= len(src) {
+		return false
+	}
+	last, _ := lineEnd(src, next)
+	line := src[next:last]
+	if strings.Trim(line, " \t>") != "$$" {
+		return false
+	}
+	marker := next + strings.LastIndex(line, "$$")
+	for j := index + 1; j < d.Len(); j++ {
+		other := d.Block(j)
+		if input.offset(other.Start) > marker {
+			break
+		}
+		if input.offset(other.End) >= marker {
+			return false
+		}
+	}
+	return marker > start
 }

@@ -193,6 +193,18 @@ func newline(ctx contract.EditContext) contract.Transaction {
 	r := ctx.Selection.Primary().Range()
 	l := lineAt(ctx, r.Start)
 	nl := eol(ctx)
+	if r.Empty() && r.Start == l.end && !rawAt(ctx, r.Start) {
+		if strings.TrimSpace(l.s[l.content:]) == "$$" {
+			lead := l.containerContinuation()
+			tx := replace(r, nl+lead+nl+lead+"$$", contract.OriginUser, "newline")
+			sel := contract.Caret(r.Start + len(nl) + len(lead))
+			tx.Selection = &sel
+			return tx
+		}
+		if tx, ok := tableFromLine(ctx, l); ok {
+			return tx
+		}
+	}
 	if _, b := leaf(ctx, r.Start); b != nil && (b.Kind == contract.BlockHTML || b.Kind == contract.BlockFrontMatter || b.Kind == contract.BlockMath) {
 		return replace(r, nl+rawContinuation(ctx, l, b), contract.OriginUser, "newline")
 	}
@@ -241,23 +253,44 @@ func newline(ctx contract.EditContext) contract.Transaction {
 			}
 		}
 		if p.kind == '-' || p.kind == '>' {
+			if p.kind == '>' && l.start > 0 {
+				previous := lineAt(ctx, l.start-1)
+				if strings.TrimSpace(previous.s) != "" && strings.TrimRight(previous.s, " \t") == strings.TrimRight(l.s[:l.content], " \t") {
+					outer := l.s[:p.a]
+					return replace(contract.Range{Start: previous.start, End: r.End}, strings.TrimRight(outer, " \t")+nl+outer, contract.OriginUser, "newline")
+				}
+			}
 			return replace(contract.Range{Start: l.start + p.a, End: r.End}, nl+l.s[:p.a], contract.OriginUser, "newline")
 		}
 	}
 	if l.list >= 0 {
 		return replace(r, nl+l.continuation(), contract.OriginUser, "newline")
 	}
-	if len(l.parts) > 0 && l.parts[len(l.parts)-1].kind == '>' {
-		return replace(r, nl+l.s[:l.content], contract.OriginUser, "newline")
-	}
 	// Continuation lines inherit the item's original marker and indentation.
 	if item := ancestor(ctx, r.Start, contract.BlockItem); item != nil {
 		first := lineAt(ctx, item.Range.Start)
-		if first.list >= 0 {
+		quote := ancestor(ctx, r.Start, contract.BlockQuote)
+		insideQuote := false
+		if quote != nil {
+			for i := item.Parent; i > 0; i = ctx.AST.Block(i).Parent {
+				if ctx.AST.Block(i).ID == quote.ID {
+					insideQuote = true
+					break
+				}
+			}
+		}
+		if first.list >= 0 && (quote == nil || insideQuote) {
 			return replace(r, nl+first.continuation(), contract.OriginUser, "newline")
 		}
 	}
+	if len(l.parts) > 0 && l.parts[len(l.parts)-1].kind == '>' {
+		lead := l.s[:l.content]
+		return replace(r, nl+strings.TrimRight(lead, " \t")+nl+lead, contract.OriginUser, "newline")
+	}
 	if strings.TrimSpace(l.s) == "" {
+		if _, b := emptyParagraph(ctx, r.Start); b != nil {
+			return replace(r, nl+nl, contract.OriginUser, "newline")
+		}
 		return replace(r, nl, contract.OriginUser, "newline")
 	}
 	if r.Empty() {
