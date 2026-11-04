@@ -20,6 +20,10 @@
   "@shell_open": {
     "description": "Opens a file from disk."
   },
+  "shell_file_menu": "File",
+  "@shell_file_menu": {
+    "description": "The File menu: under the mark in the title bar on Windows and Linux, in the menu bar on macOS."
+  },
   "shell_open_hint": "Open a file",
   "@shell_open_hint": {
     "description": "What the box in the title bar says it does."

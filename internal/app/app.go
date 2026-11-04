@@ -288,7 +288,7 @@ func buildMenu(r contract.CommandRegistry) *mygo.Menu {
 		label string
 		ids   []contract.CommandID
 	}{
-		{locales.ShellOpen(), []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileOpenFolder, contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileExportHTML, contract.CmdFileExportPDF, contract.CmdFilePrint, contract.CmdFileClose}},
+		{locales.ShellFileMenu(), shell.FileMenu},
 		{locales.ShellViewLive(), []contract.CommandID{contract.CmdViewLive, contract.CmdViewSource, contract.CmdViewToggleSidebar, contract.CmdViewThemeLight, contract.CmdViewThemeDark}},
 	}
 	items = append(items, &mygo.MenuItem{Role: mygo.RoleEditMenu})

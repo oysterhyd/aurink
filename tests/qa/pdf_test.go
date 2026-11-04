@@ -92,6 +92,23 @@ func TestExportPDFFollowsSoftBreak(t *testing.T) {
 	}
 }
 
+// Without a menu bar (Windows, Linux) the mark in the title bar opens the File
+// menu, where print and export are, as in Typora's File menu.
+func TestFileMenuUnderTheMarkPrintsAndExports(t *testing.T) {
+	a := newApp(t)
+	a.open("note.md", "# Title\n\nwords\n")
+	a.click(locales.ShellFileMenu())
+	a.click(locales.ShellPrint())
+	a.until("the page", func() bool { return len(a.printed) == 1 })
+	a.p.export = filepath.Join(a.dir, "note.pdf")
+	a.click(locales.ShellFileMenu())
+	a.click(locales.ShellExportPdf())
+	a.until("the notice", func() bool { return slices.Contains(a.s.Notices(), locales.ShellExported()) })
+	if !slices.Equal(a.p.kinds, []string{"pdf"}) {
+		t.Fatalf("the dialog was asked for %v", a.p.kinds)
+	}
+}
+
 // Print (INT-3.1) gives the print preview the light, whole page.
 func TestPrintGivesThePreviewTheLightPage(t *testing.T) {
 	a := newApp(t)

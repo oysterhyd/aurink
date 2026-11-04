@@ -527,7 +527,7 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 		right = 0
 	}
 	ui.Row(c).Height(max(bar.Height, theme.TitleBar)).Padding(0, right, 0, bar.Left+12).Gap(6).AlignItems(ui.Center).DragWindow().Children(func() {
-		ui.Image(c, kit.Brand(t.Aurora1, t.Aurora2, t.Aurora3)).Size(22, 22).TextColor(t.Text)
+		s.brandMenu(c, t)
 		if kit.IconButton(c.Key("toggleSidebar"), t, kit.IconSidebar, locales.ShellToggleSidebar(), 30, 16).Clicked() {
 			s.sidebar = !s.sidebar
 		}
@@ -639,6 +639,52 @@ func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {
 	if om.Clicked() {
 		s.openPalette(palette.ModeFiles)
 	}
+}
+
+// FileMenu is what the File menu holds: the macOS menu bar's, and the menu
+// under the mark where the window has no menu bar.
+var FileMenu = []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileOpenFolder,
+	contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileExportHTML, contract.CmdFileExportPDF,
+	contract.CmdFilePrint, contract.CmdFileClose}
+
+// brandMenu is the mark at the left of the title bar. Where the system has no
+// menu bar (Windows, Linux) it opens the File menu, as Typora's File menu
+// there does: export, print and the rest have a place to be found besides
+// the command palette.
+func (s *Shell) brandMenu(c *ui.Context, t *theme.Tokens) {
+	mark := kit.Brand(t.Aurora1, t.Aurora2, t.Aurora3)
+	if !s.o.WindowButtons {
+		ui.Image(c, mark).Size(22, 22).TextColor(t.Text)
+		return
+	}
+	b := ui.Row(c.Key("fileMenu")).Size(30, 30).Center().
+		Radius(theme.RadiusButton).Role(ui.RoleButton).Label(locales.ShellFileMenu())
+	if b.Hovered() {
+		b.Background(t.Hover)
+	}
+	b.Children(func() { ui.Image(c, mark).Size(22, 22).TextColor(t.Text) })
+	// Drawn in the window, as the view menu is.
+	b.PopoverMenuButton(func(m *ui.Menu) {
+		for _, id := range FileMenu {
+			cmd, ok := s.o.Commands.Lookup(id)
+			if !ok {
+				continue
+			}
+			// Saving, exporting and closing are groups apart, as in Typora.
+			if id == contract.CmdFileSave || id == contract.CmdFileExportHTML || id == contract.CmdFileClose {
+				m.Separator()
+			}
+			it := m.Item(Title(cmd.Title)).Disabled(cmd.Enabled != nil && !cmd.Enabled())
+			if keys := s.o.Commands.KeysFor(id); len(keys) > 0 {
+				if k, ok := keyOf(keys[0].Key); ok {
+					it.Shortcut(modsOf(keys[0].Mods), k)
+				}
+			}
+			if it.Chosen() {
+				s.run(id)
+			}
+		}
+	})
 }
 
 func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {

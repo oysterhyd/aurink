@@ -104,6 +104,22 @@ func (msgs Messages) ShellOpen() string {
 	return Catalog.Format(msgs.locale, "shell_open", nil)
 }
 
+// ShellFileMenu says "File"
+// in the language the app shows.
+//
+// The File menu: under the mark in the title bar on Windows and Linux, in
+// the menu bar on macOS.
+func ShellFileMenu() string { return In(i18n.Locale()).ShellFileMenu() }
+
+// ShellFileMenu says "File"
+// in the language of msgs.
+//
+// The File menu: under the mark in the title bar on Windows and Linux, in
+// the menu bar on macOS.
+func (msgs Messages) ShellFileMenu() string {
+	return Catalog.Format(msgs.locale, "shell_file_menu", nil)
+}
+
 // ShellOpenHint says "Open a file"
 // in the language the app shows.
 //
