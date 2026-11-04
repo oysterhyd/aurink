@@ -76,7 +76,7 @@ func (e *Editor) paintMathPop(p *ui.Painter, r ui.Rect) {
 		return
 	}
 	l := e.current(row)
-	idx := e.opts.Projector.ToDisplay(&l.proj, clampTo(x.Range.Start, e.block(row).Range), contract.Downstream)
+	idx := e.opts.Projector.ToDisplay(&l.proj, clampTo(x.Range.Start, e.rowRange(row)), contract.Downstream)
 	sx, _, _ := e.boundsAt(row, l, idx)
 	_, cy, ch := e.caretRect()
 	var w, h float32

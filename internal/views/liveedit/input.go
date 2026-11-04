@@ -248,7 +248,7 @@ func (e *Editor) unitAt(off int, x, y float32) (from, to int) {
 		r := e.rowAt(off)
 		l := e.form(r)
 		pr := e.opts.Projector
-		d := pr.ToDisplay(&l.proj, clampTo(off, e.block(r).Range), contract.Downstream)
+		d := pr.ToDisplay(&l.proj, clampTo(off, e.rowRange(r)), contract.Downstream)
 		a, z := wordAt(l.display, d)
 		return pr.ToSource(&l.proj, a, contract.Downstream), pr.ToSource(&l.proj, z, contract.Upstream)
 	case 2:
@@ -414,7 +414,7 @@ func (e *Editor) selectRaw(anchor, head int) {
 func (e *Editor) snap(off int, aff contract.Affinity) int {
 	r := e.rowAt(off)
 	b := e.block(r)
-	off = clampTo(off, b.Range)
+	off = clampTo(off, e.rowRange(r))
 	p := e.project(b, e.rows[r].leaf, revealKey{caret: off - b.Lead.Start})
 	return e.opts.Projector.Snap(&p, off, aff)
 }
@@ -449,12 +449,12 @@ func (e *Editor) moveChar(dir int, extend bool) {
 		return
 	}
 	r := e.caretRow
-	b := e.block(r)
+	rg := e.rowRange(r)
 	l := e.form(r)
 	pr := e.opts.Projector
-	head := clampTo(e.head, b.Range)
+	head := clampTo(e.head, rg)
 	if dir < 0 {
-		if head > b.Range.Start {
+		if head > rg.Start {
 			d := pr.ToDisplay(&l.proj, head, contract.Upstream)
 			if d > 0 {
 				if t := pr.ToSource(&l.proj, l.layout.PreviousBoundary(d), contract.Downstream); t < head {
@@ -462,25 +462,25 @@ func (e *Editor) moveChar(dir int, extend bool) {
 					return
 				}
 			}
-			e.moveTo(b.Range.Start, extend)
+			e.moveTo(rg.Start, extend)
 			return
 		}
 		if r > 0 {
-			e.moveTo(e.block(r-1).Range.End, extend)
+			e.moveTo(e.rowRange(r-1).End, extend)
 		}
 		return
 	}
-	if head < b.Range.End {
+	if head < rg.End {
 		d := pr.ToDisplay(&l.proj, head, contract.Downstream)
 		if t := pr.ToSource(&l.proj, l.layout.NextBoundary(d), contract.Upstream); t > head {
 			e.moveTo(t, extend)
 			return
 		}
-		e.moveTo(b.Range.End, extend)
+		e.moveTo(rg.End, extend)
 		return
 	}
 	if r+1 < len(e.rows) {
-		e.moveTo(e.block(r+1).Range.Start, extend)
+		e.moveTo(e.rowRange(r+1).Start, extend)
 	}
 }
 
@@ -488,23 +488,23 @@ func (e *Editor) moveChar(dir int, extend bool) {
 func (e *Editor) moveWord(dir int, extend bool) {
 	e.aff = ui.TextDownstream
 	r := e.caretRow
-	b := e.block(r)
+	rg := e.rowRange(r)
 	l := e.form(r)
 	pr := e.opts.Projector
-	head := clampTo(e.head, b.Range)
+	head := clampTo(e.head, rg)
 	if dir < 0 {
-		if head <= b.Range.Start {
+		if head <= rg.Start {
 			if r > 0 {
-				e.moveTo(e.block(r-1).Range.End, extend)
+				e.moveTo(e.rowRange(r-1).End, extend)
 			}
 			return
 		}
 		e.moveTo(min(pr.ToSource(&l.proj, prevWord(l.display, pr.ToDisplay(&l.proj, head, contract.Upstream)), contract.Downstream), head), extend)
 		return
 	}
-	if head >= b.Range.End {
+	if head >= rg.End {
 		if r+1 < len(e.rows) {
-			e.moveTo(e.block(r+1).Range.Start, extend)
+			e.moveTo(e.rowRange(r+1).Start, extend)
 		}
 		return
 	}
@@ -517,7 +517,7 @@ func (e *Editor) moveLine(dir int, extend bool) {
 	r := e.caretRow
 	l := e.form(r)
 	pr := e.opts.Projector
-	idx := pr.ToDisplay(&l.proj, clampTo(e.head, e.block(r).Range), contract.Downstream)
+	idx := pr.ToDisplay(&l.proj, clampTo(e.head, e.rowRange(r)), contract.Downstream)
 	c := l.layout.CaretAt(ui.TextCaretPosition{Index: idx, Affinity: e.aff})
 	if !e.hasSticky {
 		e.stickyX, e.hasSticky = c.X, true
@@ -591,7 +591,7 @@ func lineIndex(lines []ui.TextLine, y float32) int {
 func (e *Editor) moveEdge(dir int, extend bool) {
 	l := e.form(e.caretRow)
 	pr := e.opts.Projector
-	idx := pr.ToDisplay(&l.proj, clampTo(e.head, e.block(e.caretRow).Range), contract.Downstream)
+	idx := pr.ToDisplay(&l.proj, clampTo(e.head, e.rowRange(e.caretRow)), contract.Downstream)
 	c := l.layout.CaretAt(ui.TextCaretPosition{Index: idx, Affinity: e.aff})
 	mid := c.Y + c.H/2
 	if dir < 0 {
@@ -640,7 +640,7 @@ func (e *Editor) hit(x, y float32) int {
 			if p == e.caretRow && e.preedit != "" {
 				return e.head
 			}
-			return clampTo(e.opts.Projector.ToSource(&l.proj, pos.Index, contract.Downstream), e.block(p).Range)
+			return clampTo(e.opts.Projector.ToSource(&l.proj, pos.Index, contract.Downstream), e.rowRange(p))
 		}
 	}
 	return e.text.Len()

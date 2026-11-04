@@ -15,7 +15,7 @@ var _ ui.TextInputClient = (*Editor)(nil)
 // imeBase returns the caret row without the preedit and the caret's index in it.
 func (e *Editor) imeBase() (*laid, int) {
 	l := e.form(e.caretRow)
-	return l, e.opts.Projector.ToDisplay(&l.proj, clampTo(e.head, e.block(e.caretRow).Range), contract.Downstream)
+	return l, e.opts.Projector.ToDisplay(&l.proj, clampTo(e.head, e.rowRange(e.caretRow)), contract.Downstream)
 }
 
 // virtualToSource maps a unit of the input method's document to a source offset;
@@ -24,12 +24,17 @@ func (e *Editor) virtualToSource(u int) int {
 	l, at := e.imeBase()
 	n := utf16Len(e.preedit)
 	switch {
-	case u <= at:
-		return e.opts.Projector.ToSource(&l.proj, u, contract.Downstream)
+	case u == at:
+		// The caret itself: the input method's caret is ours. A hidden marker
+		// before it (the "> " of an empty quote) maps the display index to
+		// the marker's start, before it, where nothing should go.
+		return e.head
+	case u < at:
+		return clampTo(e.opts.Projector.ToSource(&l.proj, u, contract.Downstream), e.rowRange(e.caretRow))
 	case u <= at+n:
 		return e.head
 	}
-	return e.opts.Projector.ToSource(&l.proj, u-n, contract.Downstream)
+	return clampTo(e.opts.Projector.ToSource(&l.proj, u-n, contract.Downstream), e.rowRange(e.caretRow))
 }
 
 // TextForRange returns the display text with the preedit in it.
@@ -51,7 +56,7 @@ func (e *Editor) Selection() ui.TextInputSelection {
 	if e.anchor == e.head {
 		return ui.TextInputSelection{Range: ui.TextInputRange{Start: at, End: at}}
 	}
-	other := e.opts.Projector.ToDisplay(&l.proj, clampTo(e.anchor, e.block(e.caretRow).Range), contract.Downstream)
+	other := e.opts.Projector.ToDisplay(&l.proj, clampTo(e.anchor, e.rowRange(e.caretRow)), contract.Downstream)
 	return ui.TextInputSelection{Range: ui.TextInputRange{Start: min(at, other), End: max(at, other)}, Reversed: at < other}
 }
 

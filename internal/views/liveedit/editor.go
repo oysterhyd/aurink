@@ -404,6 +404,23 @@ func (e *Editor) rowAt(off int) int {
 
 func clampTo(off int, rg contract.Range) int { return max(rg.Start, min(off, rg.End)) }
 
+// rowRange is where a caret can stand in row r: its block's range, or, for an
+// empty leaf, the source its projection shows. A lone block marker not yet
+// followed by a space (">", "-", "#") is such a leaf: it shows as text, and
+// the caret goes after it, and over it, as over any text.
+func (e *Editor) rowRange(r int) contract.Range {
+	rg := e.block(r).Range
+	if !rg.Empty() {
+		return rg
+	}
+	for _, s := range e.form(r).proj.Segments {
+		if s.Kind == contract.SegText {
+			rg.Start, rg.End = min(rg.Start, s.Src.Start), max(rg.End, s.Src.End)
+		}
+	}
+	return rg
+}
+
 func (e *Editor) onEvent(ev contract.DocEvent) {
 	switch ev.Kind {
 	case contract.DocTextChanged, contract.DocReplaced:
@@ -748,12 +765,11 @@ func (e *Editor) composed() *laid {
 		return e.preLaid
 	}
 	base := e.form(e.caretRow)
-	b := e.block(e.caretRow)
-	at := e.opts.Projector.ToDisplay(&base.proj, clampTo(e.head, b.Range), contract.Downstream)
+	at := e.opts.Projector.ToDisplay(&base.proj, clampTo(e.head, e.rowRange(e.caretRow)), contract.Downstream)
 	l := &laid{key: base.key, m: base.m, proj: base.proj, base: base.base}
 	u := utf16ByteOffset(base.display, at)
 	l.display = base.display[:u] + e.preedit + base.display[u:]
-	e.shape(l, b, e.preedit, at)
+	e.shape(l, e.block(e.caretRow), e.preedit, at)
 	e.preLaid = l
 	return l
 }
@@ -960,7 +976,7 @@ func (e *Editor) dropAllForms() {
 // caretRect returns the caret in element coordinates: x, y and height.
 func (e *Editor) caretRect() (x, y, h float32) {
 	l := e.current(e.caretRow)
-	idx := e.opts.Projector.ToDisplay(&l.proj, clampTo(e.head, e.block(e.caretRow).Range), contract.Downstream)
+	idx := e.opts.Projector.ToDisplay(&l.proj, clampTo(e.head, e.rowRange(e.caretRow)), contract.Downstream)
 	if e.preedit != "" {
 		idx += e.preSelected.End
 	}
