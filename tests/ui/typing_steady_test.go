@@ -14,7 +14,7 @@ import (
 // (2026-11-04).
 func TestTypingMovesNothing(t *testing.T) {
 	for _, seq := range []string{"# ab", "## ab", "- ab", "1. ab", "+ ab", "> ab", "- [ ] ab", "---", "***",
-		"    ab", "<div>", "[^1]: ab", "[a]: http://x.y", "中文", "$x$", "|a|b|"} {
+		"    ab", "<div>", "[^1]: ab", "[a]: http://x.y", "中文", "$x$", "|a|b|", "```js", "$$", "~~~"} {
 		h := openRail(t, "first\n\n\n\nlast\n")
 		h.caret(7)
 		settle := func() {
@@ -34,13 +34,18 @@ func TestTypingMovesNothing(t *testing.T) {
 		}
 		// From the first character that is not a space: a line of spaces is
 		// still an empty line.
+		// The first keystroke on the empty line moves nothing below either.
+		settle()
+		l0 := last()
 		runes := []rune(seq)
 		k := len(seq) - len(strings.TrimLeft(seq, " "))
 		h.typed(string(runes[:k+1]))
 		runes = runes[k+1:]
 		settle()
+		if l := last(); l != l0 {
+			t.Errorf("%q: the first keystroke moved the text below from %.1f to %.1f", seq, l0, l)
+		}
 		_, y0, h0 := h.e.CaretDrawn()
-		l0 := last()
 		for _, ch := range runes {
 			h.typed(string(ch))
 			settle()
