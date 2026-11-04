@@ -1,6 +1,8 @@
 package liveedit
 
 import (
+	"strings"
+
 	"aurink/internal/contract"
 	"github.com/egoist/mygo/ui"
 )
@@ -98,6 +100,12 @@ func (e *Editor) ReplaceText(r *ui.TextInputRange, s string) {
 
 func (e *Editor) commitIME(rg contract.Range, s string) {
 	if rg.Start == rg.End && s == "" {
+		return
+	}
+	// Fence characters from an IME at the caret go through the typing rules,
+	// so a fence's closer comes in the same undo step as the keystroke.
+	if rg.Empty() && e.anchor == e.head && rg.Start == e.head && s != "" && (strings.Trim(s, "`") == "" || strings.Trim(s, "~") == "") &&
+		e.intent(contract.Intent{Kind: contract.IntentInsertText, Text: s}) {
 		return
 	}
 	c := contract.Caret(rg.Start + len(s))
