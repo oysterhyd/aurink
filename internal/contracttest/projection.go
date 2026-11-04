@@ -154,6 +154,64 @@ func TestProjection(t *testing.T, f ProjectionFixture) {
 			t.Errorf("display %q", got)
 		}
 	})
+	// As in Typora, a task marker with nothing after its space is already a
+	// task: the slash menu's To-do and the input rule leave "- [ ] " and the
+	// checkbox shows before any text is typed. Without the space it stays
+	// text, as a lone block marker does.
+	t.Run("an empty task", func(t *testing.T) {
+		for _, c := range []struct {
+			src  string
+			task contract.TaskState
+			mark string
+		}{
+			{"- [ ] ", contract.TaskOpen, "[ ]"},
+			{"- [ ] \n", contract.TaskOpen, "[ ]"},
+			{"- [ ] \r\n", contract.TaskOpen, "[ ]"},
+			{"- [x] \n", contract.TaskDone, "[x]"},
+			{"x\n\n* [ ] \n", contract.TaskOpen, "[ ]"},
+			{"- [ ] a\n- [ ] \n", contract.TaskOpen, "[ ]"},
+			{"> - [ ] \n", contract.TaskOpen, "[ ]"},
+			{"- a\n  - [ ] \n", contract.TaskOpen, "[ ]"},
+			{"- [ ]\n", contract.TaskNone, ""},
+		} {
+			text, ast := f.Parse(c.src, contract.ExtFrontMatter)
+			at := strings.LastIndex(c.src, "]") + 2
+			if c.task == contract.TaskNone {
+				at = strings.LastIndex(c.src, "]")
+			}
+			leaf := ast.LeafAt(min(at, len(c.src)))
+			if leaf < 0 {
+				t.Errorf("%q: no leaf at %d", c.src, at)
+				continue
+			}
+			p := pr.Project(ast, text, leaf, contract.Reveal{Mode: contract.RevealInline, Caret: -1})
+			var got *contract.ContainerDecor
+			for i := range p.Containers {
+				if p.Containers[i].Kind == contract.BlockItem {
+					got = &p.Containers[i]
+				}
+			}
+			if got == nil {
+				t.Errorf("%q: no item", c.src)
+				continue
+			}
+			if got.Task != c.task {
+				t.Errorf("%q: task %v, want %v", c.src, got.Task, c.task)
+			}
+			if c.task == contract.TaskNone {
+				if d := pr.DisplayText(&p); d != "[ ]" {
+					t.Errorf("%q: display %q, want the marker as text", c.src, d)
+				}
+				continue
+			}
+			if c.src[got.TaskSrc.Start:got.TaskSrc.End] != c.mark {
+				t.Errorf("%q: task source %v", c.src, got.TaskSrc)
+			}
+			if d := pr.DisplayText(&p); d != "" {
+				t.Errorf("%q: display %q, want nothing after the checkbox", c.src, d)
+			}
+		}
+	})
 	t.Run("Sig", func(t *testing.T) {
 		src := "x\n\n**a** b\n"
 		text, ast := f.Parse(src, contract.ExtFrontMatter)

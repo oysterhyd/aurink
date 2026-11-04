@@ -156,6 +156,11 @@ func TestEditingV2(t *testing.T, f EditingFixture) {
 			nil, intent(contract.IntentDeleteBackward, "")},
 		{"backspace through an empty table deletes it", "| ‸ |  |\n| --- | --- |\n|  |  |", "‸",
 			nil, intent(contract.IntentDeleteBackward, "")},
+		// An empty task item is a task (TestProjection "an empty task"): Enter
+		// on it leaves the list, as on an empty item, and typing fills it.
+		{"Enter on an empty task leaves the list", "- [ ] a\n- [ ] ‸", "- [ ] a\n\n‸", nil, intent(contract.IntentNewline, "")},
+		{"Enter on a lone empty task leaves the list", "- [ ] ‸", "‸", nil, intent(contract.IntentNewline, "")},
+		{"typing in an empty task", "- [ ] ‸", "- [ ] b‸", nil, intent(contract.IntentInsertText, "b")},
 		// Format reflows the table only: widths by display width (CJK counts 2),
 		// at least 3, padding by alignment.
 		{"format", at("| a | 中文 |\n|---|:-:|\n| 123456 | x |", "a"),
