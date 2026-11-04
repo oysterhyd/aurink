@@ -123,6 +123,13 @@ func tableCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract.
 	}
 	cols := len(t.rows[0].cells)
 	switch cmd.ID {
+	case contract.CmdTableResize:
+		if cmd.Rows < 0 || cmd.Cols < 1 || cmd.Rows == len(t.rows)-1 && cmd.Cols == cols {
+			return contract.Transaction{}, false, nil
+		}
+		return resizeTable(ctx, t, cmd.Rows, cmd.Cols), true, nil
+	case contract.CmdTableDelete:
+		return deleteTable(ctx, t, contract.OriginCommand), true, nil
 	case contract.CmdTableRowAbove, contract.CmdTableRowBelow:
 		if cmd.ID == contract.CmdTableRowAbove && t.row == 0 {
 			return contract.Transaction{}, false, nil
@@ -446,6 +453,11 @@ func tableIntent(ctx contract.EditContext, in contract.Intent) (contract.Transac
 	}
 	var id contract.CommandID
 	switch in.Kind {
+	case contract.IntentDeleteBackward:
+		if in.Gran != contract.GranChar || !ctx.Selection.Primary().Empty() || !t.rows[t.row].cells[t.col].content.Empty() {
+			return contract.Transaction{}, false
+		}
+		return backspaceEmptyTableCell(ctx, t), true
 	case contract.IntentIndent:
 		id = contract.CmdTableNextCell
 	case contract.IntentOutdent:
