@@ -308,7 +308,8 @@ func tableSafe(ctx contract.EditContext, edits []contract.TextEdit) bool {
 		probe.Selection = contract.Selection{Ranges: []contract.SelRange{{Anchor: e.Range.Start, Head: e.Range.End}}}
 		for _, i := range selectedLeaves(probe) {
 			b := ctx.AST.Block(i)
-			if ancestor(ctx, b.Range.Start, contract.BlockTable) == nil {
+			t := ancestor(ctx, b.Range.Start, contract.BlockTable)
+			if t == nil || coveredTable(t.Range, []contract.TextEdit{e}) {
 				continue
 			}
 			inside := b.Kind == contract.BlockTableCell && e.Range.Start >= b.Range.Start && e.Range.End <= b.Range.End

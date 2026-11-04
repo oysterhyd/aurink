@@ -211,6 +211,11 @@ func deleteVisible(ctx contract.EditContext, p int, back bool) (contract.Transac
 		}
 	}
 	for _, n := range nodes {
+		// Inline math shows its $ beside the caret: they are deleted as the
+		// characters they are, $abc$| to $abc|, as anything shown is.
+		if n.Kind == contract.InlineMath {
+			continue
+		}
 		if back && n.Close.End == pos && !n.Close.Empty() && n.Close.Start > n.Open.End {
 			pos = n.Close.Start
 		} else if !back && n.Open.Start == pos && !n.Open.Empty() && n.Open.End < n.Close.Start {

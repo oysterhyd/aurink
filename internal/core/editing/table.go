@@ -17,6 +17,18 @@ func tableRows(ast contract.AST, index int) int {
 	return rows
 }
 
+// coveredTable reports whether one edit replaces all of a table: select all,
+// or a selection around the table, then delete or type. Such an edit removes
+// the table, which the table guards let through.
+func coveredTable(table contract.Range, edits []contract.TextEdit) bool {
+	for _, e := range edits {
+		if e.Range.Start <= table.Start && table.End <= e.Range.End {
+			return true
+		}
+	}
+	return false
+}
+
 func preservesTables(ctx contract.EditContext, edits []contract.TextEdit) bool {
 	if ctx.AST == nil || len(edits) == 0 {
 		return true
@@ -46,6 +58,9 @@ func preservesTables(ctx contract.EditContext, edits []contract.TextEdit) bool {
 	next := ctx
 	next.AST = p.Snapshot()
 	for _, i := range tables {
+		if coveredTable(ctx.AST.Block(i).Range, edits) {
+			continue // deleted whole, as the user chose
+		}
 		at := mapped(contract.Caret(ctx.AST.Block(i).Range.Start), edits).Primary().Head
 		b := ancestor(next, at, contract.BlockTable)
 		if b == nil {
