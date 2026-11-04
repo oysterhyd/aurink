@@ -165,14 +165,44 @@ func adaptInput(src string, d *parser.Document, at int, input parserInput) (*ada
 		if p.Kind == parser.MathBlock && len(b.Lines) > 0 {
 			b.Range.End = mathEnd(src, b.Range.Start, b.Range.End)
 		}
-		if isLeaf(b.Kind) {
-			fillGaps(src, &b, b.Lines)
-		}
 		if b.Kind == contract.BlockItem && b.Task != contract.TaskNone {
 			end, _ := lineEnd(src, b.Range.Start)
 			if n := strings.IndexByte(src[b.Range.Start:end], '['); n >= 0 {
 				b.TaskMarker = contract.Range{Start: b.Range.Start + n, End: b.Range.Start + n + 3}
 			}
+		}
+		itemIndex := -1
+		if b.Parent > 0 && j == b.Parent+1 {
+			if b.Kind == contract.BlockParagraph || b.Kind == contract.BlockHeading {
+				itemIndex = b.Parent
+			} else if b.Kind == contract.BlockTableCell {
+				row := s.blocks[b.Parent]
+				if row.Kind == contract.BlockTableRow && row.Parent > 0 && b.Parent == row.Parent+1 {
+					table := s.blocks[row.Parent]
+					if table.Kind == contract.BlockTable && table.Parent > 0 && row.Parent == table.Parent+1 {
+						itemIndex = table.Parent
+					}
+				}
+			}
+		}
+		if itemIndex > 0 && len(b.Lines) > 0 {
+			item := s.blocks[itemIndex]
+			if item.Kind == contract.BlockItem && item.Task != contract.TaskNone {
+				if end, ok := emptyTaskLine(src, item.TaskMarker.Start); ok {
+					b.Range.Start, b.Content.Start = end, end
+					b.Lines[0] = contract.BlockLine{Source: contract.Range{Start: end, End: end}}
+					if b.Kind == contract.BlockTableCell {
+						b.Range.End, b.Content.End = end, end
+					}
+					if b.Kind == contract.BlockParagraph && len(b.Lines) == 1 {
+						r := contract.Range{Start: end, End: end}
+						b = contract.Block{Kind: contract.BlockBlank, Parent: parent, Next: p.Next + shift, Range: r, Content: r}
+					}
+				}
+			}
+		}
+		if isLeaf(b.Kind) {
+			fillGaps(src, &b, b.Lines)
 		}
 		s.blocks[j] = b
 	}
@@ -183,6 +213,22 @@ func adaptInput(src string, d *parser.Document, at int, input parserInput) (*ada
 		p.Range.End = max(p.Range.End, b.Range.End)
 	}
 	return s, nil
+}
+
+// emptyTaskLine recognizes an item's task marker only when it is followed by
+// whitespace and nothing else on that source line.
+func emptyTaskLine(src string, start int) (int, bool) {
+	end, _ := lineEnd(src, start)
+	if end-start < 4 || src[start] != '[' || src[start+2] != ']' ||
+		(src[start+1] != ' ' && src[start+1] != 'x' && src[start+1] != 'X') {
+		return end, false
+	}
+	for i := start + 3; i < end; i++ {
+		if src[i] != ' ' && src[i] != '\t' {
+			return end, false
+		}
+	}
+	return end, true
 }
 
 func isLeaf(k contract.BlockKind) bool {

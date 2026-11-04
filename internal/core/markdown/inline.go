@@ -24,6 +24,9 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		if b.Kind != contract.BlockParagraph && b.Kind != contract.BlockHeading && b.Kind != contract.BlockTableCell {
 			return
 		}
+		if b.Kind == contract.BlockTableCell && b.Content.Empty() {
+			return
+		}
 		if !s.hasDefinitions && b.Kind != contract.BlockTableCell && len(b.Lines) == 1 {
 			data := e.data
 			data.inlineOnce.Do(func() {
@@ -71,17 +74,43 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		}
 		var in []parser.Inline
 		found := false
-		for j := 1; j < d.Len(); j++ {
+		taskStart := -1
+		if b.Parent > 0 && i == b.Parent+1 && len(b.Lines) > 0 && b.Lines[0].Source.Empty() {
+			item := s.Block(b.Parent)
+			if item.Kind == contract.BlockItem && item.Task != contract.TaskNone {
+				if end, ok := emptyTaskLine(s.text.String(), item.TaskMarker.Start); ok && b.Range.Start == end {
+					taskStart = item.TaskMarker.End + 1
+				}
+			}
+		}
+		matches := func(d *parser.Document, input parserInput, j, shift int, lines bool) bool {
 			p := d.Block(j)
-			if contract.BlockKind(p.Kind) == b.Kind && input.offset(p.Start)+shift == b.Range.Start && d.LineCount(j) == len(b.Lines) {
-				matches := true
+			start := b.Range.Start
+			if taskStart >= 0 {
+				start = taskStart
+			}
+			if contract.BlockKind(p.Kind) != b.Kind || input.offset(p.Start)+shift != start {
+				return false
+			}
+			if lines {
+				if d.LineCount(j) != len(b.Lines) {
+					return false
+				}
 				for k, line := range b.Lines {
 					_, at := d.Line(j, k)
-					matches = matches && input.offset(at)+shift == line.Source.Start
+					if k == 0 && taskStart >= 0 {
+						if input.offset(at)+shift != taskStart {
+							return false
+						}
+					} else if input.offset(at)+shift != line.Source.Start {
+						return false
+					}
 				}
-				if !matches {
-					continue
-				}
+			}
+			return true
+		}
+		for j := 1; j < d.Len(); j++ {
+			if matches(d, input, j, shift, true) {
 				in = d.Inlines(j)
 				found = true
 				break
@@ -93,8 +122,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 			d, shift = s.inlineDoc(), s.bodyAt
 			input = s.lazyInput
 			for j := 1; j < d.Len(); j++ {
-				p := d.Block(j)
-				if contract.BlockKind(p.Kind) == b.Kind && input.offset(p.Start)+shift == b.Range.Start {
+				if matches(d, input, j, shift, false) {
 					in, found = d.Inlines(j), true
 					break
 				}
@@ -122,8 +150,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				next.Set(nextInput.text)
 				match := -1
 				for j := 1; j < next.Len(); j++ {
-					p := next.Block(j)
-					if contract.BlockKind(p.Kind) == b.Kind && nextInput.offset(p.Start)+shift == b.Range.Start && next.LineCount(j) == len(b.Lines) {
+					if matches(next, nextInput, j, shift, true) {
 						match = j
 						break
 					}
@@ -135,9 +162,30 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				in = d.Inlines(match)
 			}
 		}
-		e.in = extendInlines(s.text.String(), adaptInlines(s.text.String(), in, shift, input, s.exts), s.exts)
+		adapted := adaptInlines(s.text.String(), in, shift, input, s.exts)
+		if taskStart >= 0 {
+			adapted = trimEmptyTaskInlines(adapted, b.Range.Start)
+		}
+		e.in = extendInlines(s.text.String(), adapted, s.exts)
 	})
 	return e.in
+}
+
+// The temporary task byte and the remaining marker whitespace are not content.
+func trimEmptyTaskInlines(in []contract.Inline, end int) []contract.Inline {
+	n := 0
+	for n < len(in) && in[n].Range.End <= end && in[n].Next == n+1 {
+		n++
+	}
+	in = in[n:]
+	for i := range in {
+		in[i].Next -= n
+	}
+	if len(in) > 0 && (in[0].Kind == contract.InlineSoftBreak || in[0].Kind == contract.InlineLineBreak) {
+		in[0].Range.Start = max(in[0].Range.Start, end)
+		in[0].Kind = contract.InlineSoftBreak
+	}
+	return in
 }
 
 func shiftInlines(in []contract.Inline, delta int) {

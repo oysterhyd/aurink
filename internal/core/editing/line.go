@@ -96,7 +96,7 @@ func scanLine(s string) sourceLine {
 		for i < len(s) && space(s[i]) {
 			i++
 		}
-		if kind == '-' && i+3 <= len(s) && s[i] == '[' && (s[i+1] == ' ' || s[i+1] == 'x' || s[i+1] == 'X') && s[i+2] == ']' && (i+3 == len(s) || space(s[i+3])) {
+		if kind == '-' && i+3 < len(s) && s[i] == '[' && (s[i+1] == ' ' || s[i+1] == 'x' || s[i+1] == 'X') && s[i+2] == ']' && space(s[i+3]) {
 			l.task = i
 			i += 3
 			for i < len(s) && space(s[i]) {
@@ -228,6 +228,17 @@ func newline(ctx contract.EditContext) contract.Transaction {
 			n := min(l.indent, tabs(ctx))
 			edits := []contract.TextEdit{edit(l.start, l.start+n, "")}
 			return transaction(edits, mapped(ctx.Selection, edits), contract.OriginUser, "newline")
+		}
+		if p.kind == '-' && r.Empty() {
+			i, b := leaf(ctx, r.Start)
+			if b != nil && b.Kind == contract.BlockBlank && b.Parent > 0 {
+				item := ctx.AST.Block(b.Parent)
+				list := ctx.AST.Block(item.Parent)
+				if item.Kind == contract.BlockItem && item.Task != contract.TaskNone && item.Next == i+1 &&
+					list.Kind == contract.BlockList && b.Parent == item.Parent+1 && item.Next == list.Next {
+					return replace(contract.Range{Start: l.start + p.a, End: r.End}, "", contract.OriginUser, "newline")
+				}
+			}
 		}
 		if p.kind == '-' || p.kind == '>' {
 			return replace(contract.Range{Start: l.start + p.a, End: r.End}, nl+l.s[:p.a], contract.OriginUser, "newline")

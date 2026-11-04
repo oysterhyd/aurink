@@ -7,9 +7,9 @@ import (
 	"github.com/egoist/mygo/ui/markdown/parser"
 )
 
-// parserInput records temporary bytes inserted before dollar sequences that
-// cannot open a block. The parser sees ordinary inline content there; all
-// public ranges and text are mapped back to the unchanged source.
+// parserInput records temporary bytes used to guide block parsing. The parser
+// sees ordinary inline content there; public ranges and text map back to the
+// unchanged source.
 type parserInput struct {
 	source, text string
 	guard        string
@@ -91,7 +91,12 @@ func (p parserInput) escapeMultilineMath(in []parser.Inline) (parserInput, bool)
 func parserDocument(src string, ext parser.Extensions) (*parser.Document, parserInput) {
 	d := parser.New(ext)
 	input := parserInput{source: src, text: src}
-	if ext&parser.ExtDollarMath == 0 || !strings.Contains(src, "$$") {
+	checkMath := ext&parser.ExtDollarMath != 0 && strings.Contains(src, "$$")
+	checkTasks := ext&parser.ExtTaskLists != 0 &&
+		(strings.Contains(src, "[ ] ") || strings.Contains(src, "[ ]\t") ||
+			strings.Contains(src, "[x] ") || strings.Contains(src, "[x]\t") ||
+			strings.Contains(src, "[X] ") || strings.Contains(src, "[X]\t"))
+	if !checkMath && !checkTasks {
 		d.Set(src)
 		return d, input
 	}
@@ -122,30 +127,50 @@ func parserDocument(src string, ext parser.Extensions) (*parser.Document, parser
 		}
 		for i := 1; i < d.Len(); i++ {
 			b := d.Block(i)
-			if b.Kind != parser.MathBlock {
-				continue
-			}
-			start := input.offset(b.Start)
-			if !strings.HasPrefix(src[start:], "$$") {
-				continue
-			}
-			end, next := lineEnd(src, start)
-			if strings.Trim(src[start:end], " \t") != "$$" || next == end {
-				add(start)
-				// An invalid opener can swallow many following lines. Find
-				// further candidate openers in those lines in the same pass.
-				for k := 0; k < d.LineCount(i); k++ {
-					_, at := d.Line(i, k)
-					candidate := input.offset(at)
-					for candidate < len(src) && (src[candidate] == ' ' || src[candidate] == '\t') {
-						candidate++
+			if checkTasks && b.Kind == parser.Item && b.Task == parser.NoTask && i+1 < b.Next {
+				first := i + 1
+				// A delimiter on the next line may have turned the first
+				// paragraph into the header cell of a table.
+				if d.Block(first).Kind == parser.Table && first+2 < b.Next && d.Block(first+1).Kind == parser.TableRow {
+					first += 2
+				}
+				child := d.Block(first)
+				if (child.Kind == parser.Paragraph || child.Kind == parser.Heading || child.Kind == parser.TableCell) && d.LineCount(first) > 0 {
+					line, at := d.Line(first, 0)
+					start := input.offset(at)
+					firstEnd, _ := lineEnd(src, input.offset(b.Start))
+					if strings.HasPrefix(line, "[") && start < firstEnd {
+						if _, ok := emptyTaskLine(src, start); ok {
+							// Force the upstream parser to keep the item's normal
+							// continuation grammar; the byte is never exposed.
+							add(start + 4)
+						}
 					}
-					if candidate == start || !strings.HasPrefix(src[candidate:], "$$") {
-						continue
-					}
-					last, after := lineEnd(src, candidate)
-					if strings.Trim(src[candidate:last], " \t") != "$$" || after == last {
-						add(candidate)
+				}
+			}
+			if checkMath && b.Kind == parser.MathBlock {
+				start := input.offset(b.Start)
+				if !strings.HasPrefix(src[start:], "$$") {
+					continue
+				}
+				end, next := lineEnd(src, start)
+				if strings.Trim(src[start:end], " \t") != "$$" || next == end {
+					add(start)
+					// An invalid opener can swallow many following lines. Find
+					// further candidate openers in those lines in the same pass.
+					for k := 0; k < d.LineCount(i); k++ {
+						_, at := d.Line(i, k)
+						candidate := input.offset(at)
+						for candidate < len(src) && (src[candidate] == ' ' || src[candidate] == '\t') {
+							candidate++
+						}
+						if candidate == start || !strings.HasPrefix(src[candidate:], "$$") {
+							continue
+						}
+						last, after := lineEnd(src, candidate)
+						if strings.Trim(src[candidate:last], " \t") != "$$" || after == last {
+							add(candidate)
+						}
 					}
 				}
 			}
