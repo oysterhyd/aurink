@@ -136,6 +136,26 @@ func TestEditingV2(t *testing.T, f EditingFixture) {
 		{"a typed pipe is escaped", "| a | b |\n| --- | :-: |\n| 1‸ | 2 |", "| a | b |\n| --- | :-: |\n| 1\\|‸ | 2 |", nil, intent(contract.IntentInsertText, "|")},
 		{"paste into a cell stays in the cell", "| a | b |\n| --- | :-: |\n| 1‸ | 2 |", "| a | b |\n| --- | :-: |\n| 1x<br>y\\|z‸ | 2 |", nil,
 			&contract.Intent{Kind: contract.IntentPaste, Paste: &contract.PastePayload{Plain: "x\ny|z"}}},
+		// Resize and delete, as Typora's table toolbar (2026-11-04). New cells
+		// are two spaces, new delimiter cells ---; the caret stays in its cell.
+		{"resize grows", at(table, "a"), "| ‸a | b |  |\n| --- | :-: | --- |\n| 1 | 2 |  |\n|  |  |  |",
+			&contract.EditCommand{ID: contract.CmdTableResize, Rows: 2, Cols: 3}, nil},
+		{"resize shrinks", at(table+"\n| 3 | 4 |", "a"), "| ‸a |\n| --- |\n| 1 |",
+			&contract.EditCommand{ID: contract.CmdTableResize, Rows: 1, Cols: 1}, nil},
+		{"resize to the header alone", at(table, "b |"), "| a | ‸b |\n| --- | :-: |",
+			&contract.EditCommand{ID: contract.CmdTableResize, Rows: 0, Cols: 2}, nil},
+		{"resize to the same size", at(table, "a"), "", &contract.EditCommand{ID: contract.CmdTableResize, Rows: 1, Cols: 2}, nil},
+		{"resize to no column", at(table, "a"), "", &contract.EditCommand{ID: contract.CmdTableResize, Rows: 1, Cols: 0}, nil},
+		{"delete the table", at(table, "2"), "‸", cmd(contract.CmdTableDelete), nil},
+		// Backspace in an empty cell goes to the end of the previous cell, over
+		// the delimiter row; in the first cell of a table with no text at all
+		// it deletes the table (Typora, 2026-11-04).
+		{"backspace in an empty cell goes back a cell", "| a | ‸ |\n| --- | --- |\n| 1 | 2 |", "| a‸ |  |\n| --- | --- |\n| 1 | 2 |",
+			nil, intent(contract.IntentDeleteBackward, "")},
+		{"backspace in an empty first body cell goes to the header", "| a | b |\n| --- | --- |\n| ‸ | 2 |", "| a | b‸ |\n| --- | --- |\n|  | 2 |",
+			nil, intent(contract.IntentDeleteBackward, "")},
+		{"backspace through an empty table deletes it", "| ‸ |  |\n| --- | --- |\n|  |  |", "‸",
+			nil, intent(contract.IntentDeleteBackward, "")},
 		// Format reflows the table only: widths by display width (CJK counts 2),
 		// at least 3, padding by alignment.
 		{"format", at("| a | 中文 |\n|---|:-:|\n| 123456 | x |", "a"),

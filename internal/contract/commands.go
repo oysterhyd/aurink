@@ -79,6 +79,12 @@ const (
 	CmdTableFormat    CommandID = "table.format"
 	CmdTableNextCell  CommandID = "table.nextCell"
 	CmdTablePrevCell  CommandID = "table.prevCell"
+	// CmdTableResize 把光标所在表格调整为 Rows 个正文行（不含表头）、Cols 列：
+	// 在下方、右侧补空单元格或删去多余的行列（内容随之删去），对齐保留；
+	// Rows < 0、Cols < 1 或尺寸不变时不适用（Typora 的“调整表格”，2026-11-04）。
+	CmdTableResize CommandID = "table.resize" // Rows, Cols
+	// CmdTableDelete 删除光标所在的整张表格，光标留在原处的空段落（Typora 工具条的删除）。
+	CmdTableDelete CommandID = "table.delete"
 
 	CmdInsertImages      CommandID = "insert.images" // EditCommand.Paths
 	CmdInsertLink        CommandID = "insert.link"   // URL, Text
