@@ -243,7 +243,8 @@ func TestEditingExtensions(t *testing.T, f EditingFixture) {
 		{"subscript off", "H~‸2‸~O", contract.EditCommand{ID: contract.CmdFormatSub}, "H‸2‸O"},
 		{"no superscript over a space", "‸a b‸", contract.EditCommand{ID: contract.CmdFormatSup}, ""},
 		{"math block on an empty line", "x\n\n‸\n\ny", contract.EditCommand{ID: contract.CmdBlockMath}, "x\n\n$$\n‸\n$$\n\ny"},
-		{"math block around a paragraph", "x + y‸", contract.EditCommand{ID: contract.CmdBlockMath}, "$$\nx + y‸\n$$"},
+		// As Typora (2026-11-04): an empty math block after the paragraph.
+		{"math block after a paragraph", "x + y‸", contract.EditCommand{ID: contract.CmdBlockMath}, "x + y\n$$\n‸\n$$"},
 		{"Mermaid block on an empty line", "x\n\n‸\n\ny", contract.EditCommand{ID: contract.CmdBlockMermaid}, "x\n\n```mermaid\n‸\n```\n\ny"},
 		{"TOC on an empty line", "x\n\n‸\n\ny", contract.EditCommand{ID: contract.CmdBlockTOC}, "x\n\n[TOC]‸\n\ny"},
 		{"TOC after a paragraph", "ab‸\n\ny", contract.EditCommand{ID: contract.CmdBlockTOC}, "ab\n\n[TOC]‸\n\ny"},
