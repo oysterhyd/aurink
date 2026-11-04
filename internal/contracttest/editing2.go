@@ -131,7 +131,10 @@ func TestEditingV2(t *testing.T, f EditingFixture) {
 		// Keys in a cell.
 		{"Tab moves to the next cell", at(table, "a"), "| a | ‸b‸ |\n| --- | :-: |\n| 1 | 2 |", nil, intent(contract.IntentIndent, "")},
 		{"Shift+Tab moves back", at(table, "1"), "| a | ‸b‸ |\n| --- | :-: |\n| 1 | 2 |", nil, intent(contract.IntentOutdent, "")},
-		{"Enter adds a row below", at(table, "1"), table + "\n| ‸ |  |", nil, intent(contract.IntentNewline, "")},
+		// Enter as Typora (2026-11-04): in the last row, a paragraph after the
+		// table; in another row, the cell below with its content selected.
+		{"Enter in the last row leaves the table", at(table, "1"), table + "\n\n‸", nil, intent(contract.IntentNewline, "")},
+		{"Enter in the header goes to the cell below", at(table, "a"), "| a | b |\n| --- | :-: |\n| ‸1‸ | 2 |", nil, intent(contract.IntentNewline, "")},
 		{"Shift+Enter is a <br>", "| a | b |\n| --- | :-: |\n| 1‸ | 2 |", "| a | b |\n| --- | :-: |\n| 1<br>‸ | 2 |", nil, intent(contract.IntentLineBreak, "")},
 		{"a typed pipe is escaped", "| a | b |\n| --- | :-: |\n| 1‸ | 2 |", "| a | b |\n| --- | :-: |\n| 1\\|‸ | 2 |", nil, intent(contract.IntentInsertText, "|")},
 		{"paste into a cell stays in the cell", "| a | b |\n| --- | :-: |\n| 1‸ | 2 |", "| a | b |\n| --- | :-: |\n| 1x<br>y\\|z‸ | 2 |", nil,
