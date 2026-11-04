@@ -28,6 +28,7 @@ func (a *adapted) coveredBlocks() []contract.Block {
 		a.blocks = insertBlocks(a.blocks, extras)
 	}
 	c := a.cover()
+	a.coverQuoteEnds(c)
 	c.revealGaps()
 	byOrigin := make(map[int]coverLeaf, len(c.leaves))
 	var additions []contract.Block
