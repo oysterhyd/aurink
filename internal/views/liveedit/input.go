@@ -310,7 +310,7 @@ func (e *Editor) key(ev ui.InputEvent) bool {
 			}
 			return e.command("paste")
 		case ui.KeyHome:
-			e.moveTo(0, extend)
+			e.moveTo(e.snapShown(0), extend)
 			return true
 		case ui.KeyEnd:
 			e.moveTo(e.text.Len(), extend)
@@ -417,6 +417,17 @@ func (e *Editor) snap(off int, aff contract.Affinity) int {
 	off = clampTo(off, e.rowRange(r))
 	p := e.project(b, e.rows[r].leaf, revealKey{caret: off - b.Lead.Start})
 	return e.opts.Projector.Snap(&p, off, aff)
+}
+
+// snapShown moves off past the marks hidden while the caret is elsewhere: Home
+// lands where the text starts, after "# " or "- ", as in Typora, not on the
+// marks the caret there would show.
+func (e *Editor) snapShown(off int) int {
+	r := e.rowAt(off)
+	b := e.block(r)
+	off = clampTo(off, e.rowRange(r))
+	p := e.project(b, e.rows[r].leaf, revealKey{caret: -1})
+	return e.opts.Projector.Snap(&p, off, contract.Downstream)
 }
 
 func (e *Editor) moveTo(off int, extend bool) {
@@ -597,7 +608,7 @@ func (e *Editor) moveEdge(dir int, extend bool) {
 	if dir < 0 {
 		pos := l.layout.PositionAt(ui.Point{X: -1e6, Y: mid})
 		e.aff = ui.TextDownstream
-		e.moveTo(pr.ToSource(&l.proj, pos.Index, contract.Downstream), extend)
+		e.moveTo(e.snapShown(pr.ToSource(&l.proj, pos.Index, contract.Downstream)), extend)
 		return
 	}
 	pos := l.layout.PositionAt(ui.Point{X: 1e6, Y: mid})
@@ -658,6 +669,10 @@ func (e *Editor) intent(in contract.Intent) bool {
 	tx, ok := e.opts.Editing.HandleIntent(e.editContext(), in)
 	if !ok {
 		return false
+	}
+	if in.Kind == contract.IntentInsertText {
+		e.typing()
+		defer e.afterTyping()
 	}
 	if !e.apply(tx) {
 		return false

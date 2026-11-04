@@ -101,6 +101,8 @@ func (e *Editor) commitIME(rg contract.Range, s string) {
 		return
 	}
 	c := contract.Caret(rg.Start + len(s))
+	e.typing()
+	defer e.afterTyping()
 	if e.apply(contract.Transaction{Edits: []contract.TextEdit{{Range: rg, Text: s}}, Selection: &c, Origin: contract.OriginIME, Label: "editing_undo_typing"}) {
 		e.followUp()
 	}
@@ -110,6 +112,8 @@ func (e *Editor) commitIME(rg contract.Range, s string) {
 func (e *Editor) commitPlain(s string) {
 	rg := contract.SelRange{Anchor: e.anchor, Head: e.head}.Range()
 	c := contract.Caret(rg.Start + len(s))
+	e.typing()
+	defer e.afterTyping()
 	e.apply(contract.Transaction{Edits: []contract.TextEdit{{Range: rg, Text: s}}, Selection: &c, Origin: contract.OriginUser, Coalesce: "typing", Label: "editing_undo_typing"})
 }
 

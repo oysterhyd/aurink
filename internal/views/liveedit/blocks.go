@@ -62,7 +62,7 @@ var widgets = map[contract.BlockKind]widget{
 	contract.BlockThematicBreak: breakWidget{},
 	contract.BlockHTML:          sourceWidget{},
 	contract.BlockFrontMatter:   sourceWidget{},
-	contract.BlockLinkDef:       sourceWidget{},
+	contract.BlockLinkDef:       defWidget{},
 	contract.BlockMath:          sourceWidget{},
 	contract.BlockTOC:           sourceWidget{},
 	contract.BlockTableCell:     cellWidget{},
@@ -98,7 +98,7 @@ const (
 )
 
 // metricsFor sizes a row: its containers first, then the block's own widget.
-func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjection, lead bool) rowMetrics {
+func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjection, lead, listEnd bool) rowMetrics {
 	ty := e.ty
 	m := rowMetrics{font: ty.BodyFont(), below: ty.Body * .85, width: e.width}
 	if lead {
@@ -113,7 +113,11 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 			m.muted = true
 		case contract.BlockItem:
 			m.x += listIndent
-			m.below = ty.Body * .4
+			// Items sit close; the list as a whole is spaced as a paragraph
+			// (Typora), so a line turning into an item moves nothing below.
+			if !listEnd {
+				m.below = ty.Body * .4
+			}
 			if c.Task == contract.TaskDone {
 				m.struck = true
 			}
@@ -153,9 +157,17 @@ func (headingWidget) metrics(e *Editor, _ int, b *contract.Block, m *rowMetrics)
 
 type blankWidget struct{ plainWidget }
 
-func (blankWidget) metrics(_ *Editor, _ int, _ *contract.Block, m *rowMetrics) { m.below = 0 }
+// An empty line is an empty paragraph, as in Typora: it keeps a paragraph's
+// spacing, in its containers too, so the first character typed on it moves
+// nothing below.
+func (blankWidget) metrics(_ *Editor, _ int, _ *contract.Block, _ *rowMetrics) {}
 
 // sourceWidget shows syntax M1 does not render as pale source (06 §2.1).
+// defWidget is a link definition: body text, muted, as Typora shows it.
+type defWidget struct{ plainWidget }
+
+func (defWidget) metrics(_ *Editor, _ int, _ *contract.Block, m *rowMetrics) { m.muted = true }
+
 type sourceWidget struct{ plainWidget }
 
 func (sourceWidget) metrics(e *Editor, _ int, _ *contract.Block, m *rowMetrics) {
@@ -386,6 +398,20 @@ func (rc *rowContext) paintQuoteBar(c *contract.ContainerDecor, x float32) {
 		bottom = rc.textY() + rc.l.h
 	}
 	rc.p.Fill(ui.Rect{X: x, Y: top, W: quoteBar, H: bottom - top}, rc.t.Faint.Alpha(.35), 0)
+}
+
+// listEnd reports whether row r is in a list and the last row of its
+// outermost list.
+func (e *Editor) listEnd(r int, b *contract.Block) bool {
+	var list contract.BlockID
+	found := false
+	for x := b; x != nil && x.Parent >= 0; {
+		x = e.ast.Block(x.Parent)
+		if x.Kind == contract.BlockList {
+			list, found = x.ID, true
+		}
+	}
+	return found && e.lastInQuote(r, list)
 }
 
 // lastInQuote reports whether row r is the quote's last: the next row is not

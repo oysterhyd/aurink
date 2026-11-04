@@ -86,6 +86,11 @@ type revealKey struct {
 	caret, from, to int
 	// A layout bakes in span colors and the lead paragraph's font.
 	dark, lead bool
+	// draft shows the row as a draft (draft.go).
+	draft bool
+	// listEnd: the row is the last of its outermost list, which keeps a
+	// paragraph's spacing below it.
+	listEnd bool
 }
 
 func (k revealKey) hidden() bool { return k.caret < 0 && k.from == k.to }
@@ -178,6 +183,14 @@ type Editor struct {
 	// tableMenuOpen is set while the toolbar's More menu shows: it takes the
 	// focus from the document, and the toolbar holding it stays.
 	tableMenuOpen bool
+	// lineHeights caches lineHeight by font.
+	lineHeights map[ui.Font]float32
+	// draftAt is the start of the block shown as a draft (draft.go), -1 for
+	// none; typedFrom is the caret block's kind before the keystroke being
+	// typed, while typingNow.
+	draftAt   int
+	typedFrom contract.BlockKind
+	typingNow bool
 	// previews holds each block's last good rendering, which its preview
 	// keeps while the source being typed renders.
 	previews map[contract.BlockID]*renderState
@@ -242,7 +255,7 @@ func New(o Options) *Editor {
 		}
 	}
 	e := &Editor{model: o.Model, opts: o, scroll: -padTop, anchorOff: -padTop, labels: map[labelKey]*ui.TextLayout{}, findCur: -1, t: o.Theme,
-		ty: theme.DefaultTypography()}
+		ty: theme.DefaultTypography(), draftAt: -1}
 	if e.t == nil {
 		e.t = theme.For(theme.Options{})
 	}
@@ -434,9 +447,11 @@ func (e *Editor) onEvent(ev contract.DocEvent) {
 		e.Stats.Edits++
 		e.syncRows(ev)
 		e.refreshSelection()
+		e.noteDraft()
 		e.preLaid = nil
 	case contract.DocSelectionChanged:
 		e.refreshSelection()
+		e.noteDraft()
 	case contract.DocReadOnlyChanged:
 		if e.model.ReadOnly() {
 			e.cancelPreedit()
@@ -599,13 +614,14 @@ func (e *Editor) refreshSelection() {
 
 // keyFor returns what row r's projection depends on now.
 func (e *Editor) keyFor(r int, b *contract.Block) revealKey {
-	k := revealKey{caret: -1, dark: e.t.Dark, lead: e.isLead(r, b)}
+	k := revealKey{caret: -1, dark: e.t.Dark, lead: e.isLead(r, b), listEnd: e.listEnd(r, b)}
 	if e.mode == editorapi.ModeRead {
 		return k
 	}
 	base := b.Lead.Start
 	if r == e.caretRow {
 		k.caret = clampTo(e.head, b.Range) - base
+		k.draft = e.isDraft(r, b)
 	}
 	a, z := min(e.anchor, e.head), max(e.anchor, e.head)
 	if from, to := max(a, b.Range.Start), min(z, b.Range.End); from < to {
@@ -639,6 +655,10 @@ func (e *Editor) project(b *contract.Block, leaf int, k revealKey) contract.Bloc
 	}
 	if k.to > k.from {
 		rv.Selection = contract.Range{Start: k.from + base, End: k.to + base}
+	}
+	if k.draft {
+		rv.Mode = contract.RevealBlock
+		return e.draftOf(b, e.opts.Projector.Project(e.ast, e.text, leaf, rv))
 	}
 	return e.opts.Projector.Project(e.ast, e.text, leaf, rv)
 }
@@ -686,7 +706,10 @@ func (e *Editor) form(r int) *laid {
 		}
 	}
 	l := &laid{key: k, proj: p, base: b.Lead.Start, display: e.opts.Projector.DisplayText(&p)}
-	l.m = e.metricsFor(r, b, &l.proj, k.lead)
+	l.m = e.metricsFor(r, b, &l.proj, k.lead, k.listEnd)
+	if k.draft && b.Kind == contract.BlockHeading {
+		l.m.font.Weight = 700 // Typora's draft heading: body size, bold
+	}
 	e.shape(l, b, "", 0)
 	if len(v.forms) >= maxForms {
 		victim := 0
@@ -713,8 +736,27 @@ func (e *Editor) shape(l *laid, b *contract.Block, preedit string, at int) {
 	e.Stats.FrameShapes++
 	_, l.h = l.layout.Size()
 	if l.h <= 0 {
-		l.h = font.Size * font.LineHeight
+		// An empty row is as tall as a line of its text will be, so the
+		// first character typed moves neither the caret nor the rows below.
+		l.h = e.lineHeight(font, l.m.width)
 	}
+}
+
+// lineHeight is the height the shaper gives a line of text in font: more
+// than Size times LineHeight where the face's own extent is taller.
+func (e *Editor) lineHeight(font ui.Font, width float32) float32 {
+	if h, ok := e.lineHeights[font]; ok {
+		return h
+	}
+	_, h := ui.ShapeText("x", font, width).Size()
+	if h <= 0 {
+		h = font.Size * font.LineHeight
+	}
+	if e.lineHeights == nil {
+		e.lineHeights = map[ui.Font]float32{}
+	}
+	e.lineHeights[font] = h
+	return h
 }
 
 // current returns row r as it shows now, and keeps its height up to date.
@@ -992,7 +1034,7 @@ func (e *Editor) caretRect() (x, y, h float32) {
 func (e *Editor) boundsAt(i int, l *laid, idx int) (x, y, h float32) {
 	r := l.layout.CaretAt(ui.TextCaretPosition{Index: idx, Affinity: e.aff})
 	if l.display == "" {
-		r.H = l.m.font.Size * l.m.font.LineHeight
+		r.H = e.lineHeight(l.m.font, l.m.width)
 	}
 	return e.contentX() + l.m.x + r.X, e.rowTextY(i) + r.Y, r.H
 }
