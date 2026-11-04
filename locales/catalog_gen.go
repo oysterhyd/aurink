@@ -2412,6 +2412,62 @@ func (msgs Messages) ShellHtmlFiles() string {
 	return Catalog.Format(msgs.locale, "shell_html_files", nil)
 }
 
+// ShellExportPdf says "Export as PDF…"
+// in the language the app shows.
+//
+// Command: writes the document as a PDF.
+func ShellExportPdf() string { return In(i18n.Locale()).ShellExportPdf() }
+
+// ShellExportPdf says "Export as PDF…"
+// in the language of msgs.
+//
+// Command: writes the document as a PDF.
+func (msgs Messages) ShellExportPdf() string {
+	return Catalog.Format(msgs.locale, "shell_export_pdf", nil)
+}
+
+// ShellPrint says "Print…"
+// in the language the app shows.
+//
+// Command: opens the print preview with the system print dialog.
+func ShellPrint() string { return In(i18n.Locale()).ShellPrint() }
+
+// ShellPrint says "Print…"
+// in the language of msgs.
+//
+// Command: opens the print preview with the system print dialog.
+func (msgs Messages) ShellPrint() string {
+	return Catalog.Format(msgs.locale, "shell_print", nil)
+}
+
+// ShellPdfFiles says "PDF Files"
+// in the language the app shows.
+//
+// Name of the file type in the PDF export dialog.
+func ShellPdfFiles() string { return In(i18n.Locale()).ShellPdfFiles() }
+
+// ShellPdfFiles says "PDF Files"
+// in the language of msgs.
+//
+// Name of the file type in the PDF export dialog.
+func (msgs Messages) ShellPdfFiles() string {
+	return Catalog.Format(msgs.locale, "shell_pdf_files", nil)
+}
+
+// ShellPrintPreview says "Print Preview"
+// in the language the app shows.
+//
+// Title of the window that shows the page being printed.
+func ShellPrintPreview() string { return In(i18n.Locale()).ShellPrintPreview() }
+
+// ShellPrintPreview says "Print Preview"
+// in the language of msgs.
+//
+// Title of the window that shows the page being printed.
+func (msgs Messages) ShellPrintPreview() string {
+	return Catalog.Format(msgs.locale, "shell_print_preview", nil)
+}
+
 // SettingsTitle says "Settings"
 // in the language the app shows.
 //

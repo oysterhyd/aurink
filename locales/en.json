@@ -748,6 +748,22 @@
   "@shell_html_files": {
     "description": "Name of the file type in the export dialog."
   },
+  "shell_export_pdf": "Export as PDF…",
+  "@shell_export_pdf": {
+    "description": "Command: writes the document as a PDF."
+  },
+  "shell_print": "Print…",
+  "@shell_print": {
+    "description": "Command: opens the print preview with the system print dialog."
+  },
+  "shell_pdf_files": "PDF Files",
+  "@shell_pdf_files": {
+    "description": "Name of the file type in the PDF export dialog."
+  },
+  "shell_print_preview": "Print Preview",
+  "@shell_print_preview": {
+    "description": "Title of the window that shows the page being printed."
+  },
   "settings_title": "Settings",
   "@settings_title": {
     "description": "The settings dialog's name."

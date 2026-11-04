@@ -8,11 +8,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
 	"aurink/internal/adapters/clipboard"
+	"aurink/internal/adapters/printer"
 	"aurink/internal/adapters/richpaste"
 	"aurink/internal/adapters/trash"
 	"aurink/internal/adapters/watch"
@@ -116,6 +118,7 @@ type application struct {
 	restored bool
 	pending  []string
 	closing  bool
+	exports  *Exports
 }
 
 func newApplication() (*application, error) {
@@ -146,6 +149,8 @@ func newApplication() (*application, error) {
 	ws := workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{ShowAll: base.Files.ShowAllFiles})
 	assets := workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages)
 	index := newFileIndex(ws, dispatcher)
+	a.exports = &Exports{Files: files, D: dispatcher, Exts: exts, Settings: store, Renderer: renderer,
+		Printer: printer.New(), ObjectLangs: objectLangs}
 	a.shell = shell.New(shell.Options{Files: index.Files,
 		Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: registry, Dispatcher: dispatcher, Platform: a, Exts: exts, ObjectLangs: objectLangs, Renderer: renderer, Fuzzy: search.NewFuzzy(),
@@ -154,7 +159,9 @@ func newApplication() (*application, error) {
 		WindowButtons: runtime.GOOS != "darwin",
 		SessionStore:  docsession.NewSessionStore(filepath.Join(data, "session.json"), files),
 		Recent:        systemRecent{workspace.NewRecent(filepath.Join(data, "recent.json"), dispatcher)},
-		ExportHTML:    ExportHTML(files, dispatcher, exts, store),
+		ExportHTML:    a.exports.HTML,
+		ExportPDF:     a.exports.PDF,
+		Print:         a.print,
 		SetLanguage:   mygo.App.SetLocale,
 		Version:       mygo.App.Version(),
 		Licenses:      licenses,
@@ -281,7 +288,7 @@ func buildMenu(r contract.CommandRegistry) *mygo.Menu {
 		label string
 		ids   []contract.CommandID
 	}{
-		{locales.ShellOpen(), []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileOpenFolder, contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileExportHTML, contract.CmdFileClose}},
+		{locales.ShellOpen(), []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileOpenFolder, contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileExportHTML, contract.CmdFileExportPDF, contract.CmdFilePrint, contract.CmdFileClose}},
 		{locales.ShellViewLive(), []contract.CommandID{contract.CmdViewLive, contract.CmdViewSource, contract.CmdViewToggleSidebar, contract.CmdViewThemeLight, contract.CmdViewThemeDark}},
 	}
 	items = append(items, &mygo.MenuItem{Role: mygo.RoleEditMenu})
@@ -384,10 +391,14 @@ func (a *application) ToggleMaximize()   { a.window.ToggleMaximize() }
 func (a *application) IsMaximized() bool { return a.window.IsMaximized() }
 func (a *application) Close()            { a.window.Close() }
 
-func (a *application) ExportPath(name string, done func(string)) {
+func (a *application) ExportPath(name, kind string, done func(string)) {
+	filter := mygo.FileFilter{Name: locales.ShellHtmlFiles(), Extensions: []string{"html", "htm"}}
+	if kind == "pdf" {
+		filter = mygo.FileFilter{Name: locales.ShellPdfFiles(), Extensions: []string{"pdf"}}
+	}
 	go func() {
-		path, err := mygo.Dialog.Save(mygo.SaveDialogOptions{Parent: a.window, DefaultPath: name + ".html",
-			Filters: []mygo.FileFilter{{Name: locales.ShellHtmlFiles(), Extensions: []string{"html", "htm"}}}})
+		path, err := mygo.Dialog.Save(mygo.SaveDialogOptions{Parent: a.window, DefaultPath: name + "." + kind,
+			Filters: []mygo.FileFilter{filter}})
 		a.window.Update(func() {
 			if err != nil {
 				a.shell.Notify(contract.Notice{Level: contract.NoticeError, Message: err.Error()})
@@ -400,4 +411,33 @@ func (a *application) ExportPath(name string, done func(string)) {
 
 func filters() []mygo.FileFilter {
 	return []mygo.FileFilter{{Name: locales.ShellMarkdownFiles(), Extensions: []string{"md", "markdown"}}}
+}
+
+// print shows the document in a print preview window and opens the system's
+// print dialog over it once the page has loaded, as a browser's print does.
+// The window stays until the user closes it.
+func (a *application) print(md string, opts contract.ExportOptions, done func(error)) {
+	a.exports.PrintPage(md, opts, func(page string, err error) {
+		if err != nil {
+			done(err)
+			return
+		}
+		if !mygo.WebViewAvailable() {
+			done(contract.E(contract.CodeUnavailable, "app.print", nil))
+			return
+		}
+		title := locales.ShellPrintPreview()
+		if opts.Title != "" {
+			title += " · " + opts.Title
+		}
+		w := mygo.NewWindow(mygo.WindowOptions{Title: title, Width: 900, Height: 1000, Parent: a.window, Page: mygo.PageOptions{}})
+		if w == nil || w.Page() == nil {
+			done(contract.E(contract.CodeUnavailable, "app.print", nil))
+			return
+		}
+		var once sync.Once
+		w.Page().OnDidFinishLoad(func() { once.Do(func() { w.Page().Print() }) })
+		w.Page().LoadHTML(page, "")
+		done(nil)
+	})
 }

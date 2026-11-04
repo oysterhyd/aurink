@@ -37,8 +37,9 @@ const (
 type Platform interface {
 	OpenFile(done func(path string))
 	SavePath(name string, done func(path string))
-	// ExportPath asks where to export an HTML page; "" when canceled.
-	ExportPath(name string, done func(path string))
+	// ExportPath asks where to export a page of a kind ("html" or "pdf"); ""
+	// when canceled.
+	ExportPath(name, kind string, done func(path string))
 	ConfirmClose(name string, done func(Choice))
 	// OpenFolder asks for a folder; "" when canceled.
 	OpenFolder(done func(path string))
@@ -94,6 +95,12 @@ type Options struct {
 	// ExportHTML writes markdown as an HTML page at path off the main thread
 	// and calls done on it; nil leaves file.exportHTML out.
 	ExportHTML func(markdown, path string, opts contract.ExportOptions, done func(error))
+	// ExportPDF writes markdown as a PDF at path off the main thread; it calls
+	// opts.OnProgress and done on the main thread. nil leaves file.exportPDF out.
+	ExportPDF func(markdown, path string, opts contract.ExportOptions, done func(error))
+	// Print shows markdown as a page in a print preview and opens the system's
+	// print dialog; done comes on the main thread. nil leaves file.print out.
+	Print func(markdown string, opts contract.ExportOptions, done func(error))
 	// SetLanguage shows the interface in a language ("" for the system's);
 	// nil leaves the language setting stored only.
 	SetLanguage func(tag string)

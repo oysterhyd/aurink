@@ -52,6 +52,7 @@ func (t *timer) Stop() bool {
 type platform struct {
 	open, save string
 	export     string
+	kinds      []string // what ExportPath was asked for
 	folder     string
 	trashOK    bool
 	choice     shell.Choice
@@ -67,7 +68,10 @@ func (p *platform) ConfirmTrash(name string, done func(bool)) {
 	p.asked = append(p.asked, name)
 	done(p.trashOK)
 }
-func (p *platform) ExportPath(_ string, done func(string)) { done(p.export) }
+func (p *platform) ExportPath(_, kind string, done func(string)) {
+	p.kinds = append(p.kinds, kind)
+	done(p.export)
+}
 func (p *platform) SavePath(_ string, done func(string)) {
 	p.saves++
 	done(p.save)
@@ -95,6 +99,8 @@ type app struct {
 	store    *settings.Store
 	sessions *docsession.Manager
 	recent   *workspace.Recent
+	printer  *fakePrinter
+	printed  []string // the pages the print preview was given
 	files    []string
 	ws       *workspace.Workspace
 	trash    *contracttest.RecordingTrasher
@@ -208,13 +214,20 @@ func (a *app) boot() {
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
 	a.recent = workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q)
+	a.printer = &fakePrinter{}
+	exports := &aurinkapp.Exports{Files: files, D: a.q, Exts: qaExts, Settings: store, Renderer: a.render,
+		Printer: a.printer, ObjectLangs: []string{"mermaid"}}
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: qaExts, ObjectLangs: []string{"mermaid"}, Renderer: a.render, Fuzzy: search.NewFuzzy(),
 		Files: func() []string { return a.files }, Workspace: ws, Search: search.NewWorkspaceSearch(),
 		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
 		Recent:       a.recent,
-		ExportHTML:   aurinkapp.ExportHTML(files, a.q, qaExts),
-		SetLanguage:  func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"}})
+		ExportHTML:   exports.HTML,
+		ExportPDF:    exports.PDF,
+		Print: func(md string, opts contract.ExportOptions, done func(error)) {
+			exports.PrintPage(md, opts, func(page string, err error) { a.printed = append(a.printed, page); done(err) })
+		},
+		SetLanguage: func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"}})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}

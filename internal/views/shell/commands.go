@@ -96,6 +96,14 @@ func (s *Shell) Commands() []contract.Command {
 		cmds = append(cmds, contract.Command{ID: contract.CmdFileExportHTML, Title: "exportHTML", Enabled: hasDoc,
 			Run: func() error { s.exportHTML(s.active); return nil }})
 	}
+	if s.o.ExportPDF != nil {
+		cmds = append(cmds, contract.Command{ID: contract.CmdFileExportPDF, Title: "exportPDF", Enabled: hasDoc,
+			Run: func() error { s.exportPDF(s.active); return nil }})
+	}
+	if s.o.Print != nil {
+		cmds = append(cmds, contract.Command{ID: contract.CmdFilePrint, Title: "print", Enabled: hasDoc,
+			Run: func() error { s.print(s.active); return nil }})
+	}
 	return append(cmds, s.editCommands()...)
 }
 
@@ -109,7 +117,7 @@ func (s *Shell) exportHTML(d *doc) {
 	st := d.s.State()
 	name := strings.TrimSuffix(st.Name, filepath.Ext(st.Name))
 	md := d.s.Model().Text().String()
-	s.o.Platform.ExportPath(name, func(path string) {
+	s.o.Platform.ExportPath(name, "html", func(path string) {
 		if path == "" {
 			return
 		}
@@ -129,6 +137,62 @@ func (s *Shell) exportHTML(d *doc) {
 			s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: locales.ShellExported(), Detail: filepath.Base(path)})
 		})
 	})
+}
+
+// exportPDF asks where and prints the document there as a PDF, light, with
+// its images embedded, showing the progress in a notice (02 §5.13).
+func (s *Shell) exportPDF(d *doc) {
+	md, name, opts := s.exportSource(d)
+	s.o.Platform.ExportPath(name, "pdf", func(path string) {
+		if path == "" {
+			return
+		}
+		if filepath.Ext(path) == "" {
+			path += ".pdf"
+		}
+		progress := float32(0)
+		n := contract.Notice{Level: contract.NoticeInfo, Message: locales.ShellExporting(), Detail: filepath.Base(path), Progress: &progress, Sticky: true}
+		h := s.Notify(n)
+		opts.Format = contract.ExportPDF
+		opts.OnProgress = func(f float32) {
+			progress = f
+			h.Update(n)
+		}
+		s.o.ExportPDF(md, path, opts, func(err error) {
+			h.Dismiss()
+			if err != nil {
+				s.fail(err)
+				return
+			}
+			s.Notify(contract.Notice{Level: contract.NoticeInfo, Message: locales.ShellExported(), Detail: filepath.Base(path)})
+		})
+	})
+}
+
+// print shows the document in the print preview with the print dialog.
+func (s *Shell) print(d *doc) {
+	md, _, opts := s.exportSource(d)
+	opts.EmbedImages = true
+	s.o.Print(md, opts, func(err error) {
+		if err != nil {
+			s.fail(err)
+		}
+	})
+}
+
+// exportSource is what an export of d starts from: its text, its name
+// without the extension, and options with its title and folder.
+func (s *Shell) exportSource(d *doc) (string, string, contract.ExportOptions) {
+	if d.source != nil {
+		d.source.Sync()
+	}
+	st := d.s.State()
+	name := strings.TrimSuffix(st.Name, filepath.Ext(st.Name))
+	opts := contract.ExportOptions{Title: name}
+	if st.Path != "" {
+		opts.BaseDir = filepath.Dir(st.Path)
+	}
+	return d.s.Model().Text().String(), name, opts
 }
 
 // editCommands run in the live editor of the active tab; source mode has its own
@@ -268,6 +332,10 @@ func Title(key string) string {
 		return locales.ShellPrevTab()
 	case "exportHTML":
 		return locales.ShellExportHtml()
+	case "exportPDF":
+		return locales.ShellExportPdf()
+	case "print":
+		return locales.ShellPrint()
 	}
 	if f, ok := editTitles[key]; ok {
 		return f()

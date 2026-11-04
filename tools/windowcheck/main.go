@@ -119,7 +119,7 @@ func (platform) OpenFile(done func(string))                     { done("") }
 func (platform) OpenFolder(done func(string))                   { done("") }
 func (platform) ConfirmTrash(_ string, done func(bool))         { done(true) }
 func (platform) SavePath(_ string, done func(string))           { done("") }
-func (platform) ExportPath(_ string, done func(string))         { done("") }
+func (platform) ExportPath(_, _ string, done func(string))      { done("") }
 func (platform) ConfirmClose(_ string, done func(shell.Choice)) { done(shell.ChoiceDiscard) }
 func (p platform) Minimize()                                    { p.w.Minimize() }
 func (p platform) ToggleMaximize()                              { p.w.ToggleMaximize() }
