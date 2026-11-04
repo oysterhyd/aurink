@@ -1,0 +1,522 @@
+[
+ {
+  "name": "enter-paragraph-end",
+  "doc": "ab",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-paragraph-middle",
+  "doc": "ab",
+  "keys": "{C+HOME}{RIGHT}{ENTER}z"
+ },
+ {
+  "name": "enter-paragraph-start",
+  "doc": "ab",
+  "keys": "{C+HOME}{ENTER}z"
+ },
+ {
+  "name": "enter-twice",
+  "doc": "ab",
+  "keys": "{C+END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "enter-between-paragraphs",
+  "doc": "ab\n\ncd",
+  "keys": "{C+HOME}{END}{ENTER}z"
+ },
+ {
+  "name": "enter-heading-end",
+  "doc": "# ab",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-heading-start",
+  "doc": "# ab",
+  "keys": "{C+HOME}{ENTER}z"
+ },
+ {
+  "name": "enter-heading-middle",
+  "doc": "# ab",
+  "keys": "{C+HOME}{RIGHT}{ENTER}z"
+ },
+ {
+  "name": "enter-bullet",
+  "doc": "- ab",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-bullet-exit",
+  "doc": "- ab",
+  "keys": "{C+END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "enter-bullet-middle",
+  "doc": "- ab",
+  "keys": "{C+HOME}{RIGHT}{ENTER}z"
+ },
+ {
+  "name": "enter-ordered",
+  "doc": "1. ab",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-ordered-exit",
+  "doc": "1. ab",
+  "keys": "{C+END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "enter-task",
+  "doc": "- [x] ab",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-nested",
+  "doc": "- a\n  - b",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-nested-exit",
+  "doc": "- a\n  - b",
+  "keys": "{C+END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "enter-quote",
+  "doc": "> ab",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-quote-exit",
+  "doc": "> ab",
+  "keys": "{C+END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "enter-code",
+  "doc": "```\nab\n```",
+  "keys": "{C+HOME}{END}{ENTER}z"
+ },
+ {
+  "name": "enter-code-twice",
+  "doc": "```\nab\n```",
+  "keys": "{C+HOME}{END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "shift-enter",
+  "doc": "ab",
+  "keys": "{C+END}{S+ENTER}z"
+ },
+ {
+  "name": "shift-enter-list",
+  "doc": "- ab",
+  "keys": "{C+END}{S+ENTER}z"
+ },
+ {
+  "name": "enter-table-cell",
+  "doc": "| a | b |\n| --- | --- |\n| 1 | 2 |",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "ctrl-enter-table",
+  "doc": "| a | b |\n| --- | --- |\n| 1 | 2 |",
+  "keys": "{C+END}{C+ENTER}z"
+ },
+ {
+  "name": "bs-merge-paragraphs",
+  "doc": "ab\n\ncd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-heading-start",
+  "doc": "# ab",
+  "keys": "{C+HOME}{BS}"
+ },
+ {
+  "name": "bs-bullet-start",
+  "doc": "- ab",
+  "keys": "{C+HOME}{BS}"
+ },
+ {
+  "name": "bs-bullet-start-twice",
+  "doc": "- ab",
+  "keys": "{C+HOME}{BS}{BS}"
+ },
+ {
+  "name": "bs-second-item",
+  "doc": "- ab\n- cd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-second-item-twice",
+  "doc": "- ab\n- cd",
+  "keys": "{C+END}{HOME}{BS}{BS}"
+ },
+ {
+  "name": "bs-ordered-second",
+  "doc": "1. ab\n2. cd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-task-start",
+  "doc": "- [ ] ab",
+  "keys": "{C+HOME}{BS}"
+ },
+ {
+  "name": "bs-quote-start",
+  "doc": "> ab",
+  "keys": "{C+HOME}{BS}"
+ },
+ {
+  "name": "bs-quote-second-line",
+  "doc": "> ab\n>\n> cd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-after-rule",
+  "doc": "ab\n\n---\n\ncd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-after-code",
+  "doc": "ab\n\n```\nx\n```\n\ncd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-after-heading",
+  "doc": "# ab\n\ncd",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-into-bold",
+  "doc": "**ab**",
+  "keys": "{C+END}{BS}{BS}"
+ },
+ {
+  "name": "del-merge-paragraphs",
+  "doc": "ab\n\ncd",
+  "keys": "{C+HOME}{END}{DEL}"
+ },
+ {
+  "name": "del-merge-items",
+  "doc": "- ab\n- cd",
+  "keys": "{C+HOME}{END}{DEL}"
+ },
+ {
+  "name": "del-into-heading",
+  "doc": "ab\n\n# cd",
+  "keys": "{C+HOME}{END}{DEL}"
+ },
+ {
+  "name": "tab-indent-item",
+  "doc": "- ab\n- cd",
+  "keys": "{C+END}{HOME}{TAB}"
+ },
+ {
+  "name": "stab-outdent-item",
+  "doc": "- ab\n  - cd",
+  "keys": "{C+END}{S+TAB}"
+ },
+ {
+  "name": "tab-ordered",
+  "doc": "1. ab\n2. cd",
+  "keys": "{C+END}{HOME}{TAB}"
+ },
+ {
+  "name": "tab-paragraph",
+  "doc": "ab",
+  "keys": "{C+END}{TAB}z"
+ },
+ {
+  "name": "tab-first-item",
+  "doc": "- ab",
+  "keys": "{C+END}{TAB}"
+ },
+ {
+  "name": "bold-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{S+RIGHT}{S+RIGHT}{C+b}"
+ },
+ {
+  "name": "italic-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{S+RIGHT}{S+RIGHT}{C+i}"
+ },
+ {
+  "name": "underline-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{S+RIGHT}{S+RIGHT}{C+u}"
+ },
+ {
+  "name": "code-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{S+RIGHT}{S+RIGHT}{CS+`}"
+ },
+ {
+  "name": "strike-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{S+RIGHT}{S+RIGHT}{AS+5}"
+ },
+ {
+  "name": "bold-empty-then-type",
+  "doc": "ab",
+  "keys": "{C+END}{C+b}z"
+ },
+ {
+  "name": "bold-word-no-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{RIGHT}{C+b}"
+ },
+ {
+  "name": "bold-toggle-off",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{S+RIGHT}{S+RIGHT}{C+b}{C+b}"
+ },
+ {
+  "name": "heading-1",
+  "doc": "ab",
+  "keys": "{C+END}{C+1}"
+ },
+ {
+  "name": "heading-3",
+  "doc": "ab",
+  "keys": "{C+END}{C+3}"
+ },
+ {
+  "name": "heading-0",
+  "doc": "## ab",
+  "keys": "{C+END}{C+0}"
+ },
+ {
+  "name": "heading-same-toggles",
+  "doc": "## ab",
+  "keys": "{C+END}{C+2}"
+ },
+ {
+  "name": "heading-up",
+  "doc": "## ab",
+  "keys": "{C+END}{C+=}"
+ },
+ {
+  "name": "heading-down",
+  "doc": "## ab",
+  "keys": "{C+END}{C+-}"
+ },
+ {
+  "name": "heading-on-item",
+  "doc": "- ab",
+  "keys": "{C+END}{C+1}"
+ },
+ {
+  "name": "quote-toggle",
+  "doc": "ab",
+  "keys": "{C+END}{CS+q}"
+ },
+ {
+  "name": "quote-toggle-off",
+  "doc": "> ab",
+  "keys": "{C+END}{CS+q}"
+ },
+ {
+  "name": "bullet-toggle",
+  "doc": "ab",
+  "keys": "{C+END}{CS+]}"
+ },
+ {
+  "name": "bullet-toggle-off",
+  "doc": "- ab",
+  "keys": "{C+END}{CS+]}"
+ },
+ {
+  "name": "ordered-toggle",
+  "doc": "ab",
+  "keys": "{C+END}{CS+[}"
+ },
+ {
+  "name": "bullet-to-ordered",
+  "doc": "- ab",
+  "keys": "{C+END}{CS+[}"
+ },
+ {
+  "name": "code-block",
+  "doc": "ab",
+  "keys": "{C+END}{CS+k}"
+ },
+ {
+  "name": "math-block",
+  "doc": "ab",
+  "keys": "{C+END}{CS+m}"
+ },
+ {
+  "name": "two-lines-bullet",
+  "doc": "ab\n\ncd",
+  "keys": "{C+HOME}{S+DOWN}{S+DOWN}{CS+]}"
+ },
+ {
+  "name": "select-all-type",
+  "doc": "ab\n\ncd",
+  "keys": "{C+a}z"
+ },
+ {
+  "name": "select-all-delete",
+  "doc": "# ab\n\n- cd",
+  "keys": "{C+a}{BS}"
+ },
+ {
+  "name": "pair-paren",
+  "doc": "",
+  "keys": "(a"
+ },
+ {
+  "name": "pair-bracket",
+  "doc": "",
+  "keys": "[a"
+ },
+ {
+  "name": "pair-quote",
+  "doc": "",
+  "keys": "\"a"
+ },
+ {
+  "name": "pair-star",
+  "doc": "",
+  "keys": "*a"
+ },
+ {
+  "name": "pair-backtick",
+  "doc": "",
+  "keys": "`a"
+ },
+ {
+  "name": "enter-ordered-two",
+  "doc": "1. a\n2. b",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-ordered-from-3",
+  "doc": "3. a",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "heading-up-paragraph",
+  "doc": "ab",
+  "keys": "{C+END}{C+=}"
+ },
+ {
+  "name": "heading-down-paragraph",
+  "doc": "ab",
+  "keys": "{C+END}{C+-}"
+ },
+ {
+  "name": "heading-up-h1",
+  "doc": "# ab",
+  "keys": "{C+END}{C+=}"
+ },
+ {
+  "name": "heading-down-h6",
+  "doc": "###### ab",
+  "keys": "{C+END}{C+-}"
+ },
+ {
+  "name": "ordered-toggle-off",
+  "doc": "1. ab",
+  "keys": "{C+END}{CS+[}"
+ },
+ {
+  "name": "quote-two-paragraphs",
+  "doc": "ab\n\ncd",
+  "keys": "{C+HOME}{S+DOWN}{S+DOWN}{CS+q}"
+ },
+ {
+  "name": "code-block-empty-doc",
+  "doc": "",
+  "keys": "{CS+k}z"
+ },
+ {
+  "name": "code-block-then-type",
+  "doc": "ab",
+  "keys": "{C+END}{CS+k}z"
+ },
+ {
+  "name": "math-block-then-type",
+  "doc": "ab",
+  "keys": "{C+END}{CS+m}z"
+ },
+ {
+  "name": "italic-no-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{RIGHT}{C+i}"
+ },
+ {
+  "name": "code-no-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{RIGHT}{CS+`}"
+ },
+ {
+  "name": "link-selection",
+  "doc": "ab",
+  "keys": "{C+HOME}{S+END}{C+k}"
+ },
+ {
+  "name": "link-no-selection",
+  "doc": "ab cd",
+  "keys": "{C+HOME}{RIGHT}{C+k}"
+ },
+ {
+  "name": "bs-start-of-code",
+  "doc": "```\nab\n```",
+  "keys": "{C+HOME}{BS}"
+ },
+ {
+  "name": "tab-in-code",
+  "doc": "```\nab\n```",
+  "keys": "{C+HOME}{END}{TAB}"
+ },
+ {
+  "name": "bs-nested-item",
+  "doc": "- a\n  - b",
+  "keys": "{C+END}{HOME}{BS}"
+ },
+ {
+  "name": "bs-empty-item",
+  "doc": "- ab\n- ",
+  "keys": "{C+END}{BS}"
+ },
+ {
+  "name": "enter-empty-heading",
+  "doc": "# ab",
+  "keys": "{C+END}{ENTER}{ENTER}z"
+ },
+ {
+  "name": "del-end-of-doc-heading",
+  "doc": "ab\n\n# cd",
+  "keys": "{C+END}{DEL}z"
+ },
+ {
+  "name": "stab-top-item",
+  "doc": "- ab",
+  "keys": "{C+END}{S+TAB}"
+ },
+ {
+  "name": "enter-after-image",
+  "doc": "![x](a.png)",
+  "keys": "{C+END}{ENTER}z"
+ },
+ {
+  "name": "enter-in-link",
+  "doc": "[ab](u)",
+  "keys": "{C+HOME}{RIGHT}{ENTER}z"
+ },
+ {
+  "name": "type-closing-bold",
+  "doc": "",
+  "keys": "**ab**z"
+ },
+ {
+  "name": "type-closing-italic",
+  "doc": "",
+  "keys": "*ab*z"
+ },
+ {
+  "name": "type-closing-code",
+  "doc": "",
+  "keys": "`ab`z"
+ }
+]
