@@ -838,6 +838,48 @@ func (msgs Messages) ShellMoveUp() string {
 	return Catalog.Format(msgs.locale, "shell_move_up", nil)
 }
 
+// ShellMathBlock says "Math Block"
+// in the language the app shows.
+//
+// Command: inserts a math block after the paragraph, as Typora.
+func ShellMathBlock() string { return In(i18n.Locale()).ShellMathBlock() }
+
+// ShellMathBlock says "Math Block"
+// in the language of msgs.
+//
+// Command: inserts a math block after the paragraph, as Typora.
+func (msgs Messages) ShellMathBlock() string {
+	return Catalog.Format(msgs.locale, "shell_math_block", nil)
+}
+
+// ShellHeadingUp says "Promote Heading"
+// in the language the app shows.
+//
+// Command: one heading level up; a paragraph becomes Heading 6.
+func ShellHeadingUp() string { return In(i18n.Locale()).ShellHeadingUp() }
+
+// ShellHeadingUp says "Promote Heading"
+// in the language of msgs.
+//
+// Command: one heading level up; a paragraph becomes Heading 6.
+func (msgs Messages) ShellHeadingUp() string {
+	return Catalog.Format(msgs.locale, "shell_heading_up", nil)
+}
+
+// ShellHeadingDown says "Demote Heading"
+// in the language the app shows.
+//
+// Command: one heading level down; Heading 6 becomes a paragraph.
+func ShellHeadingDown() string { return In(i18n.Locale()).ShellHeadingDown() }
+
+// ShellHeadingDown says "Demote Heading"
+// in the language of msgs.
+//
+// Command: one heading level down; Heading 6 becomes a paragraph.
+func (msgs Messages) ShellHeadingDown() string {
+	return Catalog.Format(msgs.locale, "shell_heading_down", nil)
+}
+
 // ShellMoveDown says "Move Block Down"
 // in the language the app shows.
 //

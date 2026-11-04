@@ -254,6 +254,18 @@
   "@shell_move_up": {
     "description": "Moves the block above the previous one."
   },
+  "shell_math_block": "Math Block",
+  "@shell_math_block": {
+    "description": "Command: inserts a math block after the paragraph, as Typora."
+  },
+  "shell_heading_up": "Promote Heading",
+  "@shell_heading_up": {
+    "description": "Command: one heading level up; a paragraph becomes Heading 6."
+  },
+  "shell_heading_down": "Demote Heading",
+  "@shell_heading_down": {
+    "description": "Command: one heading level down; Heading 6 becomes a paragraph."
+  },
   "shell_move_down": "Move Block Down",
   "@shell_move_down": {
     "description": "Moves the block below the next one."
