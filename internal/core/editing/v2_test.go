@@ -18,3 +18,9 @@ func TestExtensionsContract(t *testing.T) {
 		return contextFor(t, src, sel, dominant)
 	}})
 }
+
+func TestTyporaContract(t *testing.T) {
+	contracttest.TestEditingTypora(t, contracttest.EditingFixture{Editing: New(), Context: func(src string, sel contract.Selection, dominant string) contract.EditContext {
+		return contextFor(t, src, sel, dominant)
+	}})
+}

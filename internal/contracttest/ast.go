@@ -112,9 +112,57 @@ func TestAST(t *testing.T, f ASTFixture) {
 		if a.LeafCount() != 1 || a.Block(a.LeafAt(0)).Kind != contract.BlockBlank {
 			t.Errorf("the empty document has %d leaves", a.LeafCount())
 		}
-		a = f.Parse("a\n\n\n\nb\n", 0)
-		if n := countLeaves(a, contract.BlockBlank); n != 2 { // the first blank line is a's Trailer
-			t.Errorf("%d blank leaves, want 2", n)
+		// As Typora shows them: a run of n empty lines between blocks is
+		// (n-1)/2 empty paragraphs, rounded down, each a blank leaf on the
+		// run's 2nd, 4th... line; the other lines are trailers. At the end of
+		// the document the run counts its last line, so "a\n\n" has one, where
+		// Enter at the end of a leaves the caret. Measured on Typora 1.0
+		// (2026-11-04): two empty lines show as one, three as one empty
+		// paragraph, five as two.
+		for _, c := range []struct {
+			src  string
+			at   []int // the blank leaves' starts, in "\n" offsets
+			text string
+		}{
+			{"a\n\nb\n", nil, "one empty line"},
+			{"a\n\n\nb\n", nil, "two empty lines"},
+			{"a\n\n\n\nb\n", []int{3}, "three"},
+			{"a\n\n\n\n\nb\n", []int{3}, "four"},
+			{"a\n\n\n\n\n\nb\n", []int{3, 5}, "five"},
+			{"a\n\n", []int{3}, "one at the end"},
+			{"a\n\n\n", []int{3}, "two at the end"},
+			{"a\n\n\n\n", []int{3, 5}, "three at the end"},
+		} {
+			for _, nl := range []string{"\n", "\r\n"} {
+				src := strings.ReplaceAll(c.src, "\n", nl)
+				a := f.Parse(src, 0)
+				var got []int
+				for i := 0; i < a.Len(); i++ {
+					if b := a.Block(i); b.Kind == contract.BlockBlank {
+						// Back to "\n" offsets: count the lines before it.
+						got = append(got, strings.Count(src[:b.Range.Start], nl)*(1-len(nl))+b.Range.Start)
+					}
+				}
+				if fmt.Sprint(got) != fmt.Sprint(c.at) {
+					t.Errorf("%s %q: blank leaves at %v, want %v", c.text, src, got, c.at)
+				}
+			}
+		}
+	})
+	// "$$" with no closing line is text, as in Typora, not a math block that
+	// takes the rest of the document (BE-ENTER).
+	t.Run("an unclosed $$ is text", func(t *testing.T) {
+		src := "first\n\n$$\nabc\n\n# head\n"
+		a := f.Parse(src, contract.ExtDefault)
+		if countLeaves(a, contract.BlockMath) != 0 {
+			t.Error("an unclosed $$ made a math block")
+		}
+		if countLeaves(a, contract.BlockHeading) != 1 {
+			t.Error("the heading after an unclosed $$ is gone")
+		}
+		a = f.Parse("first\n\n$$\nabc\n$$\n\n# head\n", contract.ExtDefault)
+		if countLeaves(a, contract.BlockMath) != 1 || countLeaves(a, contract.BlockHeading) != 1 {
+			t.Error("a closed math block is not one")
 		}
 	})
 	t.Run("front matter", func(t *testing.T) {

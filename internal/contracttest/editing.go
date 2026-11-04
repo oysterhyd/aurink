@@ -88,8 +88,9 @@ func TestEditing(t *testing.T, f EditingFixture) {
 		{"nested list keeps its indent", "- a\n  - b|", newline, "- a\n  - b\n  - |"},
 		{"CJK list item", "- 中文|", newline, "- 中文\n- |"},
 		{"empty item leaves the list", "- a\n- |", newline, "- a\n\n|"},
-		{"quote continues", "> a|", newline, "> a\n> |"},
-		{"empty quote line leaves the quote", "> a\n> |", newline, "> a\n\n|"},
+		// A new paragraph in the quote, as Typora writes it (TestEditingTypora).
+		{"quote continues", "> a|", newline, "> a\n>\n> |"},
+		{"empty quote line leaves the quote", "> a\n>\n> |", newline, "> a\n\n|"},
 		{"code keeps its indent", "```\n  a|\n```", newline, "```\n  a\n  |\n```"},
 		{"fence opens", "```go|", newline, "```go\n|\n```"},
 		{"thematic break", "---|", newline, "---\n\n|"},
