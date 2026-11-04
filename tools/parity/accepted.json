@@ -1,0 +1,234 @@
+{
+ "enter-twice": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-heading-start": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-heading-middle": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-ordered": {
+  "kind": "deviation",
+  "why": "Typora writes the new item with the number before it (1., 1.); Aurink counts on (2.). Both show 1, 2."
+ },
+ "enter-nested-exit": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-quote": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "shift-enter": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "shift-enter-list": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-table-cell": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "ctrl-enter-table": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-merge-paragraphs": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-second-item": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-ordered-second": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-quote-second-line": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-after-rule": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-after-code": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-after-heading": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-into-bold": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "del-merge-paragraphs": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "del-merge-items": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "del-into-heading": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "tab-paragraph": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "tab-first-item": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "strike-selection": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bold-empty-then-type": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bold-word-no-selection": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "heading-same-toggles": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "heading-up": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "heading-down": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bullet-toggle": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bullet-toggle-off": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "ordered-toggle": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bullet-to-ordered": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "code-block": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "math-block": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "two-lines-bullet": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "select-all-delete": {
+  "kind": "deviation",
+  "why": "Typora leaves an empty item '- ' after deleting everything; Aurink leaves the document empty."
+ },
+ "pair-quote": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "pair-backtick": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-ordered-two": {
+  "kind": "deviation",
+  "why": "as enter-ordered"
+ },
+ "enter-ordered-from-3": {
+  "kind": "deviation",
+  "why": "as enter-ordered"
+ },
+ "heading-up-paragraph": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "heading-down-h6": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "ordered-toggle-off": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "quote-two-paragraphs": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "code-block-then-type": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "math-block-then-type": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "italic-no-selection": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "code-no-selection": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "link-no-selection": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-start-of-code": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "tab-in-code": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-nested-item": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "bs-empty-item": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-empty-heading": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "stab-top-item": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT or BE-TYPORA-KEYS"
+ },
+ "enter-after-image": {
+  "kind": "deviation",
+  "why": "Typora's Ctrl+End stops before a lone image; not a key behaviour to copy."
+ },
+ "enter-in-link": {
+  "kind": "deviation",
+  "why": "Typora's Ctrl+Home then Right does not enter a link at the start of the document; not a key behaviour to copy."
+ }
+}

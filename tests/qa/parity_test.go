@@ -9,25 +9,33 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// TestTyporaParity runs tools/parity/scenarios.json in Aurink, as
-// tools/parity/typora.ps1 runs it in Typora, and writes what each scenario
-// leaves in the document to $AURINK_PARITY_OUT ({name: source}). Compare the
-// two with tools/parity/compare.py. Skipped unless AURINK_PARITY_OUT is set.
+// TestTyporaParity runs tools/parity/scenarios.json in Aurink and compares
+// what each scenario leaves in the document with what Typora 1.0 left
+// (tools/parity/typora.json, recorded by tools/parity/typora.ps1 on the
+// owner's machine, 2026-11-04). A scenario that differs must be listed in
+// tools/parity/accepted.json: "deviation", decided not to follow Typora, or
+// "pending", a card not done yet. A pending one that matches must leave the
+// list, so the list only shrinks. With AURINK_PARITY_OUT set, the results are
+// also written there ({name: source}) for tools/parity/compare.py.
 func TestTyporaParity(t *testing.T) {
-	out := os.Getenv("AURINK_PARITY_OUT")
-	if out == "" {
-		t.Skip("AURINK_PARITY_OUT not set")
-	}
-	raw, err := os.ReadFile("../../tools/parity/scenarios.json")
-	if err != nil {
-		t.Fatal(err)
+	read := func(name string, v any) {
+		raw, err := os.ReadFile("../../tools/parity/" + name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := json.Unmarshal(raw, v); err != nil {
+			t.Fatal(name, err)
+		}
 	}
 	var scenarios []struct{ Name, Doc, Keys string }
-	if err := json.Unmarshal(raw, &scenarios); err != nil {
-		t.Fatal(err)
-	}
+	var typora map[string]string
+	var accepted map[string]struct{ Kind, Why string }
+	read("scenarios.json", &scenarios)
+	read("typora.json", &typora)
+	read("accepted.json", &accepted)
 	only := os.Getenv("AURINK_PARITY_ONLY")
 	results := map[string]string{}
+	norm := func(s string) string { return strings.TrimRight(strings.ReplaceAll(s, "\r\n", "\n"), "\n") }
 	for _, s := range scenarios {
 		if only != "" && s.Name != only {
 			continue
@@ -43,11 +51,27 @@ func TestTyporaParity(t *testing.T) {
 			}
 			a.settle()
 		}
-		results[s.Name] = a.text()
+		got := a.text()
+		results[s.Name] = got
+		want, recorded := typora[s.Name]
+		if !recorded {
+			t.Errorf("%s: no Typora result recorded; run tools/parity/typora.ps1", s.Name)
+			continue
+		}
+		acc, listed := accepted[s.Name]
+		same := norm(got) == norm(want)
+		switch {
+		case !same && !listed:
+			t.Errorf("%s: %q\n  typora %q\n  aurink %q", s.Name, s.Keys, want, got)
+		case same && listed && acc.Kind == "pending":
+			t.Errorf("%s: now as in Typora; take it off tools/parity/accepted.json", s.Name)
+		}
 	}
-	b, _ := json.MarshalIndent(results, "", "  ")
-	if err := os.WriteFile(out, b, 0o644); err != nil {
-		t.Fatal(err)
+	if out := os.Getenv("AURINK_PARITY_OUT"); out != "" {
+		b, _ := json.MarshalIndent(results, "", "  ")
+		if err := os.WriteFile(out, b, 0o644); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
