@@ -161,14 +161,14 @@ func TestExportHTML(t *testing.T) {
 		t.Fatal(err)
 	}
 	a.run(contract.CmdFileExportHTML)
-	a.until("the page is written", func() bool { _, err := os.Stat(a.p.export); return err == nil })
+	// Written means said so: the file can exist while the export still holds it.
+	a.until("the notice", func() bool { return slices.Contains(a.s.Notices(), locales.ShellExported()) })
 	page := a.disk(a.p.export)
 	for _, want := range []string{"<!DOCTYPE html>", "<title>note</title>", "<h1", "<em>words</em>", `class="tok-keyword"`} {
 		if !strings.Contains(page, want) {
 			t.Fatalf("the page lacks %s:\n%s", want, page)
 		}
 	}
-	a.until("the notice", func() bool { return slices.Contains(a.s.Notices(), locales.ShellExported()) })
 }
 
 // TestRecentOnTheWelcomePage: opened files and folders show on the welcome
