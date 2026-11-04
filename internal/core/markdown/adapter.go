@@ -31,7 +31,9 @@ func parserExtensions(exts contract.Extensions) parser.Extensions {
 }
 
 func parseWithExtensions(src string, exts contract.Extensions, frontMatter bool) (*adapted, error) {
-	a, err := parseAdapted(src, parserExtensions(exts), frontMatter)
+	at, _ := front(src, frontMatter)
+	d, input := parserDocument(src[at:], parserExtensions(exts))
+	a, err := adaptInput(src, d, at, input)
 	if err != nil || exts&contract.ExtTOC == 0 || !containsTOC(src) {
 		return a, err
 	}
@@ -81,6 +83,10 @@ func front(src string, enabled bool) (int, contract.Range) {
 }
 
 func adapt(src string, d *parser.Document, at int) (*adapted, error) {
+	return adaptInput(src, d, at, parserInput{text: src[at:]})
+}
+
+func adaptInput(src string, d *parser.Document, at int, input parserInput) (*adapted, error) {
 	s := &adapted{source: src, doc: d, bodyAt: at}
 	shift := 0
 	if at > 0 {
@@ -106,7 +112,7 @@ func adapt(src string, d *parser.Document, at int) (*adapted, error) {
 			parent += shift
 		}
 		b := contract.Block{Kind: contract.BlockKind(p.Kind), Parent: parent, Next: p.Next + shift,
-			Range: contract.Range{Start: p.Start + at, End: p.End + at}, Level: p.Level,
+			Range: contract.Range{Start: input.offset(p.Start) + at, End: input.offset(p.End) + at}, Level: p.Level,
 			Ordered: p.Ordered, Number: p.Number, Marker: p.Marker, Tight: p.Tight,
 			Task: contract.TaskState(p.Task), Fenced: p.Fenced, Header: p.Header, Open: p.Open,
 			Info: strings.Clone(p.Info()), Lang: strings.Clone(p.Language()), Label: strings.Clone(p.Label())}
@@ -115,14 +121,13 @@ func adapt(src string, d *parser.Document, at int) (*adapted, error) {
 		}
 		for k := 0; k < d.LineCount(i); k++ {
 			text, start := d.Line(i, k)
-			start += at
 			// Line's offset names the first SOURCE byte, not the synthesized
 			// spaces. Recover the residual tab width (0..3), without unsafe or
 			// depending on private seg fields. Verify every byte at that offset.
 			pad := -1
 			for n := 0; n <= 3 && n <= len(text); n++ {
 				end := start + len(text) - n
-				if strings.Trim(text[:n], " ") == "" && end <= len(src) && src[start:end] == text[n:] {
+				if strings.Trim(text[:n], " ") == "" && end <= len(input.text) && input.text[start:end] == text[n:] {
 					pad = n
 					break
 				}
@@ -130,7 +135,7 @@ func adapt(src string, d *parser.Document, at int) (*adapted, error) {
 			if pad < 0 {
 				return nil, fmt.Errorf("block %d line %d cannot map %q at %d", i, k, text, start)
 			}
-			b.Lines = append(b.Lines, contract.BlockLine{Source: contract.Range{Start: start, End: start + len(text) - pad}, Padding: uint8(pad)})
+			b.Lines = append(b.Lines, contract.BlockLine{Source: contract.Range{Start: at + input.offset(start), End: at + input.offset(start+len(text)-pad)}, Padding: uint8(pad)})
 		}
 		if len(b.Lines) > 0 {
 			ls := b.Lines

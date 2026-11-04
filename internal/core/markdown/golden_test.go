@@ -18,7 +18,7 @@ func TestSourceEnvelopes(t *testing.T) {
 		{"> a\n> b\n", "a\n> b", "a\n> b", contract.BlockParagraph, 0, 1},
 		{"标题\r\n---\r\n", "标题\r\n---", "标题", contract.BlockHeading, 1, 0},
 		{"```go\nx\n```\n", "```go\nx\n```", "x", contract.BlockCode, 2, 0},
-		{"$$ x $$\n", "$$ x $$", "x", contract.BlockMath, 2, 0},
+		{"$$\nx\n$$\n", "$$\nx\n$$", "x", contract.BlockMath, 2, 0},
 	} {
 		s := mustNew(t, tc.src, 1, 0).Snapshot()
 		found := false

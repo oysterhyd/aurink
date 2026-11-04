@@ -175,6 +175,7 @@ type Snapshot struct {
 	lazyOnce       sync.Once
 	lazyMu         sync.Mutex
 	lazy           *parser.Document
+	lazyInput      parserInput
 	derivedOnce    sync.Once
 	outline        []contract.Heading
 	notes          map[string]int

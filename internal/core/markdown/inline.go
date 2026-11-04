@@ -8,7 +8,7 @@ import (
 )
 
 func (s *Snapshot) inlineDoc() *parser.Document {
-	s.lazyOnce.Do(func() { s.lazy = parser.New(parserExtensions(s.exts)); s.lazy.Set(s.text.String()[s.bodyAt:]) })
+	s.lazyOnce.Do(func() { s.lazy, s.lazyInput = parserDocument(s.text.String()[s.bodyAt:], parserExtensions(s.exts)) })
 	return s.lazy
 }
 
@@ -38,7 +38,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				if got != line {
 					return
 				}
-				data.inline = extendInlines(local, adaptInlines(local, d.Inlines(1), 0), s.exts)
+				data.inline = extendInlines(local, adaptInlines(local, d.Inlines(1), 0, parserInput{}, s.exts), s.exts)
 				shiftInlines(data.inline, b.Lines[0].Source.Start-e.start-2)
 				data.local = true
 			})
@@ -51,6 +51,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		s.lazyMu.Lock()
 		defer s.lazyMu.Unlock()
 		var d *parser.Document
+		var input parserInput
 		shift := s.bodyAt
 		if !s.hasDefinitions {
 			top := i
@@ -62,21 +63,21 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				last--
 			}
 			start, end := s.Block(first).Lead.Start, s.Block(last).Trailer.End
-			d = parser.New(parserExtensions(s.exts))
-			d.Set(s.text.String()[start:end])
+			d, input = parserDocument(s.text.String()[start:end], parserExtensions(s.exts))
 			shift = start
 		} else {
 			d = s.inlineDoc()
+			input = s.lazyInput
 		}
 		var in []parser.Inline
 		found := false
 		for j := 1; j < d.Len(); j++ {
 			p := d.Block(j)
-			if contract.BlockKind(p.Kind) == b.Kind && p.Start+shift == b.Range.Start && d.LineCount(j) == len(b.Lines) {
+			if contract.BlockKind(p.Kind) == b.Kind && input.offset(p.Start)+shift == b.Range.Start && d.LineCount(j) == len(b.Lines) {
 				matches := true
 				for k, line := range b.Lines {
 					_, at := d.Line(j, k)
-					matches = matches && at+shift == line.Source.Start
+					matches = matches && input.offset(at)+shift == line.Source.Start
 				}
 				if !matches {
 					continue
@@ -90,9 +91,10 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 			// A top-level leaf can begin in another block's table delimiter or
 			// depend on a lazy continuation before it. Recover its full context.
 			d, shift = s.inlineDoc(), s.bodyAt
+			input = s.lazyInput
 			for j := 1; j < d.Len(); j++ {
 				p := d.Block(j)
-				if contract.BlockKind(p.Kind) == b.Kind && p.Start+shift == b.Range.Start {
+				if contract.BlockKind(p.Kind) == b.Kind && input.offset(p.Start)+shift == b.Range.Start {
 					in, found = d.Inlines(j), true
 					break
 				}
@@ -101,16 +103,39 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		if !found && b.Kind == contract.BlockTableCell {
 			// Overflow cells have no upstream block. A synthetic table preserves
 			// cell escapes, with the snapshot as its global reference context.
-			d = parser.New(parserExtensions(s.exts))
 			context := ""
 			if s.hasDefinitions {
 				context = s.text.String()[s.bodyAt:]
 			}
-			d.Set("| " + s.text.Slice(b.Range) + " |\n|---|\n\n" + context)
+			d, input = parserDocument("| "+s.text.Slice(b.Range)+" |\n|---|\n\n"+context, parserExtensions(s.exts))
 			in = d.Inlines(3)
 			shift = b.Range.Start - 2
+			found = true
 		}
-		e.in = extendInlines(s.text.String(), adaptInlines(s.text.String(), in, shift), s.exts)
+		if s.exts&contract.ExtDollarMath != 0 {
+			for found {
+				nextInput, changed := input.escapeMultilineMath(in)
+				if !changed {
+					break
+				}
+				next := parser.New(parserExtensions(s.exts))
+				next.Set(nextInput.text)
+				match := -1
+				for j := 1; j < next.Len(); j++ {
+					p := next.Block(j)
+					if contract.BlockKind(p.Kind) == b.Kind && nextInput.offset(p.Start)+shift == b.Range.Start && next.LineCount(j) == len(b.Lines) {
+						match = j
+						break
+					}
+				}
+				if match < 0 {
+					break
+				}
+				d, input = next, nextInput
+				in = d.Inlines(match)
+			}
+		}
+		e.in = extendInlines(s.text.String(), adaptInlines(s.text.String(), in, shift, input, s.exts), s.exts)
 	})
 	return e.in
 }
@@ -128,23 +153,26 @@ func shiftInlines(in []contract.Inline, delta int) {
 	}
 }
 
-func adaptInlines(src string, in []parser.Inline, shift int) []contract.Inline {
+func adaptInlines(src string, in []parser.Inline, shift int, input parserInput, exts contract.Extensions) []contract.Inline {
 	var out []contract.Inline
 	var walk func(int, int, bool)
 	walk = func(from, end int, literal bool) {
 		for k := from; k < end; k = in[k].Next {
 			n := in[k]
-			r := contract.Range{Start: n.Start + shift, End: n.End + shift}
+			r := contract.Range{Start: input.offset(n.Start) + shift, End: input.offset(n.End) + shift}
 			if r.Start < 0 || r.End > len(src) || r.End < r.Start {
 				continue
 			}
-			if n.Kind == parser.Text && !literal {
+			raw := src[r.Start:r.End]
+			plainMath := n.Kind == parser.Math && exts&contract.ExtDollarMath != 0 && len(raw) >= 4 && strings.HasPrefix(raw, "$$") &&
+				(strings.ContainsAny(raw, "\r\n") || strings.TrimSpace(raw[2:len(raw)-2]) == "")
+			if n.Kind == parser.Text && !literal || plainMath {
 				parts := scanText(src, r)
 				var decoded strings.Builder
 				for _, p := range parts {
 					decoded.WriteString(p.Text)
 				}
-				if decoded.String() != n.Text && strings.TrimRight(decoded.String(), " ") == n.Text && len(parts) > 0 {
+				if decoded.String() != input.clean(n.Text) && strings.TrimRight(decoded.String(), " ") == input.clean(n.Text) && len(parts) > 0 {
 					parts[len(parts)-1].Text = strings.TrimRight(parts[len(parts)-1].Text, " ")
 				}
 				for _, p := range parts {
@@ -154,7 +182,10 @@ func adaptInlines(src string, in []parser.Inline, shift int) []contract.Inline {
 				continue
 			}
 			j := len(out)
-			p := contract.Inline{Kind: contract.InlineKind(n.Kind), Range: r, Text: n.Text, Dest: n.Dest, Title: n.Title, Auto: n.Auto, Display: n.Display}
+			p := contract.Inline{Kind: contract.InlineKind(n.Kind), Range: r, Text: input.clean(n.Text), Dest: input.clean(n.Dest), Title: input.clean(n.Title), Auto: n.Auto, Display: n.Display}
+			if p.Kind == contract.InlineMath && exts&contract.ExtDollarMath != 0 && strings.HasPrefix(src[r.Start:r.End], "$$") {
+				p.Display = false
+			}
 			delimiters(src, &p)
 			out = append(out, p)
 			walk(k+1, n.Next, literal || n.Auto)

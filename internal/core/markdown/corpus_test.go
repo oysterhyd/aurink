@@ -140,7 +140,7 @@ func extraSamples() map[string]string {
 		"mixed-nested": "> 1. 外\n>    - 中\n>      > 内\n>      > 续行\n>\n>    末\n",
 		"lazy":         "> - 内容\n懒续行\n>   后续\n",
 		"tabs":         ">\t\tfoo\n>\t\tbar\n\n-\t\t字\n\t续行\n\n    \tcode\n",
-		"math":         "$$ x + y $$\n\n\\[\n甲 + β\n\\]\n\n> $$\n> x\n> $$\n",
+		"math":         "$$\nx + y\n$$\n\n\\[\n甲 + β\n\\]\n\n> $$\n> x\n> $$\n",
 		"footnote":     "[^注]: 脚注中文\n    二行\n\n使用[^注]。\n",
 		"fences":       "> ~~~go\n> a\n> ~~~\n\n```\n\n```\n\n```open",
 		"setext":       "> 文字\n> ----\n\n- 第一行\n  第二行\n  ======\n",

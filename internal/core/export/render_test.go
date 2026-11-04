@@ -136,6 +136,7 @@ func TestExtensionsOnAndOff(t *testing.T) {
 		{"sub", "~down~\n", "<p><sub>down</sub></p>\n", contract.ExtSupSub | contract.ExtTildeSub},
 		{"emoji", ":smile:\n", "<p>😄</p>\n", contract.ExtEmoji},
 		{"dollar math", "$x$\n", "<p><span class=\"math\">x</span></p>\n", contract.ExtDollarMath},
+		{"double-dollar math", "$$x$$\n", "<p><span class=\"math\">x</span></p>\n", contract.ExtDollarMath},
 		{"wiki", "[[Foo Bar#Hello, World|alias]]\n", "<p><a class=\"wikilink\" href=\"Foo%20Bar.md#hello-world\">alias</a></p>\n", contract.ExtWikiLink},
 		{"toc", "# Head\n\n[TOC]\n", "<h1 id=\"head\">Head</h1>\n<nav class=\"toc\"><ul>\n<li class=\"toc-level-1\"><a href=\"#head\">Head</a></li>\n</ul></nav>\n", contract.ExtTOC},
 	}
@@ -161,6 +162,9 @@ func TestExtensionsOnAndOff(t *testing.T) {
 				// Heading IDs are an export rule, independent of the extensions.
 				if !enabled && tc.name == "toc" {
 					want = strings.Replace(want, "<h1>", "<h1 id=\"head\">", 1)
+				}
+				if !enabled && tc.name == "double-dollar math" {
+					want = "<div class=\"math\">x</div>\n"
 				}
 				if out.String() != want {
 					t.Errorf("enabled=%v: got %q want %q", enabled, out.String(), want)
