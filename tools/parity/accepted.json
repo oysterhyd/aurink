@@ -218,5 +218,17 @@
  "enter-in-link": {
   "kind": "deviation",
   "why": "Typora's Ctrl+Home then Right does not enter a link at the start of the document; not a key behaviour to copy."
+ },
+ "enter-table-middle-row": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT"
+ },
+ "enter-table-header": {
+  "kind": "pending",
+  "why": "BE-TYPORA-EDIT"
+ },
+ "shift-enter-table": {
+  "kind": "deviation",
+  "why": "Typora writes <br />, Aurink <br>; the same line break."
  }
 }

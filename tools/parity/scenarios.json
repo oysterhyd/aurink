@@ -518,5 +518,20 @@
   "name": "type-closing-code",
   "doc": "",
   "keys": "`ab`z"
+ },
+ {
+  "name": "enter-table-middle-row",
+  "doc": "| a | b |\n| --- | --- |\n| 1 | 2 |\n| 3 | 4 |",
+  "keys": "{C+HOME}{DOWN}{ENTER}z"
+ },
+ {
+  "name": "shift-enter-table",
+  "doc": "| a | b |\n| --- | --- |\n| 1 | 2 |\n| 3 | 4 |",
+  "keys": "{C+HOME}{DOWN}{S+ENTER}z"
+ },
+ {
+  "name": "enter-table-header",
+  "doc": "| a | b |\n| --- | --- |\n| 1 | 2 |\n| 3 | 4 |",
+  "keys": "{C+HOME}{ENTER}z"
  }
 ]

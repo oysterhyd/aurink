@@ -102,5 +102,8 @@
  "enter-in-link": "\n\n[zab](u)",
  "type-closing-bold": "**ab**z",
  "type-closing-italic": "*ab*z",
- "type-closing-code": "`ab`z"
+ "type-closing-code": "`ab`z",
+ "enter-table-middle-row": "| a | b |\n| --- | --- |\n| 1 | 2 |\n| z | 4 |",
+ "shift-enter-table": "| a | b |\n| --- | --- |\n| <br />z1 | 2 |\n| 3 | 4 |",
+ "enter-table-header": "| a | b |\n| --- | --- |\n| z | 2 |\n| 3 | 4 |"
 }
