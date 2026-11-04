@@ -88,6 +88,12 @@ func (s *Shell) OpenSettings() {
 // SettingsOpen reports whether the settings dialog shows.
 func (s *Shell) SettingsOpen() bool { return s.set.open }
 
+// CloseSettings hides the settings dialog, as Esc does. For tools and tests.
+func (s *Shell) CloseSettings() {
+	s.set.open = false
+	s.invalidate()
+}
+
 // update changes the settings and reports a failed write.
 func (s *Shell) update(fn func(v *contract.Settings)) {
 	if err := s.o.Settings.Update(fn); err != nil {

@@ -88,15 +88,17 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		if selFrom != selTo && selFrom < b.Trailer.End && selTo > b.Lead.Start {
 			e.fillRange(p, l, b, x, y, selFrom, selTo, t.Selection)
 		}
-		text := t.Text
-		if e.focusMode && i != e.caretRow {
-			text = text.Alpha(focusAlpha)
-		}
-		p.TextLayout(l.layout, x, y, text)
+		p.TextLayout(l.layout, x, y, t.Text)
 		rc.paintObjects()
 		rc.paintContainers()
 		w.front(&rc)
 		rc.paintPreview()
+		// Focus mode: the sheet is opaque, so a veil of it at 1-0.28 leaves
+		// everything of the row at 0.28, the runs with their own colours, the
+		// boxes, bars, cards and pictures as much as the text (02 §5.10).
+		if e.focusMode && i != e.caretRow {
+			e.veil(p, r, ox, top, i)
+		}
 		if i == e.caretRow && e.focused {
 			p.TextLayout(e.label(marginTag(&l.proj), theme.UIBadge), ox-theme.MarginLabel, y+2, t.Muted)
 		}
@@ -105,6 +107,24 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		cx, cy, ch := e.caretRect()
 		e.paintCaret(p, r, cx, cy, ch)
 	}
+}
+
+// veil covers row i with the sheet at 1-0.28. A table's cells share their
+// row's band, which the first cell's height gives; each veils its own column,
+// the outer ones out to the sheet's edges.
+func (e *Editor) veil(p *ui.Painter, r ui.Rect, ox, top float32, i int) {
+	v := &e.rows[i]
+	x0, x1 := r.X, r.X+r.W
+	if v.cols > 1 {
+		cw := e.width / float32(v.cols)
+		if v.col > 0 {
+			x0 = ox + float32(v.col)*cw
+		}
+		if v.col < v.cols-1 {
+			x1 = ox + float32(v.col+1)*cw
+		}
+	}
+	p.Fill(ui.Rect{X: x0, Y: top, W: x1 - x0, H: e.rows[i-v.col].h}, e.t.Sheet.Alpha(1-focusAlpha), 0)
 }
 
 func marginTag(p *contract.BlockProjection) string {

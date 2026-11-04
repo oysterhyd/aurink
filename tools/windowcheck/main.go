@@ -4,13 +4,18 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"log"
 	"os"
 	"path/filepath"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/egoist/mygo"
@@ -18,6 +23,7 @@ import (
 
 	"aurink/internal/adapters/trash"
 	"aurink/internal/adapters/watch"
+	"aurink/internal/adapters/webviewhost"
 	"aurink/internal/contract"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
@@ -25,11 +31,13 @@ import (
 	"aurink/internal/core/editing"
 	"aurink/internal/core/fsstore"
 	"aurink/internal/core/projection"
+	"aurink/internal/core/render"
 	"aurink/internal/core/search"
 	"aurink/internal/core/settings"
 	"aurink/internal/core/workspace"
 	"aurink/internal/views/shell"
 	"aurink/resources"
+	renderpage "aurink/resources/render"
 	"aurink/tests/corpus"
 )
 
@@ -42,6 +50,66 @@ func (d *dispatcher) Post(fn func()) {
 }
 
 type platform struct{ w *mygo.Window }
+
+// slowStore reads files whose name starts with "slow-" a second and a half
+// late, so the document skeleton shows long enough to be captured.
+type slowStore struct{ contract.FileStore }
+
+func (s slowStore) Read(path string, opts contract.ReadOptions) (contract.FileContent, error) {
+	if strings.HasPrefix(filepath.Base(path), "slow-") {
+		time.Sleep(1500 * time.Millisecond)
+	}
+	return s.FileStore.Read(path, opts)
+}
+
+// lateRenderer is the render service, set once the window exists (as in app).
+type lateRenderer struct {
+	mu sync.Mutex
+	r  contract.Renderer
+}
+
+func (l *lateRenderer) set(r contract.Renderer) { l.mu.Lock(); l.r = r; l.mu.Unlock() }
+
+func (l *lateRenderer) get() contract.Renderer { l.mu.Lock(); defer l.mu.Unlock(); return l.r }
+
+func (l *lateRenderer) Available() bool { r := l.get(); return r != nil && r.Available() }
+
+func (l *lateRenderer) Render(ctx context.Context, req contract.RenderRequest) (contract.RenderResult, error) {
+	r := l.get()
+	if r == nil {
+		return contract.RenderResult{}, contract.E(contract.CodeUnavailable, "windowcheck.Render", nil)
+	}
+	return r.Render(ctx, req)
+}
+
+// cover writes a 640×360 gradient PNG for the lightbox screen.
+func cover(path string) {
+	img := image.NewRGBA(image.Rect(0, 0, 640, 360))
+	for y := range 360 {
+		for x := range 640 {
+			img.Set(x, y, color.RGBA{uint8(60 + x*120/640), uint8(90 + y*100/360), 200, 255})
+		}
+	}
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	if err := png.Encode(f, img); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// rendered is a document of math and a diagram, for the render screen.
+const rendered = `# 公式与图表
+
+质能方程 $E = mc^2$ 写在行内。
+
+$$
+\int_0^1 x^2\,dx = \frac{1}{3}
+$$
+
+` + "```mermaid\ngraph LR\n  A[打开] --> B[编辑] --> C[保存]\n```\n"
 
 // buildStart is when the window's last frame began building: a frame's work
 // runs from it to the end of the paint, without the wait for the display.
@@ -112,7 +180,7 @@ func main() {
 			return
 		}
 		d := &dispatcher{}
-		files := fsstore.New()
+		files := slowStore{fsstore.New()}
 		store, err := settings.New(filepath.Join(tmp, "settings.json"), files, d, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -121,7 +189,8 @@ func main() {
 			log.Fatal(err)
 		}
 		base := store.Get()
-		base.Editor.Exts = contract.ExtFrontMatter
+		// All extensions, as the app has them by default (Phase 3).
+		base.Editor.Exts = contract.ExtDefault
 		// Autosave stays out of the measured frames and off the disk.
 		base.Files.AutosaveDelayMs = 3600000
 		sessions := docsession.New(files, document.Factory{}, d, filepath.Join(tmp, "recovery"), docsession.Options{Settings: &base})
@@ -129,9 +198,10 @@ func main() {
 		reg.SetDefaults(commands.DefaultBindings())
 		var w *mygo.Window
 		var s *shell.Shell
+		renderer := &lateRenderer{}
 		p := &platform{}
 		s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
-			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtFrontMatter, Fuzzy: search.NewFuzzy(),
+			Commands: reg, Dispatcher: d, Platform: p, WindowButtons: true, Exts: contract.ExtDefault, ObjectLangs: []string{"mermaid"}, Renderer: renderer, Fuzzy: search.NewFuzzy(),
 			Workspace: workspace.New(watch.New(), trash.New(), d, workspace.Options{}), Search: search.NewWorkspaceSearch()})
 		if err := reg.Register(s.Commands()...); err != nil {
 			log.Fatal(err)
@@ -139,6 +209,7 @@ func main() {
 		w = mygo.NewWindow(mygo.WindowOptions{Title: "Aurink", Width: 1280, Height: 800, TitleBarStyle: mygo.TitleBarHidden,
 			HideWindowButtons: true, Content: ui.View(func(c *ui.Context) { buildStart = time.Now(); s.View(c) })})
 		d.w, p.w = w, w
+		renderer.set(render.New(webviewhost.New(w), render.Options{Page: renderpage.Page(), CacheDir: filepath.Join(tmp, "render-cache")}))
 		go script(w, s, reg, store, tmp, *out)
 	})
 	if err := mygo.App.Run(); err != nil {
@@ -258,6 +329,7 @@ func script(w *mygo.Window, s *shell.Shell, reg *commands.Registry, store *setti
 	shot("SourceFind")
 	run(contract.CmdViewLive)
 	on(w, s.CloseFind)
+	phase3(w, s, run, open, shot, tmp)
 	// A conflict: an edit, a change on disk, a save.
 	on(w, func() {
 		m := s.ActiveSession().Model()
@@ -325,4 +397,63 @@ func stress(w *mygo.Window, s *shell.Shell, size int) {
 	slices.Sort(works)
 	fmt.Printf("window %d KB: edit to painted p50 %v p95 %v max %v; frame work p50 %v p95 %v max %v\n", size>>10,
 		times[n/2], times[n*95/100], times[n-1], works[n/2], works[n*95/100], works[n-1])
+}
+
+// phase3 saves the screens of the Phase 3 baselines: reading, focus, settings,
+// the format bar, the slash menu, the lightbox, the document skeleton, and
+// rendered math and diagrams.
+func phase3(w *mygo.Window, s *shell.Shell, run func(contract.CommandID), open func(name, text string), shot func(string), tmp string) {
+	on(w, func() { s.GoTo(strings.Index(demo, "## 写作")) })
+	run(contract.CmdViewRead)
+	time.Sleep(600 * time.Millisecond)
+	shot("Reading")
+	run(contract.CmdViewRead)
+	time.Sleep(600 * time.Millisecond)
+	run(contract.CmdViewFocus)
+	on(w, func() { s.GoTo(strings.Index(demo, "光标进入") + 3) })
+	shot("Focus")
+	run(contract.CmdViewFocus)
+	run(contract.CmdAppSettings)
+	shot("Settings")
+	on(w, s.CloseSettings)
+	time.Sleep(300 * time.Millisecond)
+	on(w, func() {
+		e := s.ActiveLive()
+		at := strings.Index(demo, "Markdown 文件就是你的文件")
+		e.Model().SetSelection(contract.Selection{Ranges: []contract.SelRange{{Anchor: at, Head: at + len("Markdown 文件就是你的文件")}}})
+		e.Focus()
+	})
+	shot("Format")
+	open("slash.md", "# 周会记录\n\n本周完成了导出。\n\n")
+	on(w, func() {
+		e := s.ActiveLive()
+		e.Model().SetSelection(contract.Caret(e.Model().Text().Len()))
+		e.Focus()
+		e.ReplaceText(nil, "/")
+	})
+	shot("Slash")
+	on(w, func() { s.ActiveLive().ReplaceText(nil, " ") })
+	cover(filepath.Join(tmp, "cover.png"))
+	open("image.md", "# 封面\n\n![封面图](cover.png)\n")
+	time.Sleep(700 * time.Millisecond)
+	on(w, func() {
+		e := s.ActiveLive()
+		for r := range e.RowCount() {
+			if e.OpenLightbox(r) {
+				return
+			}
+		}
+		log.Fatal("no image to open in the lightbox")
+	})
+	shot("Lightbox")
+	open("render.md", rendered)
+	time.Sleep(2500 * time.Millisecond) // the render service starts
+	shot("Render")
+	if err := os.WriteFile(filepath.Join(tmp, "slow-doc.md"), []byte(demo), 0o644); err != nil {
+		log.Fatal(err)
+	}
+	on(w, func() { s.Open(filepath.Join(tmp, "slow-doc.md")) })
+	time.Sleep(100 * time.Millisecond) // shot waits 0.9 s more: past 100 ms, before 1.5 s
+	shot("Loading")
+	time.Sleep(time.Second)
 }
