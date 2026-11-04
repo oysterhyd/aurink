@@ -638,6 +638,10 @@ func (e *Editor) styled(text string, seg *contract.Segment, m *rowMetrics) ui.Sp
 		s.Font = theme.Mono
 		s.Size = m.font.Size * .85
 	}
+	// Inline math shown as source is purple, its $ grey, as in Typora.
+	if st&contract.StyleMath != 0 {
+		s.Color = t.SynKeyword
+	}
 	if st&contract.StyleMarker != 0 {
 		s.Color = t.Muted
 		s.Background = ui.Color{}

@@ -69,11 +69,17 @@ func hex(c ui.Color) string {
 // rendered returns what is known of an object's rendering, starting it when
 // the service is there; nil when it is not a rendered kind.
 func (e *Editor) rendered(o *contract.ObjectRef, size float32) *renderState {
+	return e.renderedIn(o, size, e.t.Text, e.t.Dark)
+}
+
+// renderedIn is rendered in another text color, as on the dark bubble of the
+// inline math preview.
+func (e *Editor) renderedIn(o *contract.ObjectRef, size float32, color ui.Color, dark bool) *renderState {
 	kind, ok := renderKind(o)
 	if !ok {
 		return nil
 	}
-	k := renderKey{kind: kind, source: o.Source, lang: o.Lang, dark: e.t.Dark, size: size, colorHex: hex(e.t.Text)}
+	k := renderKey{kind: kind, source: o.Source, lang: o.Lang, dark: dark, size: size, colorHex: hex(color)}
 	st := e.renders[k]
 	if st != nil {
 		return st

@@ -54,6 +54,7 @@ func (e *Editor) paint(p *ui.Painter, r ui.Rect) {
 	e.paintRows(p, r)
 	e.paintLinkHint(p, r)
 	e.paintNotePreview(p, r)
+	e.paintMathPop(p, r)
 	e.paintRail(p, r)
 	e.Stats.Frames++
 	e.Stats.MaxFrameShapes = max(e.Stats.MaxFrameShapes, e.Stats.FrameShapes)
