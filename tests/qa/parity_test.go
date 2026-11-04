@@ -3,6 +3,7 @@ package qa
 import (
 	"encoding/json"
 	"os"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -18,6 +19,9 @@ import (
 // list, so the list only shrinks. With AURINK_PARITY_OUT set, the results are
 // also written there ({name: source}) for tools/parity/compare.py.
 func TestTyporaParity(t *testing.T) {
+	if runtime.GOOS == "darwin" {
+		t.Skip("the scenarios are Typora for Windows keys (Ctrl, Home, End); on macOS those keys mean other things")
+	}
 	read := func(name string, v any) {
 		raw, err := os.ReadFile("../../tools/parity/" + name)
 		if err != nil {
