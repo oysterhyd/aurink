@@ -94,6 +94,7 @@ type app struct {
 	p        *platform
 	store    *settings.Store
 	sessions *docsession.Manager
+	recent   *workspace.Recent
 	files    []string
 	ws       *workspace.Workspace
 	trash    *contracttest.RecordingTrasher
@@ -128,12 +129,12 @@ func newApp(t *testing.T) *app {
 		t.Fatal(err)
 	}
 	a.boot()
-	// Before the temporary folder goes: a session save may still be writing.
+	// Wait for background saves before removing the temporary folder.
 	t.Cleanup(a.idle)
 	return a
 }
 
-// idle waits until no session or settings save runs.
+// idle waits until session, recent and settings saves finish.
 func (a *app) idle() {
 	a.t.Helper()
 	if a.s == nil {
@@ -147,6 +148,10 @@ func (a *app) idle() {
 	done = false
 	a.sessions.Idle(func() { done = true })
 	a.pumpUntil("the document sessions idle", &done)
+	done = false
+	a.recent.Idle(func() { done = true })
+	a.pumpUntil("the recent list idle", &done)
+	_ = a.store.Flush()
 }
 
 // pumpUntil runs what is posted until *done.
@@ -202,11 +207,12 @@ func (a *app) boot() {
 	store.Subscribe(aurinkapp.FollowSettings(a.ws, a.assets, a.sessions, qaExts))
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
+	a.recent = workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q)
 	a.s = shell.New(shell.Options{Finder: search.NewFinder(), Sessions: a.sessions, Settings: store, Projector: projection.New(), Editing: editing.New(),
 		Commands: a.reg, Dispatcher: a.q, Platform: a.p, WindowButtons: true, Exts: qaExts, ObjectLangs: []string{"mermaid"}, Renderer: a.render, Fuzzy: search.NewFuzzy(),
 		Files: func() []string { return a.files }, Workspace: ws, Search: search.NewWorkspaceSearch(),
 		SessionStore: docsession.NewSessionStore(filepath.Join(a.data, "session.json"), files),
-		Recent:       workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q),
+		Recent:       a.recent,
 		ExportHTML:   aurinkapp.ExportHTML(files, a.q, qaExts),
 		SetLanguage:  func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"}})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
