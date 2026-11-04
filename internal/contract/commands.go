@@ -53,6 +53,8 @@ const (
 	CmdBlockHeading4    CommandID = "block.heading4"
 	CmdBlockHeading5    CommandID = "block.heading5"
 	CmdBlockHeading6    CommandID = "block.heading6"
+	CmdBlockHeadingUp   CommandID = "block.headingUp"   // Typora: paragraph → H6 → … → H1
+	CmdBlockHeadingDown CommandID = "block.headingDown" // Typora: H1 → … → H6 → paragraph
 	CmdBlockQuote       CommandID = "block.quote"
 	CmdBlockBulletList  CommandID = "block.bulletList"
 	CmdBlockOrderedList CommandID = "block.orderedList"
