@@ -527,7 +527,7 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 		right = 0
 	}
 	ui.Row(c).Height(max(bar.Height, theme.TitleBar)).Padding(0, right, 0, bar.Left+12).Gap(6).AlignItems(ui.Center).DragWindow().Children(func() {
-		ui.Icon(c, kit.Brand).Size(22, 22).TextColor(t.Accent)
+		ui.Image(c, kit.Brand(t.Aurora1, t.Aurora2, t.Aurora3)).Size(22, 22).TextColor(t.Text)
 		if kit.IconButton(c.Key("toggleSidebar"), t, kit.IconSidebar, locales.ShellToggleSidebar(), 30, 16).Clicked() {
 			s.sidebar = !s.sidebar
 		}

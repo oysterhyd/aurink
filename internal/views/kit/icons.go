@@ -1,6 +1,11 @@
 package kit
 
-import "github.com/egoist/mygo/ui"
+import (
+	"fmt"
+	"sync"
+
+	"github.com/egoist/mygo/ui"
+)
 
 func icon(path string) *ui.SVG {
 	return ui.MustParseSVG([]byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">` + path + `</svg>`))
@@ -31,5 +36,27 @@ var (
 	IconWarn      = icon(`<path d="M8 2.8l5.8 10H2.2z"/><path d="M8 6.5v3M8 11.2v.1"/>`)
 )
 
-// Brand is the Aurink mark: an arch in the three aurora colors.
-var Brand = ui.MustParseSVG([]byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M3 17C3 8 6 3 10 3" stroke="#2BA59B"/><path d="M10 3c4 0 7 5 7 14" stroke="#D6498F"/><path d="M6.8 17c0-5 1.3-8 3.2-8s3.2 3 3.2 8" stroke="#5B5BD6"/></svg>`))
+// Brand is the Aurink mark of the design (Main, the title bar): an arch in
+// the theme's aurora gradient over a drop of ink in currentColor. The marks
+// are made once for each set of colors.
+func Brand(a1, a2, a3 ui.Color) *ui.SVG {
+	key := [3]ui.Color{a1.SRGB(), a2.SRGB(), a3.SRGB()}
+	brandMu.Lock()
+	defer brandMu.Unlock()
+	if s, ok := brands[key]; ok {
+		return s
+	}
+	hex := func(c ui.Color) string { return fmt.Sprintf("#%02X%02X%02X", c.R, c.G, c.B) }
+	s := ui.MustParseSVG([]byte(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">` +
+		`<defs><linearGradient id="mk" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="` + hex(key[0]) +
+		`"/><stop offset="0.55" stop-color="` + hex(key[1]) + `"/><stop offset="1" stop-color="` + hex(key[2]) + `"/></linearGradient></defs>` +
+		`<path d="M3 20C4.5 11 7.8 4 12 4s7.5 7 9 16" stroke="url(#mk)" stroke-width="2.6" stroke-linecap="round"/>` +
+		`<path d="M12 11.5c1.9 2.5 3 4 3 5.4a3 3 0 0 1-6 0c0-1.4 1.1-2.9 3-5.4z" fill="currentColor"/></svg>`))
+	brands[key] = s
+	return s
+}
+
+var (
+	brandMu sync.Mutex
+	brands  = map[[3]ui.Color]*ui.SVG{}
+)

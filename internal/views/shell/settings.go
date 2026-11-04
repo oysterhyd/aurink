@@ -525,7 +525,7 @@ func (s *Shell) aboutView(c *ui.Context, t *theme.Tokens) {
 		panel.Width(420).Radius(theme.RadiusFloat+4).Border(1, t.Border).Padding(28).Gap(10).
 			Shadow(0, 32, 80, 0, t.ShadowColor).Material(effects.Glass(t, effects.Modal)).Label(locales.SettingsAbout())
 		ui.Column(c).Gap(10).AlignItems(ui.Center).Children(func() {
-			ui.Icon(c, kit.Brand).Size(40, 40).TextColor(t.Accent)
+			ui.Image(c, kit.Brand(t.Aurora1, t.Aurora2, t.Aurora3)).Size(40, 40).TextColor(t.Text)
 			ui.Text(c, locales.AppName()).Font(theme.Serif).FontSize(24).FontWeight(500)
 			ui.Text(c, locales.SettingsVersion(s.o.Version)).FontSize(theme.UIStatus).TextColor(t.Muted)
 		})
