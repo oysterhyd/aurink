@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"aurink/internal/contract"
+	"aurink/internal/views/theme"
 	"aurink/tests/corpus"
 	"github.com/egoist/mygo/ui"
 )
@@ -49,5 +50,30 @@ func TestTypingWorkStaysLocal(t *testing.T) {
 	// Typing must not cost more in a bigger document.
 	if small, big := perKey[200<<10], perKey[1<<20]; big > small*1.5 {
 		t.Errorf("allocations per keystroke grow with the document: %.0f at 200 KB, %.0f at 1 MB", small, big)
+	}
+}
+
+// Changing font size, line height or column width in a 10,000-block document
+// shapes only the visible rows, never the whole document (08 §7).
+func TestTypographyChangeShapesVisibleOnly(t *testing.T) {
+	src := ""
+	for range 10000 {
+		src += "a line of a paragraph\n\n"
+	}
+	e, tt := openEditor(t, src)
+	for _, ty := range []theme.Typography{
+		{Body: 18, LineHeight: 1.75, Column: 720},
+		{Body: 18, LineHeight: 2.0, Column: 720},
+		{Body: 18, LineHeight: 2.0, Column: 600},
+	} {
+		e.ResetStats()
+		e.SetTypography(ty)
+		tt.Frame()
+		first, last := e.VisibleRows()
+		// Visible rows plus overscan before and after the height adjustment;
+		// shaping the whole document would be 10,000.
+		if e.Stats.Shapes > (last-first+1)*3 {
+			t.Fatalf("typography %+v shaped %d rows with %d in view", ty, e.Stats.Shapes, last-first+1)
+		}
 	}
 }

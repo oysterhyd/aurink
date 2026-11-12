@@ -303,14 +303,14 @@ P0 = MVP 必须（Phase 1–2）；P1 = Beta（Phase 3）；P2 = 1.0 打磨（Ph
 |---|---|---|---|
 | 命令面板 | Ctrl+Shift+P | 快速打开 | Ctrl+P |
 | 加粗/斜体/下划线 | Ctrl+B / I / U | 行内代码 | Ctrl+Shift+` |
-| 删除线 | Ctrl+Shift+X | 链接 | Ctrl+K |
-| 标题 1–6 / 正文 | Ctrl+1…6 / Ctrl+0 | 高亮 | Ctrl+Shift+H |
-| 有序/无序/任务列表 | Ctrl+Shift+7 / 8 / 9 | 引用 | Ctrl+Shift+Q |
-| 代码块 | Ctrl+Shift+K | 数学块 | Ctrl+Shift+M |
-| 插入表格 | Ctrl+T | 缩进/反缩进 | Tab / Shift+Tab（列表内）、Ctrl+] / [ |
-| 源码模式 | Ctrl+/ | 阅读模式 | F7（Esc 退出） |
-| 专注/打字机 | F8 / F9 | 侧栏 | Ctrl+Shift+L |
-| 放大/缩小/实际大小 | Ctrl+Shift+= / - / 0 | | |
+| 删除线 | Alt+Shift+5 / Ctrl+Shift+X（macOS Ctrl+Shift+`） | 链接 | Ctrl+K |
+| 标题 1–6 / 正文 | Ctrl+1…6 / Ctrl+0 | 提升/降低标题级别 | Ctrl+= / Ctrl+- |
+| 有序/无序/任务列表 | Ctrl+Shift+[ / ]（macOS ⌥⌘O / U）、Ctrl+Shift+7 / 8 / 9 | 高亮 | Ctrl+Shift+H |
+| 代码块 | Ctrl+Shift+K | 引用 | Ctrl+Shift+Q |
+| 插入表格 | Ctrl+T | 数学块 | Ctrl+Shift+M |
+| 源码模式 | Ctrl+/ | 缩进/反缩进 | Tab / Shift+Tab（列表内）、Ctrl+] / [ |
+| 专注/打字机 | F8 / F9 | 阅读模式 | F7（Esc 退出） |
+| 放大/缩小/实际大小 | Ctrl+Shift+= / - / 0 | 侧栏 | Ctrl+Shift+L |
 | 大纲 | Ctrl+Shift+1 | 全局搜索 | Ctrl+Shift+F |
 | 查找/替换 | Ctrl+F / Ctrl+H（macOS ⌥⌘F） | 保存/另存为 | Ctrl+S / Ctrl+Shift+S |
 | 新建/打开 | Ctrl+N / Ctrl+O | 关闭标签/重开 | Ctrl+W / Ctrl+Shift+T |

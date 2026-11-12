@@ -14,7 +14,7 @@ import (
 )
 
 func openEditor(b testing.TB, src string) (*liveedit.Editor, *ui.Tester) {
-	m := document.Factory{}.New("doc", src, contract.DocMeta{Dominant: "\n", Encoding: "utf-8"}, contract.ExtFrontMatter)
+	m := document.Factory{}.New("doc", src, contract.DocMeta{Dominant: "\n", Encoding: "utf-8"}, contract.ExtDefault)
 	e := liveedit.New(liveedit.Options{Model: m, Projector: projection.New(), Editing: editing.New()})
 	b.Cleanup(e.Close)
 	e.Focus()

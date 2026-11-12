@@ -38,6 +38,27 @@
 
 **产品定位（用户 2026-11-02）：** Aurink 是 Typora 的升级版。Typora 已有的行为和观感以 Typora 为准；Typora 没有的功能（斜杠菜单、格式条、结构导轨、Wiki 链接等）照 02 保留。扩展语法默认全部开启。
 
+# M3 评估（2026-11-12）
+
+**结论：M3 通过。** 用户于 2026-11-12 确认完成 M3（0.3.0）真机审查。此前真机反馈的 Typora 按键、命令与交互差异已全部通过 `tools/parity`（104 个真机对拍场景，`pending` 清零，仅保留 8 项有意偏离）及 `BE-TYPORA-KEYS`、`BE-TYPORA-EDIT` 等卡修复合入。负责人的各项证据见 [08-phase3.md](../08-phase3.md) §10、`reports/quality.md`、`reports/render/`、`reports/pdf/` 与 `reports/parity/`。
+
+| M3 条件 | 状态 |
+|---|---|
+| 门禁、五目标交叉构建（`gate.ps1 -AllTargets`） | 通过 |
+| 语料保真、1 万步属性测试（扩展全开与全关双模式） | 通过：`tests/fidelity`（83 文件 + 3×10,000 步 × 2 模式）、`tests/qa`（3×10,000 步 × 2 模式） |
+| Typora 键位与编辑行为对拍 | 通过：`TestTyporaParity` 104 场景（0 pending，8 项记录在案的有意偏离） |
+| 02 P1 功能清单逐项覆盖 | 通过：21 项全部对应测试与视觉证据，见 `reports/quality.md` |
+| 渲染服务可用与不可用降级两态 | 通过：`tools/rendercheck`（210 公式 p95 9.2 ms、8 图表、缓存微秒级、空闲退出回收）+ `tests/qa/render_test.go` + `reports/render/` |
+| 导出 PDF 与打印 | 通过：`tools/pdfcheck`（A4 7 页、Letter 8 页逐页转图核对，`reports/pdf/`）+ `tests/qa/pdf_test.go` |
+| 02 §4.4 运动规则走查、`ReduceMotion` / `ReduceTransparency` 合规 | 通过：`reports/parity/Motion.md`、`LowPower.md`（标记 `Quick` 淡入与列表 `Stagger` 未做，记为小差异） |
+| 空闲 0 帧（含极光 12 s 后停帧） | 通过：`FramePending` 断言通过 |
+| 中英文界面完整与实时切换 | 通过：311 条文案 `i18ncheck` 通过、`en-XA` 伪本地化无截断、中英文双套截图 |
+| 18 张设计基线对照（含 150% 缩放、中文界面与独立盲审复核） | 通过：`reports/parity/Phase3.md`（标签条边缘渐隐、设置「跟随系统强调色」、单击图片保留预览维持现状，记为小差异） |
+| Windows 0.3.0 安装包安装、卸载、文件关联 | 通过：本机实操验证（08 §10 批次 9） |
+| 公式/图表/Front Matter 观感、各模式/斜杠菜单/格式条/灯箱手感、设置与语言切换、微软拼音、PDF 效果 | 用户真机审查确认 |
+
+只在本机一种 Windows 硬件上验证。核显机型以及 macOS、Linux 上的有窗口运行（IME、字体、Vibrancy、系统菜单、WebView 渲染、PDF 与打印、文件关联）均标记为**未验证**，留待 Phase 4（QA-4.1）验收。
+
 # M1 评估（2026-11-02）
 
 **结论：M1 通过。** 用户 2026-11-02 确认真机验收已过：日常使用（打开、编辑、保存、切模式、切主题）、微软拼音、观感与基线（`docs/06-phase1.md` §8 归用户的三项），没有报告问题。负责人的各项证据见 06 §9 和 `reports/quality.md`。

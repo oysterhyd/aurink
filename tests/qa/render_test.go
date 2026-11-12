@@ -356,3 +356,34 @@ func TestRenderedBlocksCentre(t *testing.T) {
 		}
 	}
 }
+
+// A document without formulas or diagrams never touches the render service (08 §7).
+func TestProseDocumentNeverCallsRenderer(t *testing.T) {
+	a := newApp(t)
+	a.open("prose.md", "# Title\n\nParagraph with **bold**, `code` and ==highlight==.\n\n```go\nvar x = 1\n```\n")
+	a.caret(len(a.text()) - 1)
+	a.typed(" more prose")
+	a.animate()
+	if got := a.render.count(); got != 0 {
+		t.Fatalf("prose document called renderer %d times", got)
+	}
+}
+
+// Typing in prose beside already-rendered formulas and diagrams triggers zero
+// render requests (08 §7).
+func TestTypingBesideFormulasDoesNotRender(t *testing.T) {
+	a := newApp(t)
+	a.open("m.md", "# Math\n\ninline $x^2$ here\n\n$$\nsum_0^1 f\n$$\n\n```mermaid\ngraph TD; A-->B\n```\n\ntail\n")
+	a.caret(len(a.text()) - 1)
+	a.until("everything renders", func() bool {
+		return a.renderState("x^2") == "rendered" && a.renderState("sum_0^1 f") == "rendered" && a.renderState("graph TD; A-->B") == "rendered"
+	})
+	before := a.render.count()
+	for range 20 {
+		a.typed("a")
+	}
+	a.animate()
+	if after := a.render.count(); after != before {
+		t.Fatalf("typing prose rendered again: %d calls, want %d", after, before)
+	}
+}

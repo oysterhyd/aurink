@@ -226,3 +226,13 @@
 | `projection.go` | `ObjectRef.Meta`、`FrontMatterMeta` | D5 |
 | `render.go` | `RenderHost` 与渲染页面的协议；`RenderRequest.Scale`；`ExportOptions.Renderer` | D7–D9、D14 |
 | 本文 §4.2.10、§4.3.5a | 扩展语法和对象的规则 | D1–D6 |
+
+## 附：Phase 3 批次 3–11 补充（2026-11-04）
+
+依据 [08 §10](08-phase3.md) 导出联调与 Typora 真机对齐。新增套件 `TestEditingTypora`（`editing3.go`）、`TestEditingTypora2`（`editing4.go`）。
+
+| 文件 | 变更 | 依据 |
+|---|---|---|
+| `render.go` | `ExportOptions.SoftBreak`：导出段落内软换行跟随编辑器设置 | BE-2.10（08 批次 3） |
+| `commands.go` | `CmdTableResize`、`CmdTableDelete`：表格工具条尺寸调整与整表删除 | BE-TABLE-KEYS（08 批次 11） |
+| `commands.go` | `CmdBlockHeadingUp`、`CmdBlockHeadingDown`：标题级别提升与降低（段落 ↔ H6…H1） | BE-TYPORA-EDIT（08 批次 11） |

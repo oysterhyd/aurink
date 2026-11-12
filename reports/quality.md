@@ -237,6 +237,62 @@ At 200 KB, frame work p95 is about 5 ms, inside 8 ms. At 1 MB it is about 15 ms,
 
 `go test -tags e2e ./tests/e2e -run 'TestM2Flow|TestNativeDialogs' -v` [实测，Windows only, local, not in CI]: the real app driven through MyGo's automation plugin. It covers the remembered window size, a folder given as an argument, quick open, typing and autosave, an external change while edited then Keep Mine, closing, and a second start with the folder and tab back. The native dialogs are answered through UI Automation (`tests/e2e/dialog.ps1`): Save As of a new document, Open, Export HTML (which offers `other.html`), and the close confirmation, where Cancel keeps the tab and Don't Save closes it. Both tests passed twice in a row. A mutant that skips the session restore was caught. macOS and Linux dialogs are unverified.
 
-## Not exercised
+## Not exercised (M2)
 
-Installer file association. Microsoft Pinyin. `RevealInline` feel. Launching with a file argument and the second instance were checked on Windows [实测]; macOS and Linux real use was not.
+macOS and Linux real-window use, IME, dialogs and printing remain unverified.
+
+## QA-3.x — Phase 3 / M3 (08 §7, §9)
+
+Windows 11, AMD Ryzen 7 8845H, 150% scaling (144 DPI). Integrated graphics, macOS and Linux windowed runtime remain unverified.
+
+### Fidelity, property and Typora parity suites [实测]
+
+- `tests/fidelity` (`TestCorpusOpenSaveIsByteIdentical`, `TestRandomEditsAgainstString`): 83 corpus files open and save byte-identical, and 3 seeds × 10,000 random edit/undo/redo/save steps (LF/mixed, CRLF, UTF-8 BOM, including extension tokens) match a plain string model under **both** `extensions_on` (`contract.ExtDefault`) and `extensions_off` (`0`) — PASS (`50.0s`).
+- `tests/qa` (`TestRandomEditsTenThousandSteps`): 3 seeds × 10,000 applied edits + 1,000-step undo walk through `document.Factory` and `views/liveedit` under **both** `extensions_on` (`contract.ExtDefault`) and `extensions_off` (`0`) — PASS.
+- `tests/qa` (`TestTyporaParity`): 104 key/command scenarios measured in Typora 1.0 (`tools/parity/scenarios.json`, `typora.json`) replayed end-to-end in Aurink — **0 pending**, 8 documented intentional deviations (`tools/parity/accepted.json`) — PASS.
+
+### Phase 3 performance and resource budgets (08 §7) [实测]
+
+| Item | Budget | Result | Evidence |
+|---|---|---|---|
+| Typing, 200 KB (`ExtDefault`) | ~1.2 ms, no worse than M2; typing beside formulas triggers 0 renders | `1.33–1.43 ms/op` (`-benchtime=300x -count=3`); 0 row walks, ≤4 shapes/key, <1500 allocs/key; 0 render calls while typing prose | `BenchmarkTypeFrame200KB`, `TestTypingWorkStaysLocal`, `TestTypingBesideFormulasDoesNotRender` |
+| Typing, 1 MB (`ExtDefault`) | Recorded (Phase 4 target) | `2.60–2.91 ms/op` (`-benchtime=300x -count=3`) | `BenchmarkTypeFrame1MB` |
+| Scrolling 10,000 blocks | No whole-screen relayout | `1.28–1.31 ms/op`, `8.20 shapes/frame` | `BenchmarkScroll10kBlocks`, `TestScrollShapesNoWholeScreen` |
+| Single formula (uncached) | p95 < 50 ms (ADR-002) | Service p50 `3.68 ms`, p95 `8.64 ms`; end-to-end (with `ui.ParseSVG` / PNG decode) p50 `3.91 ms`, p95 `9.24 ms` across 210 valid formulas (187 SVG, 23 PNG; 10 invalid return `CodeRender`); 8 Mermaid diagrams across 6 chart types; 2× scale PNG verified | `tools/rendercheck`, `reports/render/summary.md` |
+| Render cache hit | < 1 ms | p50 `0.0016 ms`, p95 `0.0041 ms`, max `0.0090 ms` | `tools/rendercheck`, `reports/render/summary.md` |
+| Prose-only document | Render service does not start | 0 render calls | `TestProseDocumentNeverCallsRenderer` |
+| Idle frames | 0 frames; aurora stops after 12 s | `FramePending == false` at rest and 12 s after opening welcome / empty live doc | `TestScenarios` (idle checks), `TestAurora`, `internal/views/effects` `TestAuroraPhase` |
+| WebView2 memory | Recorded vs S2 (361–565 MiB); idle shutdown verified | Cold start `909 ms`, restart after idle `403 ms`, `idle stopped: true`; process-tree working set `361 MiB` after start, `509 MiB` after corpus, `341 MiB` after idle stop (private bytes `196 MiB` → `330 MiB` → `170 MiB`) | `tools/rendercheck`, `reports/render/summary.md` |
+| Binary and installer size | Recorded (~5.2 MiB embedded render bundle) | `Aurink.exe`: `28,912,640` bytes (`27.57 MiB`); Windows installer `aurink-setup-0.3.0-amd64.exe`: `14,638,218` bytes (`13.96 MiB`) | `build/windows-amd64/` |
+| Live typography settings | Changing size, line height or width lays out visible area only | 33 shapes on a 10,000-block document (16 visible rows + overscan) | `TestTypographyChangeShapesVisibleOnly` |
+
+### 02 P1 feature coverage table (08 §9)
+
+| § in `02-product-ux.md` | P1 Feature | Automated tests / verification path | Visual / real-machine evidence | Status |
+|---|---|---|---|---|
+| §2.1 | Math (`$$…$$`, `\[…\]`, `$…$`) — rendered view, TeX + live preview when active, unavailable fallback | `internal/core/render` (`TestRenderer`), `tests/qa` (`TestMathAndDiagramsRender`, `TestMathShowsSourceWithoutTheService`, `TestBadMathShowsSource`, `TestRenderUnavailableSaysSoOnce`, `TestMathPreviewUnderTheSource`, `TestMathPreviewShowsTheError`, `TestInlineMathPreviewBubble`, `TestDeletingInlineMathTakesWhatIsThere`) | `reports/render/summary.md`, `reports/render/fallback-window.png`, `reports/parity/screens/Render.png`, user real-machine check | PASS |
+| §2.1 | Mermaid (`mermaid` fence) — rendered diagram, source + preview below when active | `internal/core/render`, `tests/qa` (`TestMathAndDiagramsRender`, `TestDiagramPreviewUnderTheSource`, `TestRenderedBlocksCentre`) | `reports/render/diagram-*.png`, `reports/parity/screens/Render.png`, user real-machine check | PASS |
+| §2.1 | YAML Front Matter — editorial header (kicker, tag pills, date), expands YAML when active | `internal/core/projection` (`frontmatter_test.go`), `tests/qa` (`TestFrontMatterHeaderAndTOC`) | `reports/parity/screens/Main.png`, user real-machine check | PASS |
+| §2.1 | `[TOC]`, `==highlight==`, `^sup^`, `~sub~`, `:emoji:`, `[[Wiki link]]` — on by default, per-extension toggle | `internal/core/markdown` (`extensions_test.go`), `internal/contracttest` (`TestExtensions`, `TestProjectionExtensions`, `TestEditingExtensions`), `tests/qa` (`TestFrontMatterHeaderAndTOC`, `TestWikiLinkOpensTheNote`, `TestSettingsFilesAndExtensions`) | `reports/parity/screens/Main.png`, `Settings.png`, user real-machine check | PASS |
+| §2.1 | Slash menu `/` — two-column 15-item block menu with preview, filter, language/table pickers | `tests/qa` (`TestSlash*`, 19 tests in `slash_test.go`), `tests/ui` (`TestSlashTodoShowsACheckbox`) | `reports/parity/screens/Slash.png`, user real-machine check (incl. Microsoft Pinyin) | PASS |
+| §2.1 | Floating selection format bar — glass bar, "Turn into" menu, inline link input | `tests/qa` (`TestFormatBar*`, 4 tests in `format_test.go`) | `reports/parity/screens/Format.png`, user real-machine check (incl. Microsoft Pinyin) | PASS |
+| §2.1 | Link popover — hover URL, `Ctrl/⌘+K` edit, `Ctrl/⌘+Click` open | `tests/ui` (`TestLinkPopoverEditsTheDestination`, `TestPrimaryKInALinkEditsIt`, `TestLinkPopoverOpensAFileNextToTheDocument`, `TestReferenceLinkHasNoEditInPlace`) | `reports/parity/screens/Link.png`, user real-machine check | PASS |
+| §2.1 | Image lightbox — double-click shared-element flight, 60–160% zoom, `Esc` return | `tests/qa` (`TestLightboxOpensOnDoubleClick`, `TestLightboxZoom`, `TestLightboxFlight`) | `reports/parity/screens/Lightbox.png`, user real-machine check | PASS |
+| §2.1 | Structure rail — heading ticks, find hits, click jump | `tests/ui` (`TestRailGoesToAHeading`, `TestRailMarksFindHits`, `TestRailHidesWithOneHeading`, `TestRailDoesNotLayOutTheDocument`) | `reports/parity/Find.md` (viewport thumb omitted because scrollbar is present; accepted), user real-machine check | PASS |
+| §2.1 | Scroll-linked header (`filename › current heading`) | `tests/qa` (`TestScenarios`, `TestReadingModeShowsTheTitleAfterTheHeading`, `TestScrollEdge`) | `reports/parity/screens/Reading.png`, user real-machine check | PASS |
+| §2.2 | Reading mode (`F7` enter, `Esc` / button exit, serif body, top progress bar, read-only) | `tests/qa` (`TestReadingModeEntersAndLeaves`, `TestReadingModeShowsTheTitleAfterTheHeading`, `TestReadingModeKeepsEachTabsView`, `TestReadingModeEndsWithTheLastTab`) | `reports/parity/screens/Reading.png`, user real-machine check | PASS |
+| §2.2 | Focus mode & Typewriter mode | `tests/qa` (`TestFocusModeDimsEveryOtherBlock`, `TestFocusModeFoldsTheSidebar`, `TestViewMenuHasTheModes`), `tests/ui` (`TestTypewriterCenters`, `TestTypewriterBand`) | `reports/parity/screens/Focus.png`, user real-machine check | PASS |
+| §2.2 | Content width, font size, line height, zoom (`Ctrl/⌘+Shift+=/-/0`) | `tests/qa` (`TestTypographyFollowsSettingsZoomAndReading`, `TestSettingsAppearanceAppliesAtOnce`), `tests/perf` (`TestTypographyChangeShapesVisibleOnly`) | `reports/parity/screens/Settings.png`, user real-machine check | PASS |
+| §2.3 | Session restore on restart (workspace + tabs + caret + scroll) | `tests/qa` (`TestRestartRestoresTheSession`, `TestCleanExitRestoresTheSession`, `TestRestoreSkipsMissingFiles`, `TestRestoreSessionOff`, `TestDamagedSessionStartsEmpty`, `TestRecoveredTabKeepsItsPlace`), `tests/e2e` (`TestM2Flow`) | Real-window E2E & user real-machine check | PASS |
+| §2.4 | Workspace full-text search (streaming grouped results, match highlights) | `internal/core/search` (`TestWorkspaceSearch`), `tests/qa` (`TestSearchAtScale`, `TestScenarios`) | `reports/parity/screens/Search.png`, user real-machine check | PASS |
+| §2.5 | Export PDF & Print (`PrintToPDF` / preview window) | `internal/core/pdf` (`pdf_test.go`), `internal/adapters/printer` (`printer_test.go`), `tests/qa` (`TestExportPDF`, `TestExportPDFFollowsSoftBreak`, `TestFileMenuUnderTheMarkPrintsAndExports`, `TestPrintGivesThePreviewTheLightPage`) | `reports/pdf/README.md` (A4 7p & Letter 8p inspected page by page), user real-machine check | PASS |
+| §2.6 | Accent hues (182, 278, 48, 140) | `tests/qa` (`TestSettingsAppearanceAppliesAtOnce`) | `reports/parity/screens/Settings.png`, user real-machine check | PASS |
+| §2.6 | Notification stack progress bar | `tests/qa` (`TestExportPDF`, `TestExportHTML`) | `reports/parity/screens/Notify.png`, user real-machine check | PASS |
+| §2.6 | Document switch skeleton (>100 ms threshold, shimmer, still under `ReduceMotion`) | `tests/qa` (`TestLoadingSkeleton`, `TestLoadingQuickShowsNothing`, `TestLoadingStillWithMotionReduced`) | `reports/parity/screens/Loading.png` | PASS |
+| §2.6 | Settings modal (Appearance, Editor, Files, Extensions, Shortcuts view) & About | `tests/qa` (`TestSettingsOpensAndCloses`, `TestSettingsAppearanceAppliesAtOnce`, `TestSettingsEditorAppliesAtOnce`, `TestSettingsFilesAndExtensions`, `TestSettingsFilesApplyAtOnce`, `TestSettingsListsTheShortcuts`, `TestAboutShowsTheVersion`) | `reports/parity/screens/Settings.png`, user real-machine check | PASS |
+| §2.6 | Chinese (`zh-Hans`) & English (`en`) UI, live switching, no truncation | `tools/i18ncheck` (311 messages), `tests/qa` (`TestSettingsLanguage`, `TestSettingsFitInPseudoLocale`) | `reports/parity/screens/` & `reports/parity/screens/zh-Hans/`, user real-machine check | PASS |
+
+### Unverified platforms / hardware
+
+- macOS and Linux windowed runtime (IME, fonts, Vibrancy, system menu bar, file associations, WebView/WKWebView/WebKitGTK math & Mermaid rendering, PDF export and native print dialog): **unverified** (CI executes cross-builds and headless suites only; real-machine acceptance belongs to Phase 4 QA-4.1).
+- Integrated-graphics-only machines and non-150% DPI scaling on Windows beyond the owner's single test machine: **unverified**.

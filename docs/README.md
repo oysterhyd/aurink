@@ -1,6 +1,6 @@
 # Aurink 规划文档包（v1.2 · 2026-11-01）
 
-> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；开发方式已改为一位负责人 + Codex 实现后端；M0 已通过，Phase 1 进行中**。进度见 [06 §9](06-phase1.md)。
+> 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；M0–M3 均已通过（2026-11-12 用户确认 M3 真机验收），待进入 Phase 4**。评估见 [adr/README.md](adr/README.md)，实施记录见 [06](06-phase1.md)、[07](07-phase2.md)、[08](08-phase3.md)。
 >
 > 仓库：<https://github.com/oysterhyd/aurink>（私有）· 集成分支 `main` · CI：`.github/workflows/ci.yml`
 
@@ -74,4 +74,4 @@
 
 ## 6. 下一步
 
-现状见 [05 §6](05-delivery-plan.md)。M0 已通过，见 [adr/README.md](adr/README.md)。Phase 1 按 [06-phase1.md](06-phase1.md) 进行。
+M0–M3 均已通过，见 [adr/README.md](adr/README.md) 与 [08-phase3.md](08-phase3.md)。下一步进入 Phase 4（加固与发布，见 [05 §6](05-delivery-plan.md)）。

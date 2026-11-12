@@ -27,10 +27,11 @@ type rig struct {
 	m *docsession.Manager
 }
 
-func newRig(t *testing.T) *rig {
+func newRig(t *testing.T, exts contract.Extensions) *rig {
 	t.Helper()
 	q := make(queue, 64)
 	value := settings.Defaults()
+	value.Editor.Exts = exts
 	value.Files.Autosave = false
 	value.Files.LargeFileBytes = 256 << 20
 	return &rig{q, docsession.New(fsstore.New(), document.Factory{}, q, "", docsession.Options{Settings: &value})}
@@ -81,33 +82,42 @@ func corpusFiles(t *testing.T) []corpus.Entry {
 	return entries
 }
 
-// TestCorpusOpenSaveIsByteIdentical is the first line of 05's QA-1.1 card.
+// TestCorpusOpenSaveIsByteIdentical is the first line of 05's QA-1.1 card,
+// checked with all extensions on and all extensions off (08 §9).
 func TestCorpusOpenSaveIsByteIdentical(t *testing.T) {
-	dir := t.TempDir()
-	n := 0
-	for _, e := range corpusFiles(t) {
-		data, err := os.ReadFile(filepath.Join(corpus.Root(), filepath.FromSlash(e.Path)))
-		if err != nil {
-			t.Fatal(err)
-		}
-		path := filepath.Join(dir, fmt.Sprintf("%d.md", n))
-		n++
-		if err := os.WriteFile(path, data, 0o644); err != nil {
-			t.Fatal(err)
-		}
-		r := newRig(t)
-		s := r.open(t, path)
-		r.save(t, s)
-		got, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !bytes.Equal(got, data) {
-			t.Errorf("%s: saved %d bytes differ from %d bytes at %d", e.Path, len(got), len(data), firstDiff(got, data))
-		}
-		s.Close(true)
+	files := corpusFiles(t)
+	for _, mode := range []struct {
+		name string
+		exts contract.Extensions
+	}{{"extensions_on", contract.ExtDefault}, {"extensions_off", 0}} {
+		t.Run(mode.name, func(t *testing.T) {
+			dir := t.TempDir()
+			n := 0
+			for _, e := range files {
+				data, err := os.ReadFile(filepath.Join(corpus.Root(), filepath.FromSlash(e.Path)))
+				if err != nil {
+					t.Fatal(err)
+				}
+				path := filepath.Join(dir, fmt.Sprintf("%d.md", n))
+				n++
+				if err := os.WriteFile(path, data, 0o644); err != nil {
+					t.Fatal(err)
+				}
+				r := newRig(t, mode.exts)
+				s := r.open(t, path)
+				r.save(t, s)
+				got, err := os.ReadFile(path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !bytes.Equal(got, data) {
+					t.Errorf("%s: saved %d bytes differ from %d bytes at %d", e.Path, len(got), len(data), firstDiff(got, data))
+				}
+				s.Close(true)
+			}
+			t.Logf("%d files", n)
+		})
 	}
-	t.Logf("%d files", n)
 }
 
 func firstDiff(a, b []byte) int {
@@ -127,7 +137,7 @@ type step struct {
 	text       string
 }
 
-var inserts = []string{"x", "中", "😀", "\n", "\r\n", "\n\n", "# ", "- ", "> ", "**", "*", "`", "```\n", "| a |\n|---|\n", "[a](b)", "[^n]", "\\", "&amp;", " ", "    ", "\t", ""}
+var inserts = []string{"x", "中", "😀", "\n", "\r\n", "\n\n", "# ", "- ", "> ", "**", "*", "`", "```\n", "| a |\n|---|\n", "[a](b)", "[^n]", "==h==", "^s^", "~t~", ":smile:", "[[w]]", "$x$", "[TOC]\n\n", "\\", "&amp;", " ", "    ", "\t", ""}
 
 func script(seed uint64, n int) []step {
 	rng := rand.New(rand.NewPCG(seed, seed^0x5bd1))
@@ -260,7 +270,7 @@ func minimize(t *testing.T, r *rig, path, start string, encode func(string) []by
 
 // TestRandomEditsAgainstString is the second line of the card and the §8 property:
 // three seeds of ten thousand steps each, on documents with every line ending and
-// a byte order mark.
+// a byte order mark, with all extensions on and all extensions off (08 §9).
 func TestRandomEditsAgainstString(t *testing.T) {
 	stepsPerSeed := 10000
 	if testing.Short() {
@@ -270,24 +280,31 @@ func TestRandomEditsAgainstString(t *testing.T) {
 		name, text string
 		bom        bool
 	}{
-		{"mixed", "# 标题\n\n段落 **粗** *斜* `码`\n\n- a\n- b\n\n> q\n\n```go\nx\n```\n\n| a | b |\n|---|---|\n| c | d |\n", false},
+		{"mixed", "---\ntitle: t\n---\n\n# 标题\n\n段落 **粗** *斜* `码` ==亮== $x$\n\n- a\n- b\n\n> q\n\n```go\nx\n```\n\n| a | b |\n|---|---|\n| c | d |\n", false},
 		{"crlf", "# t\r\n\r\npara\r\n\r\n- a\r\n- b\r\n", false},
 		{"bom", "first\n\nsecond\n", true},
 	}
-	for seed, start := range starts {
-		t.Run(start.name, func(t *testing.T) {
-			path := filepath.Join(t.TempDir(), "a.md")
-			encode := func(s string) []byte {
-				if start.bom {
-					return append([]byte{0xef, 0xbb, 0xbf}, s...)
-				}
-				return []byte(s)
-			}
-			r := newRig(t)
-			steps := script(uint64(seed)+1, stepsPerSeed)
-			if msg := run(t, r, path, start.text, encode, steps); msg != "" {
-				small := minimize(t, r, path, start.text, encode, steps)
-				t.Fatalf("%s\nminimal script of %d steps, from %q: %+v", msg, len(small), start.text, small)
+	for _, mode := range []struct {
+		name string
+		exts contract.Extensions
+	}{{"extensions_on", contract.ExtDefault}, {"extensions_off", 0}} {
+		t.Run(mode.name, func(t *testing.T) {
+			for seed, start := range starts {
+				t.Run(start.name, func(t *testing.T) {
+					path := filepath.Join(t.TempDir(), "a.md")
+					encode := func(s string) []byte {
+						if start.bom {
+							return append([]byte{0xef, 0xbb, 0xbf}, s...)
+						}
+						return []byte(s)
+					}
+					r := newRig(t, mode.exts)
+					steps := script(uint64(seed)+1, stepsPerSeed)
+					if msg := run(t, r, path, start.text, encode, steps); msg != "" {
+						small := minimize(t, r, path, start.text, encode, steps)
+						t.Fatalf("%s\nminimal script of %d steps, from %q: %+v", msg, len(small), start.text, small)
+					}
+				})
 			}
 		})
 	}
@@ -295,7 +312,7 @@ func TestRandomEditsAgainstString(t *testing.T) {
 
 func TestMinimizeShrinks(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "a.md")
-	r := newRig(t)
+	r := newRig(t, contract.ExtDefault)
 	// Saving under a wrong encoding fails as soon as a save runs after an edit.
 	wrong := func(s string) []byte {
 		if len(s) > 3 {
