@@ -18,6 +18,8 @@ func DefaultBindings() []contract.KeyBinding {
 		{Command: contract.CmdFormatStrike, Chord: contract.Chord{Mods: shifted, Key: "X"}},
 		{Command: contract.CmdFormatLink, Chord: contract.Chord{Mods: primary, Key: "K"}},
 		{Command: contract.CmdBlockParagraph, Chord: contract.Chord{Mods: primary, Key: "0"}},
+		{Command: contract.CmdBlockHeadingUp, Chord: contract.Chord{Mods: primary, Key: "="}},
+		{Command: contract.CmdBlockHeadingDown, Chord: contract.Chord{Mods: primary, Key: "-"}},
 		{Command: contract.CmdFormatHighlight, Chord: contract.Chord{Mods: shifted, Key: "H"}},
 		{Command: contract.CmdBlockOrderedList, Chord: contract.Chord{Mods: shifted, Key: "7"}},
 		{Command: contract.CmdBlockBulletList, Chord: contract.Chord{Mods: shifted, Key: "8"}},
@@ -59,6 +61,18 @@ func DefaultBindings() []contract.KeyBinding {
 		{Command: contract.CmdEditFindPrev, Chord: contract.Chord{Mods: contract.ModShift, Key: "F3"}, Platform: "linux"},
 		{Command: contract.CmdEditFindPrev, Chord: contract.Chord{Mods: shifted, Key: "G"}, Platform: "darwin"},
 	}
+	for _, goos := range []string{"windows", "linux"} {
+		bindings = append(bindings,
+			contract.KeyBinding{Command: contract.CmdFormatStrike, Chord: contract.Chord{Mods: contract.ModAlt | contract.ModShift, Key: "5"}, Platform: goos},
+			contract.KeyBinding{Command: contract.CmdBlockBulletList, Chord: contract.Chord{Mods: shifted, Key: "]"}, Platform: goos},
+			contract.KeyBinding{Command: contract.CmdBlockOrderedList, Chord: contract.Chord{Mods: shifted, Key: "["}, Platform: goos},
+		)
+	}
+	bindings = append(bindings,
+		contract.KeyBinding{Command: contract.CmdFormatStrike, Chord: contract.Chord{Mods: contract.ModCtrlMac | contract.ModShift, Key: "`"}, Platform: "darwin"},
+		contract.KeyBinding{Command: contract.CmdBlockBulletList, Chord: contract.Chord{Mods: primary | contract.ModAlt, Key: "U"}, Platform: "darwin"},
+		contract.KeyBinding{Command: contract.CmdBlockOrderedList, Chord: contract.Chord{Mods: primary | contract.ModAlt, Key: "O"}, Platform: "darwin"},
+	)
 	for i, id := range []contract.CommandID{
 		contract.CmdBlockHeading1, contract.CmdBlockHeading2, contract.CmdBlockHeading3,
 		contract.CmdBlockHeading4, contract.CmdBlockHeading5, contract.CmdBlockHeading6,

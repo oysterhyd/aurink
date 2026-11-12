@@ -196,6 +196,7 @@ var knownIDs = map[contract.CommandID]bool{
 	contract.CmdFormatLink: true, contract.CmdFormatClear: true,
 	contract.CmdBlockHeading1: true, contract.CmdBlockHeading2: true, contract.CmdBlockHeading3: true,
 	contract.CmdBlockHeading4: true, contract.CmdBlockHeading5: true, contract.CmdBlockHeading6: true,
+	contract.CmdBlockHeadingUp: true, contract.CmdBlockHeadingDown: true,
 	contract.CmdNavGoToTab1: true, contract.CmdNavGoToTab2: true, contract.CmdNavGoToTab3: true,
 	contract.CmdNavGoToTab4: true, contract.CmdNavGoToTab5: true, contract.CmdNavGoToTab6: true,
 	contract.CmdNavGoToTab7: true, contract.CmdNavGoToTab8: true, contract.CmdNavGoToTab9: true,

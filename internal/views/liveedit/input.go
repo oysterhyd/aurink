@@ -288,6 +288,10 @@ func (e *Editor) autoscroll(now time.Time) {
 func (e *Editor) key(ev ui.InputEvent) bool {
 	extend := ev.Mods&ui.Shift != 0
 	word := ev.Mods&wordMod() != 0
+	if ev.Key == ui.KeyEnter && ev.Mods == ui.Ctrl && e.inTable() && !e.readOnly() {
+		e.tableEdit(contract.EditCommand{ID: contract.CmdTableRowBelow, Rows: -1})
+		return true
+	}
 	if ev.Mods&ui.Cmd != 0 {
 		switch ev.Key {
 		case ui.KeyZ:
@@ -318,7 +322,7 @@ func (e *Editor) key(ev ui.InputEvent) bool {
 		case ui.KeyEnter:
 			// A row below the caret's, in a table (02 §5.8).
 			if !extend && e.inTable() && !e.readOnly() {
-				e.tableEdit(contract.EditCommand{ID: contract.CmdTableRowBelow})
+				e.tableEdit(contract.EditCommand{ID: contract.CmdTableRowBelow, Rows: -1})
 				return true
 			}
 		}

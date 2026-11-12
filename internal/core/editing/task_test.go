@@ -12,7 +12,7 @@ func TestEmptyTaskEnter(t *testing.T) {
 		golden{"1. [x] ¦", "¦"},
 		golden{"> + [ ] ¦", "> ¦"},
 		golden{"- [ ] a\n- [ ] ¦", "- [ ] a\n\n¦"},
-		golden{"- parent\n  - [ ] ¦", "- parent\n- [ ] ¦"},
+		golden{"- parent\n  - [ ] ¦", "- parent\n  \n  ¦"},
 		golden{"- [ ]¦", "- [ ]\n- ¦"},
 		golden{"- [x]¦", "- [x]\n- ¦"},
 		golden{"1. [X]¦", "1. [X]\n2. ¦"})

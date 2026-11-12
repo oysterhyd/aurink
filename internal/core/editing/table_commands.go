@@ -134,7 +134,12 @@ func tableCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract.
 		if cmd.ID == contract.CmdTableRowAbove && t.row == 0 {
 			return contract.Transaction{}, false, nil
 		}
-		tx := addTableRow(ctx, t, cmd.ID == contract.CmdTableRowAbove, t.col)
+		col := t.col
+		// The keyboard route requests the first cell; toolbar commands keep the column.
+		if cmd.Rows == -1 {
+			col = 0
+		}
+		tx := addTableRow(ctx, t, cmd.ID == contract.CmdTableRowAbove, col)
 		return tx, true, nil
 	case contract.CmdTableDeleteRow:
 		if t.row == 0 {
@@ -463,7 +468,17 @@ func tableIntent(ctx contract.EditContext, in contract.Intent) (contract.Transac
 	case contract.IntentOutdent:
 		id = contract.CmdTablePrevCell
 	case contract.IntentNewline:
-		id = contract.CmdTableRowBelow
+		if t.row+1 == len(t.rows) {
+			at := t.rows[t.row].line.end
+			return replace(contract.Range{Start: at, End: at}, eol(ctx)+eol(ctx), contract.OriginUser, "newline"), true
+		}
+		if t.col >= len(t.rows[t.row+1].cells) {
+			tx := materializeCell(ctx, t, t.row+1, t.col)
+			tx.Origin = contract.OriginUser
+			return tx, true
+		}
+		c := t.rows[t.row+1].cells[t.col].content
+		return transaction(nil, selected(ctx, c.Start, c.End), contract.OriginUser, "table"), true
 	case contract.IntentLineBreak:
 		return replace(ctx.Selection.Primary().Range(), "<br>", contract.OriginUser, "newline"), true
 	case contract.IntentInsertText:

@@ -34,6 +34,32 @@ func (Editor) Run(ctx contract.EditContext, cmd contract.EditCommand) (contract.
 		}
 		return tx, ok, err
 	}
+	if cmd.ID == contract.CmdBlockHeadingUp || cmd.ID == contract.CmdBlockHeadingDown {
+		_, b := leaf(ctx, ctx.Selection.Primary().Range().Start)
+		if b == nil || b.Kind != contract.BlockParagraph && b.Kind != contract.BlockHeading {
+			return contract.Transaction{}, false, nil
+		}
+		level := b.Level
+		if cmd.ID == contract.CmdBlockHeadingUp {
+			if level == 1 {
+				return contract.Transaction{}, false, nil
+			}
+			if level == 0 {
+				level = 7
+			}
+			level--
+		} else {
+			if level == 0 {
+				return contract.Transaction{}, false, nil
+			}
+			level++
+		}
+		if level == 7 {
+			cmd.ID = contract.CmdBlockParagraph
+		} else {
+			cmd.ID, cmd.Level = contract.CmdBlockHeading, level
+		}
+	}
 	if strings.HasPrefix(string(cmd.ID), string(contract.CmdBlockHeading)) && cmd.ID != contract.CmdBlockHeading {
 		level, err := strconv.Atoi(strings.TrimPrefix(string(cmd.ID), string(contract.CmdBlockHeading)))
 		if err != nil || level < 1 || level > 6 {
@@ -103,6 +129,21 @@ func changeBlock(ctx contract.EditContext, cmd contract.EditCommand) (contract.T
 	n := 0
 	for _, l := range lines {
 		if !r.Empty() && strings.TrimSpace(l.s[l.content:]) == "" {
+			if cmd.ID == contract.CmdBlockQuote && l.list < 0 {
+				quoted := false
+				for _, part := range l.parts {
+					if part.kind == '>' {
+						quoted = true
+						if remove {
+							edits = append(edits, edit(l.start+part.a, l.start+part.b, ""))
+						}
+						break
+					}
+				}
+				if !remove && !quoted {
+					edits = append(edits, edit(l.start+l.indent, l.start+l.indent, ">"))
+				}
+			}
 			continue
 		}
 		at, end, mark := l.content, l.content, ""
@@ -119,7 +160,8 @@ func changeBlock(ctx contract.EditContext, cmd contract.EditCommand) (contract.T
 				at = l.parts[heading].a
 				separator = trailingSpace(l.s[at:end])
 			}
-			if cmd.ID == contract.CmdBlockHeading {
+			_, block := leaf(ctx, l.start+l.content)
+			if cmd.ID == contract.CmdBlockHeading && (block == nil || block.Kind != contract.BlockHeading || block.Level != cmd.Level) {
 				mark = strings.Repeat("#", cmd.Level) + separator
 			}
 			// Setext underlines and optional ATX closing markers are separate edits.
@@ -127,7 +169,7 @@ func changeBlock(ctx contract.EditContext, cmd contract.EditCommand) (contract.T
 			if b != nil && b.Kind == contract.BlockHeading {
 				for _, m := range b.Markers {
 					if m.Start >= l.start+end && !m.Empty() {
-						if cmd.ID == contract.CmdBlockHeading && m.Start <= l.end {
+						if cmd.ID == contract.CmdBlockHeading && mark != "" && m.Start <= l.end {
 							continue
 						}
 						if m.Start > l.end {
@@ -249,6 +291,27 @@ func fenceCommand(ctx contract.EditContext, cmd contract.EditCommand, math bool)
 		return contract.Transaction{}, false, &contract.Error{Code: contract.CodeInvalid, Op: "editing.Run", Detail: "invalid code language"}
 	}
 	r := ctx.Selection.Primary().Range()
+	if r.Empty() {
+		_, block := leaf(ctx, r.Start)
+		if block != nil && block.Kind == contract.BlockParagraph && strings.TrimSpace(ctx.Text.Slice(block.Content)) != "" {
+			last := lineAt(ctx, block.Range.End)
+			at := last.end
+			lead := lineAt(ctx, block.Range.Start).containerContinuation()
+			fence := ctx.Prefs.FenceDelim
+			if fence != "~~~" {
+				fence = "```"
+			}
+			prefix := eol(ctx) + lead + eol(ctx) + lead
+			if math {
+				fence, prefix = "$$", eol(ctx)+lead
+			}
+			open := prefix + fence + cmd.Text + eol(ctx) + lead
+			tx := replace(contract.Range{Start: at, End: at}, open+eol(ctx)+lead+fence, contract.OriginCommand, "block")
+			sel := contract.Caret(at + len(open))
+			tx.Selection = &sel
+			return tx, true, nil
+		}
+	}
 	if selectionHas(ctx, contract.BlockCode) {
 		b := ancestor(ctx, r.Start, contract.BlockCode)
 		if b == nil || r.End > b.Range.End {

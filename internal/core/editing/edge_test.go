@@ -10,10 +10,10 @@ import (
 
 func TestAdditionalIntentGoldens(t *testing.T) {
 	intentGoldens(t, "square pair", contract.Intent{Kind: contract.IntentInsertText, Text: "["}, golden{"中¦", "中[¦]"}, golden{"- a\n  - ¦b¦", "- a\n  - [¦b¦]"}, golden{"> ¦文", "> [¦文"})
-	intentGoldens(t, "backtick pair", contract.Intent{Kind: contract.IntentInsertText, Text: "`"}, golden{"中¦", "中`¦`"}, golden{"- a\n  - ¦b¦", "- a\n  - `¦b¦`"}, golden{"> ¦文", "> `¦文"})
-	intentGoldens(t, "pair backspace", contract.Intent{Kind: contract.IntentDeleteBackward}, golden{"(¦)", "¦"}, golden{"[¦]", "¦"}, golden{"`¦`", "¦"})
+	intentGoldens(t, "backtick pair", contract.Intent{Kind: contract.IntentInsertText, Text: "`"}, golden{"中¦", "中`¦"}, golden{"- a\n  - ¦b¦", "- a\n  - `¦b¦`"}, golden{"> ¦文", "> `¦文"})
+	intentGoldens(t, "pair backspace", contract.Intent{Kind: contract.IntentDeleteBackward}, golden{"(¦)", "¦"}, golden{"[¦]", "¦"}, golden{"`¦`", "¦`"})
 	intentGoldens(t, "literal code typing", contract.Intent{Kind: contract.IntentInsertText, Text: "("}, golden{"```\n中¦\n```", "```\n中(¦\n```"}, golden{"- ```\n  ¦\n  ```", "- ```\n  (¦\n  ```"}, golden{"    中¦", "    中(¦"})
-	intentGoldens(t, "plain tab", contract.Intent{Kind: contract.IntentIndent}, golden{"中¦文", "中  ¦文"}, golden{"¦", "  ¦"}, golden{"a\n¦b", "a\n  ¦b"})
+	intentGoldens(t, "plain tab", contract.Intent{Kind: contract.IntentIndent}, golden{"中¦文", "中\t¦文"}, golden{"¦", "\t¦"}, golden{"a\n¦b", "a\n\t¦b"})
 	intentGoldens(t, "multiline indent", contract.Intent{Kind: contract.IntentIndent}, golden{"¦中文\nword¦\ntail", "  ¦中文\n  word¦\ntail"}, golden{"¦- 父\n  - 子¦", "¦- 父\n  - 子¦"}, golden{"> ¦中\n> 文¦", ">   ¦中\n>   文¦"})
 	intentGoldens(t, "indent subtree", contract.Intent{Kind: contract.IntentIndent}, golden{"- 先\n- 父¦\n  - 子\n- 后", "- 先\n  - 父¦\n    - 子\n- 后"}, golden{"- 先\n- [ ] 父¦\n  子", "- 先\n  - [ ] 父¦\n    子"}, golden{"- 先\n- 父¦\n  - 子\n    - 孙", "- 先\n  - 父¦\n    - 子\n      - 孙"})
 	intentGoldens(t, "line selection end", contract.Intent{Kind: contract.IntentIndent}, golden{"¦- 中\n¦tail", "¦- 中\n¦tail"}, golden{"¦a\n¦b", "  ¦a\n¦b"}, golden{"> ¦中\n¦tail", ">   ¦中\n¦tail"})
@@ -51,14 +51,14 @@ func TestPreferencesAndBoundaries(t *testing.T) {
 	}{
 		{"¦中¦", "__¦中¦__", contract.EditPrefs{StrongDelim: "__"}, contract.Intent{}, contract.EditCommand{ID: contract.CmdFormatStrong}},
 		{"¦中¦", "_¦中¦_", contract.EditPrefs{EmphasisDelim: "_"}, contract.Intent{}, contract.EditCommand{ID: contract.CmdFormatEmphasis}},
-		{"中¦", "~~~go\n中¦\n~~~", contract.EditPrefs{FenceDelim: "~~~"}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockCode, Text: "go"}},
-		{"x```中¦", "````\nx```中¦\n````", contract.EditPrefs{}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockCode}},
+		{"中¦", "中\n\n~~~go\n¦\n~~~", contract.EditPrefs{FenceDelim: "~~~"}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockCode, Text: "go"}},
+		{"x```中¦", "x```中\n\n```\n¦\n```", contract.EditPrefs{}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockCode}},
 		{"¦", "```\n¦\n```", contract.EditPrefs{}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockCode}},
 		{"中¦", "* 中¦", contract.EditPrefs{BulletMarker: '*'}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockBulletList}},
 		{"中¦", "- 中¦", contract.EditPrefs{}, contract.Intent{}, contract.EditCommand{ID: contract.CmdBlockBulletList}},
-		{"中¦", "中    ¦", contract.EditPrefs{TabSize: 4}, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{}},
-		{"中¦", "中  ¦", contract.EditPrefs{TabSize: 100}, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{}},
-		{"中¦", "中  ¦", contract.EditPrefs{}, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{}},
+		{"中¦", "中\t¦", contract.EditPrefs{TabSize: 4}, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{}},
+		{"中¦", "中\t¦", contract.EditPrefs{TabSize: 100}, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{}},
+		{"中¦", "中\t¦", contract.EditPrefs{}, contract.Intent{Kind: contract.IntentIndent}, contract.EditCommand{}},
 		{"中¦", "中(¦", contract.EditPrefs{}, contract.Intent{Kind: contract.IntentInsertText, Text: "("}, contract.EditCommand{}},
 		{"\\¦", "\\(¦", contract.EditPrefs{AutoPair: true}, contract.Intent{Kind: contract.IntentInsertText, Text: "("}, contract.EditCommand{}},
 		{"\\\\¦", "\\\\(¦)", contract.EditPrefs{AutoPair: true}, contract.Intent{Kind: contract.IntentInsertText, Text: "("}, contract.EditCommand{}},

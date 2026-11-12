@@ -231,15 +231,29 @@ func newline(ctx contract.EditContext) contract.Transaction {
 		lead := rawContinuation(ctx, l, code)
 		return replace(r, nl+lead, contract.OriginUser, "newline")
 	}
+	if r.Empty() {
+		_, b := leaf(ctx, r.Start)
+		if b != nil && b.Kind == contract.BlockHeading {
+			if r.Start == b.Content.Start {
+				at := l.start
+				tx := replace(contract.Range{Start: at, End: at}, nl+nl, contract.OriginUser, "newline")
+				sel := contract.Caret(r.Start + 2*len(nl))
+				tx.Selection = &sel
+				return tx
+			}
+			if r.Start < b.Content.End {
+				return replace(r, nl+nl+l.s[:l.content], contract.OriginUser, "newline")
+			}
+		}
+	}
 	if p, marker, ok := pendingLine(ctx, l); ok && r.Start >= marker.Start && r.End <= marker.End {
 		return replace(r, nl+pendingContinuation(ctx, l, p, marker), contract.OriginUser, "newline")
 	}
 	if r.Start >= l.start+l.content && strings.TrimSpace(l.s[l.content:]) == "" && len(l.parts) > 0 {
 		p := l.parts[len(l.parts)-1]
 		if p.kind == '-' && l.indent > 0 {
-			n := min(l.indent, tabs(ctx))
-			edits := []contract.TextEdit{edit(l.start, l.start+n, "")}
-			return transaction(edits, mapped(ctx.Selection, edits), contract.OriginUser, "newline")
+			prefix := l.s[:p.a]
+			return replace(contract.Range{Start: l.start + p.a, End: r.End}, nl+prefix, contract.OriginUser, "newline")
 		}
 		if p.kind == '-' && r.Empty() {
 			i, b := leaf(ctx, r.Start)
@@ -350,10 +364,19 @@ func indentation(ctx contract.EditContext, out bool, origin contract.Origin) (co
 	var numberEdits []contract.TextEdit
 	r := ctx.Selection.Primary().Range()
 	l := lineAt(ctx, r.Start)
+	if origin == contract.OriginUser && !out && r.Empty() && rawAt(ctx, r.Start) && ancestor(ctx, r.Start, contract.BlockCode) != nil {
+		return replace(r, "\t", origin, "indent"), true
+	}
 	width := tabs(ctx)
 	item := ancestor(ctx, r.Start, contract.BlockItem)
 	if rawAt(ctx, r.Start) {
 		item = nil
+	}
+	if origin == contract.OriginUser && !out && r.Empty() && item == nil {
+		_, block := leaf(ctx, r.Start)
+		if block == nil || block.Kind == contract.BlockParagraph || block.Kind == contract.BlockBlank {
+			return replace(r, "\t", origin, "indent"), true
+		}
 	}
 	continuation := false
 	if out && item != nil && l.list >= 0 && l.start != lineAt(ctx, item.Range.Start).start {
@@ -370,6 +393,11 @@ func indentation(ctx contract.EditContext, out bool, origin contract.Origin) (co
 			list := ctx.AST.Block(item.Parent)
 			parent := ctx.AST.Block(list.Parent)
 			if parent.Kind != contract.BlockItem {
+				if origin == contract.OriginUser && r.Empty() && first.list >= 0 {
+					part := first.parts[first.list]
+					edits := []contract.TextEdit{edit(first.start+part.a, first.start+part.b, "")}
+					return transaction(edits, mapped(ctx.Selection, edits), origin, "indent"), true
+				}
 				return transaction(nil, ctx.Selection, origin, "indent"), false
 			}
 			parentLine := lineAt(ctx, parent.Range.Start)
@@ -389,6 +417,9 @@ func indentation(ctx contract.EditContext, out bool, origin contract.Origin) (co
 			}
 			if prev == nil {
 				list := ctx.AST.Block(item.Parent)
+				if origin == contract.OriginUser && r.Empty() {
+					return replace(r, "\t", origin, "indent"), true
+				}
 				return transaction(nil, ctx.Selection, origin, "indent"), ctx.AST.Block(list.Parent).Kind != contract.BlockItem
 			}
 			width = itemWidth(lineAt(ctx, prev.Range.Start))

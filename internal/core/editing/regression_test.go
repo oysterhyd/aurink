@@ -52,7 +52,7 @@ func TestOwnerIntentGoldens(t *testing.T) {
 	indent := contract.Intent{Kind: contract.IntentIndent}
 	insert := func(s string) contract.Intent { return contract.Intent{Kind: contract.IntentInsertText, Text: s} }
 	checkRegressions(t, []regression{
-		{name: "table Enter", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c|d|\n| ¦ |  |\n", in: enter},
+		{name: "table Enter", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c|d|\n\n¦\n", in: enter},
 		{name: "table hard break", before: "|a|b|\n|-|-|\n|c¦|d|\n", after: "|a|b|\n|-|-|\n|c<br>¦|d|\n", in: contract.Intent{Kind: contract.IntentLineBreak}},
 		{name: "HTML Enter", before: "<div>¦\n</div>\n", after: "<div>\n¦\n</div>\n", in: enter},
 		{name: "front matter Enter", before: "---\nt: 1¦\n---\n", after: "---\nt: 1\n¦\n---\n", in: enter},
@@ -62,7 +62,7 @@ func TestOwnerIntentGoldens(t *testing.T) {
 		{name: "pair before letter", before: "(¦abc", after: "((¦abc", in: insert("(")},
 		{name: "bracket before letter", before: "a¦b", after: "a[¦b", in: insert("[")},
 		{name: "pair before space", before: "a¦ b", after: "a(¦) b", in: insert("(")},
-		{name: "first item indent", before: "- a¦", after: "- a¦", in: indent, noEdits: true},
+		{name: "first item indent", before: "- a¦", after: "- a\t¦", in: indent},
 		{name: "CJK word", before: "中文 词语¦", after: "中文 ¦", in: contract.Intent{Kind: contract.IntentDeleteBackward, Gran: contract.GranWord}},
 	})
 }
@@ -102,7 +102,11 @@ func TestOwnerCommandGoldens(t *testing.T) {
 		{contract.CmdBlockBulletList, "- ", "- "}, {contract.CmdBlockOrderedList, "1. ", "2. "},
 		{contract.CmdBlockTaskList, "- [ ] ", "- [ ] "}, {contract.CmdBlockQuote, "> ", "> "},
 	} {
-		cases = append(cases, regression{name: string(b.id) + " gap", before: "¦a\n\nb¦", after: b.first + "¦a\n\n" + b.second + "b¦", cmd: contract.EditCommand{ID: b.id}})
+		gap := "\n\n"
+		if b.id == contract.CmdBlockQuote {
+			gap = "\n>\n"
+		}
+		cases = append(cases, regression{name: string(b.id) + " gap", before: "¦a\n\nb¦", after: b.first + "¦a" + gap + b.second + "b¦", cmd: contract.EditCommand{ID: b.id}})
 	}
 	checkRegressions(t, cases)
 }

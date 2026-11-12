@@ -117,7 +117,7 @@ func TestBlockReviewGoldens(t *testing.T) {
 		{name: "mixed bullet", before: "- ¦a\n\nb¦", after: "- ¦a\n\n- b¦", cmd: contract.EditCommand{ID: contract.CmdBlockBulletList}},
 		{name: "mixed ordered", before: "3) ¦a\n\nb¦", after: "3) ¦a\n\n2. b¦", cmd: contract.EditCommand{ID: contract.CmdBlockOrderedList}},
 		{name: "mixed task", before: "- [x] ¦a\n\nb¦", after: "- [x] ¦a\n\n- [ ] b¦", cmd: contract.EditCommand{ID: contract.CmdBlockTaskList}},
-		{name: "mixed quote", before: "> ¦a\n\nb¦", after: "> ¦a\n\n> b¦", cmd: contract.EditCommand{ID: contract.CmdBlockQuote}},
+		{name: "mixed quote", before: "> ¦a\n\nb¦", after: "> ¦a\n>\n> b¦", cmd: contract.EditCommand{ID: contract.CmdBlockQuote}},
 		{name: "quote code soft break", before: "> ¦a\n> b¦", after: "> ```\n> ¦a\n> b¦\n> ```", cmd: contract.EditCommand{ID: contract.CmdBlockCode}},
 		{name: "item code soft break", before: "- ¦a\n  b¦", after: "- ```\n  ¦a\n  b¦\n  ```", cmd: contract.EditCommand{ID: contract.CmdBlockCode}},
 		{name: "code crossing fence", before: "¦a\n\n```\nb\n```¦", after: "¦a\n\n```\nb\n```¦", cmd: contract.EditCommand{ID: contract.CmdBlockCode}, unhandled: true},

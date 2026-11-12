@@ -27,8 +27,10 @@ func TestDefaultBindings(t *testing.T) {
 				t.Fatalf("default conflicts through contract API: %+v", got)
 			}
 			replace, next, prev := "Primary+H", "F3", "Shift+F3"
+			strike, bullet, ordered := "Alt+Shift+5", "Primary+Shift+]", "Primary+Shift+["
 			if goos == "darwin" {
 				replace, next, prev = "Primary+Alt+F", "Primary+G", "Primary+Shift+G"
+				strike, bullet, ordered = "Ctrl+Shift+`", "Primary+Alt+U", "Primary+Alt+O"
 			}
 			want := []struct {
 				key string
@@ -43,6 +45,11 @@ func TestDefaultBindings(t *testing.T) {
 				{"Primary+Shift+X", contract.CmdFormatStrike},
 				{"Primary+K", contract.CmdFormatLink},
 				{"Primary+0", contract.CmdBlockParagraph},
+				{"Primary+=", contract.CmdBlockHeadingUp},
+				{"Primary+-", contract.CmdBlockHeadingDown},
+				{strike, contract.CmdFormatStrike},
+				{bullet, contract.CmdBlockBulletList},
+				{ordered, contract.CmdBlockOrderedList},
 				{"Primary+Shift+H", contract.CmdFormatHighlight},
 				{"Primary+Shift+7", contract.CmdBlockOrderedList},
 				{"Primary+Shift+8", contract.CmdBlockBulletList},

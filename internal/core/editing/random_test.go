@@ -199,6 +199,18 @@ func checkIndentRoundTrip(t *testing.T, ctx contract.EditContext) bool {
 		return false
 	}
 	nested := verifyTransaction(t, ctx, indent)
+	// A literal Tab inserts text; Shift+Tab is a structural outdent and is
+	// no longer its inverse. verifyTransaction already checked the edit's inverse.
+	if len(indent.Edits) == 1 && indent.Edits[0].Range.Empty() && indent.Edits[0].Text == "\t" {
+		return true
+	}
+	if item := ancestor(nested, nested.Selection.Primary().Head, contract.BlockItem); item != nil {
+		list := nested.AST.Block(item.Parent)
+		if nested.AST.Block(list.Parent).Kind != contract.BlockItem {
+			// Shift+Tab on a top-level item now turns it into a paragraph.
+			return true
+		}
+	}
 	outdent, ok := New().HandleIntent(nested, contract.Intent{Kind: contract.IntentOutdent})
 	if !ok {
 		return false
@@ -266,7 +278,7 @@ func checkTableRows(t *testing.T, before, after contract.EditContext, tx contrac
 		delta := 0
 		if inTable && active.block.ID == b.ID {
 			last := active.row == len(active.rows)-1 && active.col == len(active.rows[0].cells)-1
-			if intent.Kind == contract.IntentNewline || last && (intent.Kind == contract.IntentIndent || command.ID == contract.CmdTableNextCell) {
+			if last && (intent.Kind == contract.IntentIndent || command.ID == contract.CmdTableNextCell) {
 				delta = 1
 			} else if command.ID == contract.CmdTableDeleteRow && active.row > 0 {
 				delta = -1

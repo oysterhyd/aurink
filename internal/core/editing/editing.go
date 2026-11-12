@@ -170,7 +170,9 @@ func handleIntent(ctx contract.EditContext, in contract.Intent) (contract.Transa
 			_, b := leaf(ctx, r.Start)
 			return replace(r, eol(ctx)+rawContinuation(ctx, lineAt(ctx, r.Start), b), contract.OriginUser, "newline"), true
 		}
-		return replace(r, "  "+eol(ctx), contract.OriginUser, "newline"), true
+		l := lineAt(ctx, r.Start)
+		lead := l.containerContinuation()
+		return replace(r, eol(ctx)+lead, contract.OriginUser, "newline"), true
 	case contract.IntentDeleteBackward, contract.IntentDeleteForward:
 		return deletion(ctx, in), true
 	case contract.IntentIndent, contract.IntentOutdent:
@@ -205,20 +207,11 @@ func pair(ctx contract.EditContext, s string) (contract.Transaction, bool) {
 	if len(s) != 1 || selectionHas(ctx, contract.BlockCode, contract.BlockHTML, contract.BlockFrontMatter, contract.BlockMath) {
 		return contract.Transaction{}, false
 	}
-	if r.Empty() && strings.ContainsAny(s, ")]}`") && strings.HasPrefix(source[r.Start:], s) {
+	if r.Empty() && strings.ContainsAny(s, ")]}\"`") && strings.HasPrefix(source[r.Start:], s) {
 		return transaction(nil, contract.Caret(r.Start+1), contract.OriginUser, "typing"), true
 	}
 	if inlineLiteral(ctx) {
 		return contract.Transaction{}, false
-	}
-	if s == "`" && r.Empty() {
-		l := lineAt(ctx, r.Start)
-		if r.Start >= l.start+l.content {
-			before := source[l.start+l.content : r.Start]
-			if len(before) >= 2 && strings.Trim(before, "`") == "" {
-				return replace(r, "`", contract.OriginUser, "typing"), true
-			}
-		}
 	}
 	close := ""
 	switch s {
@@ -226,8 +219,12 @@ func pair(ctx contract.EditContext, s string) (contract.Transaction, bool) {
 		close = ")"
 	case "[":
 		close = "]"
+	case "\"":
+		close = "\""
 	case "`":
-		close = "`"
+		if !r.Empty() {
+			close = "`"
+		}
 	case "*", "_", "~":
 		if !r.Empty() {
 			close = s

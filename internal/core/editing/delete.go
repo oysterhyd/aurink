@@ -126,6 +126,9 @@ func deletion(ctx contract.EditContext, in contract.Intent) contract.Transaction
 	s, p := ctx.Text.String(), r.Start
 	back := in.Kind == contract.IntentDeleteBackward
 	if in.Gran == contract.GranChar {
+		if tx, ok := deleteBlockEdge(ctx, p, back); ok {
+			return tx
+		}
 		if tx, ok := deleteEmptyParagraph(ctx, p, back); ok {
 			return tx
 		}
@@ -165,7 +168,7 @@ func deletion(ctx contract.EditContext, in contract.Intent) contract.Transaction
 				}
 				return replace(contract.Range{Start: a, End: p}, "", contract.OriginUser, "delete")
 			}
-			if p > 0 && p < len(s) && ctx.Prefs.AutoPair && !rawAt(ctx, p) && (s[p-1] == '(' && s[p] == ')' || s[p-1] == '[' && s[p] == ']' || s[p-1] == '`' && s[p] == '`') {
+			if p > 0 && p < len(s) && ctx.Prefs.AutoPair && !rawAt(ctx, p) && (s[p-1] == '(' && s[p] == ')' || s[p-1] == '[' && s[p] == ']' || s[p-1] == '"' && s[p] == '"') {
 				return replace(contract.Range{Start: p - 1, End: p + 1}, "", contract.OriginUser, "delete")
 			}
 		}
@@ -204,6 +207,94 @@ func deletion(ctx contract.EditContext, in contract.Intent) contract.Transaction
 	return replace(contract.Range{Start: a, End: b}, "", contract.OriginUser, "delete")
 }
 
+// deleteBlockEdge joins adjacent content while keeping the surrounding container.
+func deleteBlockEdge(ctx contract.EditContext, p int, back bool) (contract.Transaction, bool) {
+	_, b := leaf(ctx, p)
+	if b == nil {
+		return contract.Transaction{}, false
+	}
+	l := lineAt(ctx, p)
+	if back {
+		if b.Kind == contract.BlockCode && b.Fenced && len(b.Lines) > 0 && len(b.Markers) >= 2 && p == b.Lines[0].Source.Start {
+			opener := lineAt(ctx, b.Markers[0].Start)
+			closer := lineAt(ctx, b.Markers[len(b.Markers)-1].Start)
+			last := lineAt(ctx, b.Lines[len(b.Lines)-1].Source.End)
+			edits := []contract.TextEdit{edit(opener.start+opener.content, p, ""), edit(last.end, closer.end, "")}
+			return transaction(edits, mapped(ctx.Selection, edits), contract.OriginUser, "delete"), true
+		}
+		emptyItem := l.list >= 0 && strings.TrimSpace(l.s[l.content:]) == "" && p >= l.start+l.parts[l.list].a+1 && p <= l.start+l.content
+		if (p == l.start+l.content || emptyItem) && l.list >= 0 && l.parts[len(l.parts)-1].kind == '-' {
+			item := ancestor(ctx, p, contract.BlockItem)
+			if item != nil && lineAt(ctx, item.Range.Start).start == l.start {
+				list := ctx.AST.Block(item.Parent)
+				var prev *contract.Block
+				for j := range ctx.AST.Children(item.Parent) {
+					candidate := ctx.AST.Block(j)
+					if candidate.ID == item.ID {
+						break
+					}
+					prev = candidate
+				}
+				if prev == nil && list.Parent > 0 && ctx.AST.Block(list.Parent).Kind == contract.BlockItem {
+					prev = ctx.AST.Block(list.Parent)
+				}
+				if prev != nil {
+					prefix := l.s[:l.parts[l.list].a]
+					indent := lineAt(ctx, prev.Range.Start).containerContinuation()
+					end := p
+					if emptyItem {
+						end = l.end
+					}
+					return replace(contract.Range{Start: l.start, End: end}, prefix+eol(ctx)+indent, contract.OriginUser, "delete"), true
+				}
+			}
+		}
+		if b.Kind != contract.BlockParagraph || p != b.Content.Start {
+			return contract.Transaction{}, false
+		}
+		if b.Lead.Start == 0 {
+			return contract.Transaction{}, false
+		}
+		prev := ctx.AST.Block(ctx.AST.LeafAt(b.Lead.Start - 1))
+		if prev == nil || prev.Parent != b.Parent {
+			return contract.Transaction{}, false
+		}
+		switch prev.Kind {
+		case contract.BlockParagraph, contract.BlockHeading:
+			return replace(contract.Range{Start: prev.Content.End, End: p}, "", contract.OriginUser, "delete"), true
+		case contract.BlockThematicBreak:
+			return replace(contract.Range{Start: prev.Lead.Start, End: p}, "", contract.OriginUser, "delete"), true
+		case contract.BlockCode:
+			if !prev.Fenced || len(prev.Markers) < 2 {
+				break
+			}
+			at := prev.Content.End
+			edits := []contract.TextEdit{edit(at, at, ctx.Text.Slice(b.Content)), edit(prev.Range.End, b.Range.End, "")}
+			return transaction(edits, contract.Caret(at), contract.OriginUser, "delete"), true
+		}
+		return contract.Transaction{}, false
+	}
+	if (b.Kind != contract.BlockParagraph && b.Kind != contract.BlockHeading) || p != b.Content.End {
+		return contract.Transaction{}, false
+	}
+	if b.Trailer.End >= ctx.Text.Len() {
+		return contract.Transaction{}, false
+	}
+	next := ctx.AST.Block(ctx.AST.LeafAt(b.Trailer.End))
+	if next.Kind != contract.BlockParagraph && next.Kind != contract.BlockHeading {
+		return contract.Transaction{}, false
+	}
+	sameContainer := b.Parent == next.Parent
+	if !sameContainer {
+		left, right := ctx.AST.Block(b.Parent), ctx.AST.Block(next.Parent)
+		sameContainer = left.Kind == contract.BlockItem && right.Kind == contract.BlockItem && left.Parent == right.Parent
+	}
+	if !sameContainer || next.Content.Start < p {
+		return contract.Transaction{}, false
+	}
+	return replace(contract.Range{Start: p, End: next.Content.Start}, "", contract.OriginUser, "delete"), true
+}
+
 func deleteVisible(ctx contract.EditContext, p int, back bool) (contract.Transaction, bool) {
 	i, b := leaf(ctx, p)
 	if b == nil || b.Kind == contract.BlockCode {
@@ -222,9 +313,7 @@ func deleteVisible(ctx contract.EditContext, p int, back bool) (contract.Transac
 		if n.Kind == contract.InlineMath {
 			continue
 		}
-		if back && n.Close.End == pos && !n.Close.Empty() && n.Close.Start > n.Open.End {
-			pos = n.Close.Start
-		} else if !back && n.Open.Start == pos && !n.Open.Empty() && n.Open.End < n.Close.Start {
+		if !back && n.Open.Start == pos && !n.Open.Empty() && n.Open.End < n.Close.Start {
 			pos = n.Open.End
 		}
 	}

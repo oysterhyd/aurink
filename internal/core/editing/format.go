@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"aurink/internal/contract"
 )
@@ -215,6 +216,26 @@ func inlineCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract
 		return contract.Transaction{}, false, nil
 	}
 	if r.Empty() {
+		if cmd.ID == contract.CmdFormatStrong || cmd.ID == contract.CmdFormatEmphasis || cmd.ID == contract.CmdFormatCode || cmd.ID == contract.CmdFormatLink {
+			if !formatOn(ctx, cmd.ID) && (cmd.ID != contract.CmdFormatLink || !inLink(ctx, r.Start)) {
+				if word, ok := wordAtCaret(ctx, r.Start); ok {
+					part := ctx
+					part.Selection = selected(ctx, word.Start, word.End)
+					tx, ok, err := inlinePart(part, cmd)
+					if ok && err == nil {
+						caret := mapped(contract.Caret(r.Start), tx.Edits).Primary().Head
+						for _, e := range tx.Edits {
+							if e.Range.Empty() && e.Range.Start == r.Start && r.Start == word.End {
+								caret -= len(e.Text)
+							}
+						}
+						sel := contract.Caret(caret)
+						tx.Selection = &sel
+					}
+					return tx, ok, err
+				}
+			}
+		}
 		return inlinePart(ctx, cmd)
 	}
 	var parts []contract.Range
@@ -317,6 +338,49 @@ func inlineCommand(ctx contract.EditContext, cmd contract.EditCommand) (contract
 		selection = selected(ctx, sr.Start+startDelta, sr.End+endDelta)
 	}
 	return transaction(edits, selection, contract.OriginCommand, "format"), true, nil
+}
+
+func inLink(ctx contract.EditContext, at int) bool {
+	i, b := leaf(ctx, at)
+	if b == nil {
+		return false
+	}
+	for _, n := range ctx.AST.Inlines(i) {
+		c := contentRange(n)
+		if n.Kind == contract.InlineLink && c.Start <= at && at <= c.End {
+			return true
+		}
+	}
+	return false
+}
+
+func wordAtCaret(ctx contract.EditContext, at int) (contract.Range, bool) {
+	_, b := leaf(ctx, at)
+	if b == nil || b.Kind != contract.BlockParagraph && b.Kind != contract.BlockHeading && b.Kind != contract.BlockTableCell || at <= b.Content.Start || at > b.Content.End {
+		return contract.Range{}, false
+	}
+	s := ctx.Text.String()
+	wordRune := func(r rune) bool { return unicode.IsLetter(r) || unicode.IsNumber(r) || extend(r) || r == '_' }
+	r, _ := utf8.DecodeLastRuneInString(s[b.Content.Start:at])
+	if !wordRune(r) {
+		return contract.Range{}, false
+	}
+	a, z := at, at
+	for a > b.Content.Start {
+		r, n := utf8.DecodeLastRuneInString(s[b.Content.Start:a])
+		if !wordRune(r) {
+			break
+		}
+		a -= n
+	}
+	for z < b.Content.End {
+		r, n := utf8.DecodeRuneInString(s[z:b.Content.End])
+		if !wordRune(r) {
+			break
+		}
+		z += n
+	}
+	return contract.Range{Start: a, End: z}, true
 }
 
 func formatOn(ctx contract.EditContext, id contract.CommandID) bool {
