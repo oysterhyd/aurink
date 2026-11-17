@@ -21,6 +21,7 @@
 | [06-phase1.md](06-phase1.md) | Phase 1 实施计划：M1 范围、批次顺序、Codex 流程、任务要点、风险、验收 |
 | [07-phase2.md](07-phase2.md) | Phase 2 实施计划：M2 范围、M1 留下的缺口、批次顺序、设计决定、风险、验收 |
 | [08-phase3.md](08-phase3.md) | Phase 3 实施计划：M3 范围、待用户决定的问题、批次顺序、渲染与扩展语法的设计决定、风险、验收 |
+| [09-phase4.md](09-phase4.md) | Phase 4 实施计划：M4 范围、大文档与性能加固、旧编码与安全 HTML 块、自定义主题与改键、三平台发布与最终验收 |
 | `../spikes/00-probe/` | 可行性探针（独立模块，`go test -v ./...` 复现 P1–P14） |
 | `../spikes/01-contract-rc/` | 契约 Go 代码 RC（独立模块，仅依赖标准库，`go vet`/`go build` 通过） |
 
@@ -74,4 +75,4 @@
 
 ## 6. 下一步
 
-M0–M3 均已通过，见 [adr/README.md](adr/README.md) 与 [08-phase3.md](08-phase3.md)。下一步进入 Phase 4（加固与发布，见 [05 §6](05-delivery-plan.md)）。
+M0–M3 均已通过，见 [adr/README.md](adr/README.md) 与 [08-phase3.md](08-phase3.md)。Phase 4 按 [09-phase4.md](09-phase4.md) 进行。
