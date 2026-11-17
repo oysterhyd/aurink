@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="resources/icon.png" width="96" height="96" alt="Aurink">
+  <img src="docs/assets/aurink-hero.png" width="880" alt="Aurink — Lossless Live Markdown Editor">
 </p>
 
 <h1 align="center">Aurink</h1>
@@ -7,6 +7,13 @@
 <p align="center">
   <strong>Lossless WYSIWYG Live Markdown Desktop Editor for Windows</strong><br>
   Built in pure Go (<code>CGO_ENABLED=0</code>) with <a href="https://github.com/egoist/mygo">MyGo</a> Native UI · Ink &amp; Aurora Design System
+</p>
+
+<p align="center">
+  <a href="https://github.com/oysterhyd/aurink/releases/latest"><strong>Download for Windows (x64)</strong></a> ·
+  <a href="CHANGELOG.md">Changelog</a> ·
+  <a href="docs/02-product-ux.md">Product &amp; UX</a> ·
+  <a href="docs/03-architecture.md">Architecture</a>
 </p>
 
 ---
