@@ -3782,6 +3782,34 @@ func (msgs Messages) SettingsShortcutsResetAll() string {
 	return Catalog.Format(msgs.locale, "settings_shortcuts_reset_all", nil)
 }
 
+// ShellCheckUpdates says "Check for Updates…"
+// in the language the app shows.
+//
+// Command and button that checks for application updates.
+func ShellCheckUpdates() string { return In(i18n.Locale()).ShellCheckUpdates() }
+
+// ShellCheckUpdates says "Check for Updates…"
+// in the language of msgs.
+//
+// Command and button that checks for application updates.
+func (msgs Messages) ShellCheckUpdates() string {
+	return Catalog.Format(msgs.locale, "shell_check_updates", nil)
+}
+
+// SettingsAutoUpdate says "Check for Updates Automatically"
+// in the language the app shows.
+//
+// Toggle for automatic background update checks.
+func SettingsAutoUpdate() string { return In(i18n.Locale()).SettingsAutoUpdate() }
+
+// SettingsAutoUpdate says "Check for Updates Automatically"
+// in the language of msgs.
+//
+// Toggle for automatic background update checks.
+func (msgs Messages) SettingsAutoUpdate() string {
+	return Catalog.Format(msgs.locale, "settings_auto_update", nil)
+}
+
 // SettingsAbout says "About Aurink"
 // in the language the app shows.
 //

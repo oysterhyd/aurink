@@ -1146,6 +1146,14 @@
   "@settings_shortcuts_reset_all": {
     "description": "Button resetting all customized shortcuts to defaults."
   },
+  "shell_check_updates": "Check for Updates…",
+  "@shell_check_updates": {
+    "description": "Command and button that checks for application updates."
+  },
+  "settings_auto_update": "Check for Updates Automatically",
+  "@settings_auto_update": {
+    "description": "Toggle for automatic background update checks."
+  },
   "settings_about": "About Aurink",
   "@settings_about": {
     "description": "The about dialog and its command."

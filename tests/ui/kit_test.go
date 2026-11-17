@@ -3,14 +3,14 @@ package ui_test
 import (
 	"testing"
 
+	"aurink/internal/assets/fonts"
 	"aurink/internal/views/kit"
 	"aurink/internal/views/theme"
-	"aurink/resources"
 	"github.com/egoist/mygo/ui"
 )
 
 func TestFontsRegister(t *testing.T) {
-	if err := resources.RegisterFonts(); err != nil {
+	if err := fonts.RegisterFonts(); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -50,17 +50,19 @@ func (t *timer) Stop() bool {
 }
 
 type platform struct {
-	open, save  string
-	export      string
-	kinds       []string // what ExportPath was asked for
-	folder      string
-	trashOK     bool
-	choice      shell.Choice
-	asked       []string
-	saves       int
-	openedPaths []string
-	mins, maxs  int
-	closes      int
+	open, save   string
+	export       string
+	kinds        []string // what ExportPath was asked for
+	folder       string
+	trashOK      bool
+	choice       shell.Choice
+	asked        []string
+	saves        int
+	openedPaths  []string
+	updateChecks int
+	autoUpdate   bool
+	mins, maxs   int
+	closes       int
 }
 
 func (p *platform) OpenFile(done func(string))   { done(p.open) }
@@ -131,7 +133,7 @@ func (w heldWorkspace) SetRoot(path string, done func(error)) {
 func newApp(t *testing.T) *app {
 	t.Helper()
 	dir := t.TempDir()
-	a := &app{t: t, dir: dir, data: filepath.Join(dir, "data"), q: make(pump, 4096), p: &platform{}, render: &fakeRenderer{available: true}}
+	a := &app{t: t, dir: dir, data: filepath.Join(dir, "data"), q: make(pump, 4096), p: &platform{autoUpdate: true}, render: &fakeRenderer{available: true}}
 	if err := os.MkdirAll(a.data, 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -230,7 +232,13 @@ func (a *app) boot() {
 			exports.PrintPage(md, opts, func(page string, err error) { a.printed = append(a.printed, page); done(err) })
 		},
 		SetLanguage: func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"},
-		ThemesDir: filepath.Join(a.data, "themes"), OpenPath: func(p string) { a.p.openedPaths = append(a.p.openedPaths, p) }})
+		ThemesDir:    filepath.Join(a.data, "themes"),
+		OpenPath:     func(p string) { a.p.openedPaths = append(a.p.openedPaths, p) },
+		CheckUpdates: func() { a.p.updateChecks++ },
+		AutoUpdate:   func() bool { return a.p.autoUpdate },
+		SetAutoUpdate: func(on bool) {
+			a.p.autoUpdate = on
+		}})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}

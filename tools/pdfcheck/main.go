@@ -18,13 +18,13 @@ import (
 
 	"aurink/internal/adapters/printer"
 	"aurink/internal/adapters/webviewhost"
+	renderassets "aurink/internal/assets/render"
 	"aurink/internal/contract"
 	"aurink/internal/core/export"
 	"aurink/internal/core/markdown"
 	"aurink/internal/core/pdf"
 	"aurink/internal/core/render"
 	"aurink/internal/core/text"
-	renderassets "aurink/resources/render"
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 )

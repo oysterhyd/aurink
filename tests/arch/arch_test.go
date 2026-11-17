@@ -34,7 +34,7 @@ var rules = []rule{
 	{mod + "internal/contracttest", []string{contract, mod + "internal/mock", mod + "tests/corpus"}},
 	{mod + "internal/app", []string{mod, mygo, "golang.org/x/"}},
 	{mod + "locales", []string{mygo + "/i18n", mygo + "/locales"}},
-	{mod + "resources", []string{mygo + "/ui"}},
+	{mod + "internal/assets", []string{mygo + "/ui"}},
 }
 
 // unrestricted packages do not take part in the layering.
@@ -175,6 +175,8 @@ func TestRulesDetectViolations(t *testing.T) {
 		{mod + "internal/mock", mod + "internal/adapters/watch", false},
 		{mod + "internal/mock", mygo + "/ui/markdown/parser", true},
 		{mod + "internal/mock", mygo + "/ui", false},
+		{mod + "internal/assets/fonts", mygo + "/ui", true},
+		{mod + "internal/assets/fonts", mod + "internal/core/text", false},
 		{mod + "internal/app", mod + "internal/core/text", true},
 		{mod + "internal/app", mygo + "/ui", true},
 	} {

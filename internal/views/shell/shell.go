@@ -114,6 +114,11 @@ type Options struct {
 	// disables custom theme loading. OpenPath opens a folder in the OS shell.
 	ThemesDir string
 	OpenPath  func(path string)
+	// CheckUpdates triggers a manual update check; AutoUpdate and SetAutoUpdate
+	// read and write automatic background update checks (09 D12).
+	CheckUpdates  func()
+	AutoUpdate    func() bool
+	SetAutoUpdate func(on bool)
 }
 
 const maxNotices = 4
@@ -780,7 +785,7 @@ func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {
 // under the mark where the window has no menu bar.
 var FileMenu = []contract.CommandID{contract.CmdFileNew, contract.CmdFileOpen, contract.CmdFileOpenFolder,
 	contract.CmdFileSave, contract.CmdFileSaveAs, contract.CmdFileExportHTML, contract.CmdFileExportPDF,
-	contract.CmdFilePrint, contract.CmdFileClose}
+	contract.CmdFilePrint, contract.CmdAppCheckUpdates, contract.CmdFileClose}
 
 // brandMenu is the mark at the left of the title bar. Where the system has no
 // menu bar (Windows, Linux) it opens the File menu, as Typora's File menu
@@ -805,8 +810,8 @@ func (s *Shell) brandMenu(c *ui.Context, t *theme.Tokens) {
 			if !ok {
 				continue
 			}
-			// Saving, exporting and closing are groups apart, as in Typora.
-			if id == contract.CmdFileSave || id == contract.CmdFileExportHTML || id == contract.CmdFileClose {
+			// Saving, exporting, updates and closing are groups apart, as in Typora.
+			if id == contract.CmdFileSave || id == contract.CmdFileExportHTML || id == contract.CmdAppCheckUpdates || id == contract.CmdFileClose {
 				m.Separator()
 			}
 			it := m.Item(Title(cmd.Title)).Disabled(cmd.Enabled != nil && !cmd.Enabled())

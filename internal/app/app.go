@@ -11,6 +11,8 @@ import (
 	"sync"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/plugins/updater"
+	"github.com/egoist/mygo/plugins/updater/native"
 	"github.com/egoist/mygo/ui"
 
 	"aurink/internal/adapters/clipboard"
@@ -19,6 +21,8 @@ import (
 	"aurink/internal/adapters/trash"
 	"aurink/internal/adapters/watch"
 	"aurink/internal/adapters/webviewhost"
+	"aurink/internal/assets/fonts"
+	renderpage "aurink/internal/assets/render"
 	"aurink/internal/contract"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
@@ -32,8 +36,6 @@ import (
 	"aurink/internal/core/workspace"
 	"aurink/internal/views/shell"
 	"aurink/locales"
-	"aurink/resources"
-	renderpage "aurink/resources/render"
 )
 
 // FollowSettings returns what a settings change does to the services that
@@ -73,11 +75,16 @@ func (d *windowDispatcher) Post(fn func()) {
 	d.w.Update(fn)
 }
 
+var updaterOnce sync.Once
+
 // Run opens the main window and blocks until the app quits.
 func Run() error {
 	if !mygo.App.RequestSingleInstanceLock() {
 		return nil // The first instance got the arguments and opens them.
 	}
+	updaterOnce.Do(func() {
+		mygo.Use(native.Plugin)
+	})
 	var a *application
 	mygo.App.OnOpenFile(func(path string) {
 		if a != nil {
@@ -111,9 +118,11 @@ func Run() error {
 }
 
 type application struct {
-	window   *mygo.Window
-	shell    *shell.Shell
-	sessions contract.Sessions
+	window    *mygo.Window
+	shell     *shell.Shell
+	sessions  contract.Sessions
+	logFile   *RollingLog
+	offUpdate func()
 	// Files asked for before the last session's recovery finished wait here.
 	restored bool
 	pending  []string
@@ -122,14 +131,16 @@ type application struct {
 }
 
 func newApplication() (*application, error) {
-	if err := resources.RegisterFonts(); err != nil {
+	if err := fonts.RegisterFonts(); err != nil {
 		return nil, err
 	}
 	data, err := mygo.App.Path(mygo.PathUserData)
 	if err != nil {
 		return nil, err
 	}
-	a := &application{}
+	logFile := setupLogging(filepath.Join(data, "logs", "aurink.log"))
+	slog.Info("aurink starting", "component", "app", "version", mygo.App.Version())
+	a := &application{logFile: logFile}
 	dispatcher := &windowDispatcher{}
 	files := fsstore.New()
 	store, err := settings.New(filepath.Join(data, "settings.json"), files, dispatcher, func(err error) {
@@ -174,6 +185,9 @@ func newApplication() (*application, error) {
 				}
 			}()
 		},
+		CheckUpdates:  updater.CheckForUpdates,
+		AutoUpdate:    updater.AutomaticChecks,
+		SetAutoUpdate: updater.SetAutomaticChecks,
 	})
 	// The settings store is the language's source; files settings reach the
 	// sessions as they change.
@@ -189,6 +203,11 @@ func newApplication() (*application, error) {
 	}
 	a.window = mygo.NewWindow(style)
 	dispatcher.w = a.window
+	a.offUpdate = updater.OnChange(func() {
+		if a.window != nil && !a.window.IsDestroyed() {
+			a.window.Invalidate()
+		}
+	})
 	renderer.set(render.New(webviewhost.New(a.window), render.Options{
 		Page: renderpage.Page(), CacheDir: filepath.Join(data, "render-cache")}))
 	a.window.OnClose(func(e *mygo.CloseEvent) {
@@ -233,6 +252,12 @@ func (a *application) closeAll(sessions contract.Sessions) {
 		// Close removes recovery copies in the session queue. Restore runs after
 		// them in it, so the next start does not bring closed documents back.
 		sessions.Restore(func([]contract.Session, error) {
+			if a.offUpdate != nil {
+				a.offUpdate()
+			}
+			if a.logFile != nil {
+				_ = a.logFile.Close()
+			}
 			a.closing = true
 			a.window.Close()
 		})

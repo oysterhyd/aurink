@@ -266,6 +266,8 @@
   "settings_shortcuts_override": "覆盖",
   "settings_shortcuts_reset": "重置",
   "settings_shortcuts_reset_all": "恢复默认",
+  "shell_check_updates": "检查更新…",
+  "settings_auto_update": "自动检查更新",
   "settings_about": "关于 Aurink",
   "settings_version": "版本 {version}",
   "settings_licenses": "开源组件",

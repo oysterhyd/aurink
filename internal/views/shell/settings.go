@@ -536,6 +536,14 @@ func (s *Shell) filesPage(c *ui.Context, t *theme.Tokens) {
 			s.update(func(v *contract.Settings) { v.Files.ImageDir = dirs[i] })
 		}
 	})
+	if s.o.AutoUpdate != nil && s.o.SetAutoUpdate != nil {
+		s.row(c, t, "autoUpdate", locales.SettingsAutoUpdate(), "", func() {
+			s.toggle(c, t, "autoUpdate", locales.SettingsAutoUpdate(), s.o.AutoUpdate(), func(on bool) {
+				s.o.SetAutoUpdate(on)
+				s.invalidate()
+			})
+		})
+	}
 }
 
 // extensions are the syntax switches, in the order of 02 §2.1.
@@ -865,7 +873,22 @@ func (s *Shell) aboutView(c *ui.Context, t *theme.Tokens) {
 			ui.Image(c, kit.Brand(t.Aurora1, t.Aurora2, t.Aurora3)).Size(40, 40).TextColor(t.Text)
 			ui.Text(c, locales.AppName()).Font(theme.Serif).FontSize(24).FontWeight(500)
 			ui.Text(c, locales.SettingsVersion(s.o.Version)).FontSize(theme.UIStatus).TextColor(t.Muted)
+			if s.o.CheckUpdates != nil {
+				if kit.Button(c.Key("checkUpdates"), t, locales.ShellCheckUpdates(), "", false).Clicked() {
+					s.set.about = false
+					s.o.CheckUpdates()
+				}
+			}
 		})
+		if s.o.AutoUpdate != nil && s.o.SetAutoUpdate != nil {
+			ui.Row(c.Key("aboutAutoUpdate")).Padding(6, 0, 2, 0).AlignItems(ui.Center).Children(func() {
+				ui.Text(c, locales.SettingsAutoUpdate()).FontSize(theme.UIStatus).TextColor(t.Muted).Grow(1).Shrink(1).MinWidth(0)
+				s.toggle(c, t, "aboutAutoUpdate", locales.SettingsAutoUpdate(), s.o.AutoUpdate(), func(on bool) {
+					s.o.SetAutoUpdate(on)
+					s.invalidate()
+				})
+			})
+		}
 		ui.Text(c, locales.SettingsLicenses()).FontSize(theme.UIText).FontWeight(600).Padding(10, 0, 0, 0)
 		for i, l := range s.o.Licenses {
 			ui.Text(c.Key(i), l).FontSize(theme.UIStatus).TextColor(t.Muted)

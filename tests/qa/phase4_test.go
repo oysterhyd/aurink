@@ -397,3 +397,49 @@ func TestTabBarOverflowEdgeFades(t *testing.T) {
 		t.Fatalf("active tab = %q, want tab-05.md", a.s.ActiveSession().State().Name)
 	}
 }
+
+// TestUpdateCheckMenuAboutPaletteAndToggle verifies that Check for Updates is
+// wired through the Command Registry/Palette, File menu, and About dialog, and
+// that the automatic update check toggle updates platform state (09 D12, INT-4.1).
+func TestUpdateCheckMenuAboutPaletteAndToggle(t *testing.T) {
+	a := newApp(t)
+
+	// 1. Command Registry / Palette command triggers CheckUpdates.
+	a.run(contract.CmdAppCheckUpdates)
+	if a.p.updateChecks != 1 {
+		t.Fatalf("updateChecks after CmdAppCheckUpdates = %d, want 1", a.p.updateChecks)
+	}
+
+	// 2. File menu under brand mark contains Check for Updates… and invokes it.
+	a.click(locales.ShellFileMenu())
+	a.animate()
+	a.click(locales.ShellCheckUpdates())
+	if a.p.updateChecks != 2 {
+		t.Fatalf("updateChecks after File menu = %d, want 2", a.p.updateChecks)
+	}
+
+	// 3. About dialog shows Check for Updates… button and automatic updates toggle.
+	a.run(contract.CmdAppAbout)
+	a.animate()
+	if !a.shows(locales.ShellCheckUpdates()) || !a.shows(locales.SettingsAutoUpdate()) {
+		t.Fatalf("About dialog missing update controls: %v", a.tt.Texts())
+	}
+	a.click(locales.ShellCheckUpdates())
+	a.animate()
+	if a.p.updateChecks != 3 {
+		t.Fatalf("updateChecks after About button = %d, want 3", a.p.updateChecks)
+	}
+
+	// 4. Toggle automatic updates in Settings -> Files.
+	if !a.p.autoUpdate {
+		t.Fatal("expected initial autoUpdate = true")
+	}
+	a.openSettings()
+	a.category(2) // Files
+	x, y := a.control(locales.SettingsAutoUpdate(), "", 38)
+	a.tt.ClickAt(x, y)
+	a.settle()
+	if a.p.autoUpdate {
+		t.Fatal("clicking autoUpdate switch did not turn automatic checks off")
+	}
+}

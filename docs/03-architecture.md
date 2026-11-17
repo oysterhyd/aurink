@@ -42,7 +42,7 @@ Aurink 是单进程原生桌面应用（Go + MyGo Native UI）。模块间通信
 | `internal/adapters/**` | contract、mygo 任意包 | core、views、app |
 | `internal/views/**` | contract、`internal/views/**`、mygo/ui 及子包、plugins/glass | **core、adapters、app** |
 | `internal/mock` | contract、标准库、parser | core、views、adapters |
-| `resources` | 标准库、mygo/ui（只注册内嵌字体） | 项目内任何包 |
+| `internal/assets/**` | 标准库、`mygo/ui`（仅内嵌字体注册与离线渲染页，避免 `resources/` 打包重复） | 项目内任何包 |
 | `internal/app` | 全部 | — |
 
 要点：views 只面向 contract 编程，因此在 core 未完成时可以用 mock 开发；core 不依赖 UI，因此可以纯单元测试、可以在任意 goroutine 使用不可变快照。

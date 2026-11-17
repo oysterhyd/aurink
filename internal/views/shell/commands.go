@@ -105,6 +105,10 @@ func (s *Shell) Commands() []contract.Command {
 		cmds = append(cmds, contract.Command{ID: contract.CmdFilePrint, Title: "print", Enabled: hasDoc,
 			Run: func() error { s.print(s.active); return nil }})
 	}
+	if s.o.CheckUpdates != nil {
+		cmds = append(cmds, contract.Command{ID: contract.CmdAppCheckUpdates, Title: "checkUpdates",
+			Run: func() error { s.o.CheckUpdates(); return nil }})
+	}
 	return append(cmds, s.editCommands()...)
 }
 
@@ -298,7 +302,7 @@ var editTitles = map[string]func() string{
 	"searchWorkspace": locales.ShellSearchInFolder, "rename": locales.ShellRename,
 	"copyMarkdown": locales.ShellCopyMarkdown, "copyHTML": locales.ShellCopyHtml, "pastePlain": locales.ShellPastePlain,
 	"find": locales.ShellFind, "replace": locales.ShellReplace, "findNext": locales.ShellFindNext,
-	"findPrev": locales.ShellFindPrev, "settings": locales.SettingsTitle, "about": locales.SettingsAbout,
+	"findPrev": locales.ShellFindPrev, "settings": locales.SettingsTitle, "checkUpdates": locales.ShellCheckUpdates, "about": locales.SettingsAbout,
 }
 
 // showPanel opens the sidebar on a panel.

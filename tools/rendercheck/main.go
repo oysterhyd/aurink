@@ -20,9 +20,9 @@ import (
 	"time"
 
 	"aurink/internal/adapters/webviewhost"
+	renderassets "aurink/internal/assets/render"
 	"aurink/internal/contract"
 	"aurink/internal/core/render"
-	renderassets "aurink/resources/render"
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 	xdraw "golang.org/x/image/draw"

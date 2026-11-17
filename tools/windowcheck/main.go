@@ -24,6 +24,8 @@ import (
 	"aurink/internal/adapters/trash"
 	"aurink/internal/adapters/watch"
 	"aurink/internal/adapters/webviewhost"
+	"aurink/internal/assets/fonts"
+	renderpage "aurink/internal/assets/render"
 	"aurink/internal/contract"
 	"aurink/internal/core/commands"
 	"aurink/internal/core/docsession"
@@ -36,8 +38,6 @@ import (
 	"aurink/internal/core/settings"
 	"aurink/internal/core/workspace"
 	"aurink/internal/views/shell"
-	"aurink/resources"
-	renderpage "aurink/resources/render"
 	"aurink/tests/corpus"
 )
 
@@ -172,7 +172,7 @@ func main() {
 		log.Fatal(err)
 	}
 	mygo.App.WhenReady(func() {
-		if err := resources.RegisterFonts(); err != nil {
+		if err := fonts.RegisterFonts(); err != nil {
 			log.Fatal(err)
 		}
 		if *design {
