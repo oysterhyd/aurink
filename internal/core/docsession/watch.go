@@ -257,7 +257,7 @@ func (m *Manager) checkFiles(dir string, batch []contract.WatchEvent, only *sess
 				}
 			}
 		}
-		opts := m.readOptions()
+		opts, threshold := m.readOptions(), m.largeThreshold()
 		m.background(func() func() {
 			candidateStamps := make(map[string]contract.FileStamp)
 			for key, path := range candidates {
@@ -302,6 +302,9 @@ func (m *Manager) checkFiles(dir string, batch []contract.WatchEvent, only *sess
 				f := &files[i]
 				if f.err == nil && (f.deleted || !sameStamp(f.stamp, f.observed)) {
 					f.content, f.err = m.files.Read(f.path, opts)
+					if f.err == nil && (f.content.Stamp.Size >= threshold || int64(len(f.content.Text)) >= threshold) {
+						f.content.Meta.Large = true
+					}
 				}
 			}
 			return func() {
@@ -381,20 +384,23 @@ func (s *session) replaceExternal(content contract.FileContent) {
 	}
 	s.localSaved = false
 	s.loading = true
-	readOnly := s.model.ReadOnly()
-	if readOnly {
+	userReadOnly := s.model.ReadOnly() && !s.legacyRO
+	if s.model.ReadOnly() {
 		s.model.SetReadOnly(false)
 	}
 	s.model.SetMeta(content.Meta)
 	s.model.Replace(content.Text, contract.OriginReload)
-	if readOnly {
+	s.legacyRO = isLegacyEncoding(content.Meta.Encoding)
+	if userReadOnly || s.legacyRO {
 		s.model.SetReadOnly(true)
 	}
 	s.loading = false
+	s.state.ReadOnly = s.model.ReadOnly()
+	s.state.LargeFile = content.Meta.Large
 	s.stamp, s.observed, s.saved, s.savedHash = content.Stamp, content.Stamp, content.Text, fingerprint(content.Text)
 	s.previous = s.model.Text()
 	s.hash = fingerprint(s.previous.String())
-	s.state.Conflict, s.state.Deleted, s.forcedEdit = false, false, false
+	s.state.Conflict, s.state.Deleted, s.forcedEdit, s.converted = false, false, false, false
 	s.state.Err = nil
 	s.updateEdited()
 	s.schedule()

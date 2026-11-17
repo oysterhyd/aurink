@@ -8,6 +8,8 @@ import (
 	"unicode/utf16"
 	"unicode/utf8"
 
+	"golang.org/x/text/encoding/simplifiedchinese"
+
 	"aurink/internal/contract"
 )
 
@@ -23,13 +25,23 @@ func decode(data []byte, allowBinary bool) (string, contract.DocMeta, contract.C
 	}
 	var text string
 	if meta.Encoding == "utf-8" {
-		if !allowBinary && isBinary(data) {
+		if !allowBinary && bytes.IndexByte(data, 0) >= 0 {
 			return "", meta, contract.CodeBinary
 		}
-		if !utf8.Valid(data) {
+		if utf8.Valid(data) {
+			text = string(data)
+		} else if !meta.BOM && bytes.IndexByte(data, 0) < 0 {
+			if decoded, ok := decodeGB18030(data); ok {
+				meta.Encoding = "gb18030"
+				text = decoded
+			}
+		}
+		if text == "" && len(data) > 0 {
+			if !allowBinary && isBinary(data) {
+				return "", meta, contract.CodeBinary
+			}
 			return "", meta, contract.CodeEncoding
 		}
-		text = string(data)
 	} else {
 		if len(data)%2 != 0 {
 			return "", meta, contract.CodeEncoding
@@ -85,6 +97,47 @@ func isBinary(data []byte) bool {
 	}
 	// A few bad bytes indicate an encoding error; over 30% suggests binary.
 	return float64(invalid) > float64(len(data))*0.3
+}
+
+// decodeGB18030 strictly validates GB18030 1/2/4-byte framing and decodes data
+// without introducing replacement characters (docs/09-phase4.md D6).
+func decodeGB18030(data []byte) (string, bool) {
+	wantFFFD := 0
+	for i := 0; i < len(data); {
+		b := data[i]
+		if b < 0x80 {
+			i++
+			continue
+		}
+		if b == 0x80 || b == 0xff || i+1 >= len(data) {
+			return "", false
+		}
+		b2 := data[i+1]
+		if b2 >= 0x40 && b2 <= 0xfe && b2 != 0x7f {
+			i += 2
+			continue
+		}
+		if b2 >= 0x30 && b2 <= 0x39 && i+3 < len(data) {
+			b3, b4 := data[i+2], data[i+3]
+			if b3 >= 0x81 && b3 <= 0xfe && b4 >= 0x30 && b4 <= 0x39 {
+				if b == 0x84 && b2 == 0x31 && b3 == 0xa4 && b4 == 0x37 {
+					wantFFFD++
+				}
+				i += 4
+				continue
+			}
+		}
+		return "", false
+	}
+	out, err := simplifiedchinese.GB18030.NewDecoder().Bytes(data)
+	if err != nil || !utf8.Valid(out) {
+		return "", false
+	}
+	s := string(out)
+	if strings.Count(s, "\uFFFD") != wantFFFD {
+		return "", false
+	}
+	return s, true
 }
 
 func encode(text string, meta contract.DocMeta) ([]byte, error) {

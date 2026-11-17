@@ -928,8 +928,17 @@ var scenarios = []scenario{
 		a.tabs(0)
 		a.notices(1)
 	}},
-	{"a file over 5 MB is refused with a notice", func(a *app) {
-		p := a.file("big.md", strings.Repeat("x", 5<<20+1))
+	{"a file over 64 MB is refused with a notice", func(a *app) {
+		p := filepath.Join(a.dir, "huge.md")
+		f, err := os.Create(p)
+		if err != nil {
+			a.t.Fatal(err)
+		}
+		if err := f.Truncate((64 << 20) + 1); err != nil {
+			f.Close()
+			a.t.Fatal(err)
+		}
+		f.Close()
 		a.s.Open(p)
 		a.settle()
 		a.tabs(0)

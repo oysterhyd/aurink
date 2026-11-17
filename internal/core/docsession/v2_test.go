@@ -33,7 +33,6 @@ func TestSessionStore(t *testing.T) {
 }
 
 func TestSessionsPhase4(t *testing.T) {
-	t.Skip("BE-1.8 / BE-2.11")
 	contracttest.TestSessionsPhase4(t, func(t *testing.T) contracttest.SessionPhase4Fixture {
 		h := newHarness(t)
 		h.settings.Files.LargeFileBytes = 1024

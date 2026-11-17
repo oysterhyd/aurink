@@ -116,11 +116,15 @@ func (m *Manager) Open(path string, done func(contract.Session, error)) {
 			return
 		}
 		opts := m.readOptions()
+		threshold := m.largeThreshold()
 		m.background(func() func() {
 			content, err := m.files.Read(path, opts)
 			return func() {
 				var s *session
 				if err == nil {
+					if content.Stamp.Size >= threshold || int64(len(content.Text)) >= threshold {
+						content.Meta.Large = true
+					}
 					s, err = m.create(contract.DocID(rand.Text()), path, filepath.Base(path), content.Text, content.Meta, content.Stamp)
 					if err == nil {
 						m.events.emit(contract.SessionsEvent{Kind: contract.SessionOpened, ID: s.ID()})
@@ -159,8 +163,13 @@ func (m *Manager) create(id contract.DocID, path, name, source string, meta cont
 	if model == nil {
 		return nil, contract.E(contract.CodeInternal, "docsession.create", nil)
 	}
+	legacyRO := isLegacyEncoding(meta.Encoding)
+	if legacyRO {
+		model.SetReadOnly(true)
+	}
 	s := &session{manager: m, model: model, stamp: stamp, observed: stamp, saved: source, savedHash: fingerprint(source), previous: model.Text(), hash: fingerprint(source),
-		state: contract.DocState{ID: id, Path: path, Name: name, ReadOnly: model.ReadOnly()}}
+		legacyRO: legacyRO,
+		state:    contract.DocState{ID: id, Path: path, Name: name, ReadOnly: model.ReadOnly(), LargeFile: meta.Large}}
 	s.off = model.Subscribe(s.changed)
 	m.sessions = append(m.sessions, s)
 	if path != "" {
@@ -203,11 +212,21 @@ func (m *Manager) All() []contract.Session {
 func (m *Manager) Subscribe(fn func(contract.SessionsEvent)) func() { return m.events.subscribe(fn) }
 
 func (m *Manager) readOptions() contract.ReadOptions {
+	// MaxSize == 0 uses FileStore's 64 MB hard cap; files at or above
+	// LargeFileBytes enter large-file mode instead of failing (docs/09 D1).
+	return contract.ReadOptions{}
+}
+
+func (m *Manager) largeThreshold() int64 {
 	limit := m.settings.Files.LargeFileBytes
 	if limit <= 0 {
 		limit = 5 << 20
 	}
-	return contract.ReadOptions{MaxSize: limit}
+	return limit
+}
+
+func isLegacyEncoding(enc string) bool {
+	return enc == "gb18030"
 }
 
 func (m *Manager) delay() time.Duration {

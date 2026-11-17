@@ -21,18 +21,24 @@ var _ contract.DocumentFactory = Factory{}
 var _ contract.DocumentModel = (*Model)(nil)
 
 // New creates a document at version 1 with a caret at byte zero.
+// When meta.Large is true, Markdown syntax parsing is skipped in favor of a
+// single-leaf plain AST snapshot (docs/09-phase4.md D2).
 // An internal parser failure is logged and returns nil.
 func (f Factory) New(id contract.DocID, source string, meta contract.DocMeta, exts contract.Extensions) contract.DocumentModel {
+	clock := f.Clock
+	if clock == nil {
+		clock = time.Now
+	}
+	t := text.New(source, 1)
+	if meta.Large {
+		return &Model{id: id, text: t, plain: newPlainAST(t.Len(), 1), exts: exts, meta: meta, selection: contract.Caret(0), clock: clock}
+	}
 	p, err := markdown.New(source, 1, exts)
 	if err != nil {
 		slog.Error("document creation failed", "document", id, "error", err)
 		return nil
 	}
-	clock := f.Clock
-	if clock == nil {
-		clock = time.Now
-	}
-	return &Model{id: id, text: text.New(source, 1), parser: p, meta: meta, selection: contract.Caret(0), clock: clock}
+	return &Model{id: id, text: t, parser: p, exts: exts, meta: meta, selection: contract.Caret(0), clock: clock}
 }
 
 // Model owns transactions, history and synchronous events on the calling thread.
@@ -41,6 +47,8 @@ type Model struct {
 	id          contract.DocID
 	text        *text.Text
 	parser      *markdown.Parser
+	plain       *plainAST
+	exts        contract.Extensions
 	meta        contract.DocMeta
 	selection   contract.Selection
 	readOnly    bool
@@ -59,7 +67,12 @@ func (m *Model) ID() contract.DocID { return m.id }
 func (m *Model) Text() contract.Text { return m.text }
 
 // AST returns the current immutable syntax snapshot.
-func (m *Model) AST() contract.AST { return m.parser.Snapshot() }
+func (m *Model) AST() contract.AST {
+	if m.plain != nil {
+		return m.plain
+	}
+	return m.parser.Snapshot()
+}
 
 // Version returns the current transaction version.
 func (m *Model) Version() contract.Version { return m.text.Version() }
@@ -70,6 +83,15 @@ func (m *Model) Meta() contract.DocMeta { return m.meta }
 // SetMeta updates metadata and emits an event if it changed.
 func (m *Model) SetMeta(meta contract.DocMeta) {
 	if m.meta != meta {
+		if meta.Large && m.plain == nil {
+			m.parser = nil
+			m.plain = newPlainAST(m.text.Len(), m.Version())
+		} else if !meta.Large && m.parser == nil {
+			if p, err := markdown.New(m.text.String(), m.Version(), m.exts); err == nil {
+				m.parser = p
+				m.plain = nil
+			}
+		}
 		m.meta = meta
 		m.emit(contract.DocEvent{Kind: contract.DocMetaChanged, Version: m.Version()})
 	}
@@ -173,9 +195,19 @@ func (m *Model) apply(tx contract.Transaction, kind contract.DocEventKind, repla
 		kind = contract.DocSelectionChanged
 	}
 	step := historyStep{edits: inverseEdits(m.text, changes), before: m.Selection(), after: selection, label: tx.Label, key: tx.Coalesce, origin: tx.Origin}
-	update, err := m.parser.Update(next, changes)
-	if err != nil {
-		return v, err
+	var dirty []contract.BlockID
+	var stats markdown.Stats
+	if m.plain != nil {
+		m.plain = newPlainAST(next.Len(), next.Version())
+		if len(changes) > 0 {
+			dirty = []contract.BlockID{2}
+		}
+	} else {
+		update, err := m.parser.Update(next, changes)
+		if err != nil {
+			return v, err
+		}
+		dirty, stats = update.Dirty, update.Stats
 	}
 	if len(changes) > 0 {
 		if replay == 0 {
@@ -187,9 +219,9 @@ func (m *Model) apply(tx contract.Transaction, kind contract.DocEventKind, repla
 	} else {
 		m.BreakCoalescing()
 	}
-	m.text, m.selection, m.lastUpdate = next, selection, update.Stats
+	m.text, m.selection, m.lastUpdate = next, selection, stats
 	v = next.Version()
-	m.emit(contract.DocEvent{Kind: kind, Version: v, Changes: changes, Dirty: update.Dirty, Origin: tx.Origin})
+	m.emit(contract.DocEvent{Kind: kind, Version: v, Changes: changes, Dirty: dirty, Origin: tx.Origin})
 	if replay != 0 && selectionChanged {
 		m.emit(contract.DocEvent{Kind: contract.DocSelectionChanged, Version: v, Origin: tx.Origin})
 	}

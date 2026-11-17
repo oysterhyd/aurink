@@ -22,6 +22,5 @@ func TestContract(t *testing.T) {
 }
 
 func TestLargeDocumentContract(t *testing.T) {
-	t.Skip("BE-1.8")
 	contracttest.TestLargeDocument(t, Factory{})
 }

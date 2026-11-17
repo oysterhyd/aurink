@@ -20,7 +20,6 @@ func TestFileStore(t *testing.T) {
 }
 
 func TestFileStoreGB18030(t *testing.T) {
-	t.Skip("BE-2.11")
 	contracttest.TestFileStoreGB18030(t, func(t *testing.T) contracttest.FileStoreFixture {
 		dir := t.TempDir()
 		return contracttest.FileStoreFixture{

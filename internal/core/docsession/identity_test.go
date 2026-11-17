@@ -100,15 +100,15 @@ func TestSettingsLimitsAndAutosaveEligibility(t *testing.T) {
 	called := 0
 	m.Open(path, func(s contract.Session, err error) {
 		called++
-		wantCode(t, err, contract.CodeTooLarge)
-		if s != nil {
-			t.Fatal("large file opened")
+		if err != nil || s == nil || !s.State().LargeFile || !s.Model().Meta().Large {
+			t.Fatalf("large file open: session=%v state=%+v err=%v", s, s.State(), err)
 		}
 	})
 	h.settle()
-	if called != 1 || len(m.All()) != 0 {
+	if called != 1 || len(m.All()) != 1 {
 		t.Fatal("open callback or sessions", called)
 	}
+	m.All()[0].Close(true)
 	put(t, path, "a")
 	s := h.open(m, path)
 	appendText(t, s, "b")

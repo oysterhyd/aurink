@@ -71,7 +71,8 @@ func TestLargeDocument(t *testing.T, f contract.DocumentFactory) {
 	var events []contract.DocEvent
 	defer m.Subscribe(func(ev contract.DocEvent) { events = append(events, ev) })()
 
-	v1, err := m.Apply(insertAt(len("# Heading"), " 2"))
+	at := strings.Index(src, "# Heading") + len("# Heading")
+	v1, err := m.Apply(insertAt(at, " 2"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,10 +147,11 @@ func TestFileStoreGB18030(t *testing.T, newFixture func(t *testing.T) FileStoreF
 
 	t.Run("invalid byte sequences return CodeEncoding", func(t *testing.T) {
 		for name, bad := range map[string][]byte{
-			"truncated lead byte":  {0xD6, 0xD0, 0x81},
-			"invalid 0xFF byte":    []byte("hello\xffworld"),
-			"truncated 4-byte seq": {0x90, 0x30, 0x81},
-			"bad second byte 0x20": {0x81, 0x20, 'a', 'b'},
+			"truncated lead byte":     append([]byte("hello world "), 0xD6, 0xD0, 0x81),
+			"invalid 0xFF byte":       []byte("hello\xffworld"),
+			"truncated 4-byte seq":    append([]byte("hello world "), 0x90, 0x30, 0x81),
+			"bad second byte 0x20":    append([]byte("hello world "), 0x81, 0x20),
+			"utf8 BOM with GBK bytes": append([]byte{0xEF, 0xBB, 0xBF}, "hello world \xD6\xD0"...),
 		} {
 			t.Run(name, func(t *testing.T) {
 				f := newFixture(t)

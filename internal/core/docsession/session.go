@@ -21,6 +21,8 @@ type session struct {
 	events     listeners[contract.DocState]
 	closed     bool
 	loading    bool
+	legacyRO   bool
+	converted  bool
 	forcedEdit bool
 	localSaved bool
 	rescue     *recoveryCopy
@@ -56,6 +58,7 @@ func (s *session) changed(event contract.DocEvent) {
 		return
 	}
 	s.state.ReadOnly = s.model.ReadOnly()
+	s.state.LargeFile = s.model.Meta().Large
 	next := s.model.Text()
 	if next.Version() != s.previous.Version() && (event.Kind == contract.DocTextChanged || event.Kind == contract.DocReplaced) {
 		s.rescue = nil
@@ -82,7 +85,7 @@ func (s *session) changed(event contract.DocEvent) {
 
 func (s *session) updateEdited() {
 	t := s.model.Text()
-	s.state.Edited = s.forcedEdit || t.Len() != len(s.saved) || s.hash != s.savedHash || t.String() != s.saved
+	s.state.Edited = s.forcedEdit || s.converted || t.Len() != len(s.saved) || s.hash != s.savedHash || t.String() != s.saved
 }
 
 func (s *session) notify() {
@@ -161,6 +164,11 @@ func (s *session) save(path string, force bool, done func(error)) {
 	m := s.manager
 	// Capture the immutable text and metadata before starting any worker.
 	text, meta, hash := s.model.Text(), s.model.Meta(), s.hash
+	saveAsUTF8 := path != "" && isLegacyEncoding(meta.Encoding)
+	if saveAsUTF8 {
+		meta.Encoding = "utf-8"
+		meta.BOM = false
+	}
 	s.saves++
 	s.state.Saving = true
 	m.enqueue(func() {
@@ -231,12 +239,22 @@ func (s *session) save(path string, force bool, done func(error)) {
 					return
 				}
 				if err == nil {
+					if saveAsUTF8 {
+						s.loading = true
+						s.model.SetMeta(meta)
+						if s.legacyRO {
+							s.legacyRO = false
+							s.model.SetReadOnly(false)
+						}
+						s.loading = false
+						s.state.ReadOnly = s.model.ReadOnly()
+					}
 					m.setPath(s, target)
-					s.localSaved = s.localSaved || text.String() != s.saved
+					s.localSaved = s.localSaved || s.converted || text.String() != s.saved
 					s.rescue = nil
 					s.stamp, s.observed, s.saved, s.savedHash = stamp, stamp, text.String(), hash
 					s.state.SavedAt = m.options.Clock()
-					s.state.Conflict, s.state.Deleted, s.forcedEdit = false, false, false
+					s.state.Conflict, s.state.Deleted, s.forcedEdit, s.converted = false, false, false, false
 					s.updateEdited()
 				} else {
 					s.state.Conflict = s.state.Conflict || (contract.CodeOf(err) == contract.CodeConflict && !deleted)
@@ -267,12 +285,36 @@ func failureOrNil(err error) error {
 
 func (s *session) Revert(done func(error))     { s.reload(done) }
 func (s *session) LoadTheirs(done func(error)) { s.reload(done) }
-func (s *session) ConvertToUTF8()              {}
+
+func (s *session) ConvertToUTF8() {
+	if s.closed {
+		return
+	}
+	meta := s.model.Meta()
+	if !isLegacyEncoding(meta.Encoding) {
+		return
+	}
+	meta.Encoding = "utf-8"
+	meta.BOM = false
+	s.loading = true
+	s.model.SetMeta(meta)
+	if s.legacyRO {
+		s.legacyRO = false
+		s.model.SetReadOnly(false)
+	}
+	s.loading = false
+	s.state.ReadOnly = s.model.ReadOnly()
+	s.converted = true
+	s.updateEdited()
+	s.schedule()
+	s.writeCopy()
+	s.notify()
+}
 
 func (s *session) reload(done func(error)) {
 	m := s.manager
 	m.enqueue(func() {
-		path, opts := s.state.Path, m.readOptions()
+		path, opts, threshold := s.state.Path, m.readOptions(), m.largeThreshold()
 		m.background(func() func() {
 			var content contract.FileContent
 			var err error
@@ -280,24 +322,36 @@ func (s *session) reload(done func(error)) {
 				err = contract.E(contract.CodeInvalid, "docsession.Revert", nil)
 			} else {
 				content, err = m.files.Read(path, opts)
+				if err == nil && (content.Stamp.Size >= threshold || int64(len(content.Text)) >= threshold) {
+					content.Meta.Large = true
+				}
 			}
 			return func() {
 				if s.closed {
 					callDone(done, contract.E(contract.CodeCanceled, "docsession.Revert", nil))
 					return
 				}
-				if err == nil && s.model.ReadOnly() {
+				if err == nil && s.model.ReadOnly() && !s.legacyRO {
 					err = contract.E(contract.CodeReadOnly, "docsession.Revert", nil)
 				}
 				if err == nil {
 					s.loading = true
+					if s.model.ReadOnly() {
+						s.model.SetReadOnly(false)
+					}
 					s.model.SetMeta(content.Meta)
 					s.model.Replace(content.Text, contract.OriginReload)
+					s.legacyRO = isLegacyEncoding(content.Meta.Encoding)
+					if s.legacyRO {
+						s.model.SetReadOnly(true)
+					}
 					s.loading = false
+					s.state.ReadOnly = s.model.ReadOnly()
+					s.state.LargeFile = content.Meta.Large
 					s.stamp, s.observed, s.saved, s.savedHash = content.Stamp, content.Stamp, content.Text, fingerprint(content.Text)
 					s.previous = s.model.Text()
 					s.hash = fingerprint(s.previous.String())
-					s.state.Conflict, s.state.Deleted, s.forcedEdit = false, false, false
+					s.state.Conflict, s.state.Deleted, s.forcedEdit, s.converted = false, false, false, false
 					s.localSaved, s.rescue = false, nil
 					s.updateEdited()
 					s.schedule()
