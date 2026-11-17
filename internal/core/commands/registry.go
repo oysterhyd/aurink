@@ -220,5 +220,5 @@ var knownIDs = map[contract.CommandID]bool{
 	contract.CmdViewThemeLight: true, contract.CmdViewThemeDark: true, contract.CmdViewThemeSystem: true,
 	contract.CmdNavQuickOpen: true, contract.CmdNavPalette: true, contract.CmdNavGoToHeading: true,
 	contract.CmdNavNextTab: true, contract.CmdNavPrevTab: true, contract.CmdNavSearchWorkspace: true,
-	contract.CmdAppSettings: true, contract.CmdAppAbout: true, contract.CmdAppQuit: true,
+	contract.CmdAppSettings: true, contract.CmdAppCheckUpdates: true, contract.CmdAppAbout: true, contract.CmdAppQuit: true,
 }

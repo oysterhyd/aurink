@@ -267,6 +267,7 @@ func failureOrNil(err error) error {
 
 func (s *session) Revert(done func(error))     { s.reload(done) }
 func (s *session) LoadTheirs(done func(error)) { s.reload(done) }
+func (s *session) ConvertToUTF8()              {}
 
 func (s *session) reload(done func(error)) {
 	m := s.manager

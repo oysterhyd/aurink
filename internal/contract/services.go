@@ -69,6 +69,10 @@ type Session interface {
 	KeepMine(done func(error))
 	// LoadTheirs 冲突时载入磁盘版本（作为可撤销的一步）。
 	LoadTheirs(done func(error))
+	// ConvertToUTF8 将旧编码（如 gb18030）只读会话转为 UTF-8 可编辑会话：Meta.Encoding
+	// 设为 "utf-8"（BOM 为 false，保留换行风格与内容），解除因此设置的只读并标记为已编辑；
+	// 对非旧编码会话不做改动（09 D7）。
+	ConvertToUTF8()
 	// Close 关闭会话；force 为 true 时丢弃未保存修改（恢复副本同时删除）。
 	Close(force bool) CloseDecision
 	OnState(fn func(DocState)) (off func())

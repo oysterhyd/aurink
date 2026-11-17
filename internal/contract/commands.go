@@ -125,9 +125,10 @@ const (
 	CmdNavGoToTab8        CommandID = "nav.goToTab8"
 	CmdNavGoToTab9        CommandID = "nav.goToTab9"
 
-	CmdAppSettings CommandID = "app.settings"
-	CmdAppAbout    CommandID = "app.about"
-	CmdAppQuit     CommandID = "app.quit"
+	CmdAppSettings     CommandID = "app.settings"
+	CmdAppCheckUpdates CommandID = "app.checkUpdates"
+	CmdAppAbout        CommandID = "app.about"
+	CmdAppQuit         CommandID = "app.quit"
 )
 
 // Mods 是与平台无关的修饰键。

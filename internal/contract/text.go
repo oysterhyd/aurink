@@ -57,6 +57,9 @@ type DocMeta struct {
 	// Dominant 是新插入换行使用的序列："\n" 或 "\r\n"。
 	Dominant string
 	BOM      bool
-	// Encoding："utf-8"、"utf-16le"、"utf-16be"。
+	// Encoding："utf-8"、"utf-16le"、"utf-16be"、"gb18030"（只读打开，转换后以 utf-8 保存）。
 	Encoding string
+	// Large 表示大文件模式（字节数 ≥ Settings.Files.LargeFileBytes）：跳过 Markdown 解析，
+	// AST() 返回满足不变式的单叶子纯文本快照，编辑在源码模式进行（09 D1–D3）。
+	Large bool
 }

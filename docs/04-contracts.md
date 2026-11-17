@@ -236,3 +236,13 @@
 | `render.go` | `ExportOptions.SoftBreak`：导出段落内软换行跟随编辑器设置 | BE-2.10（08 批次 3） |
 | `commands.go` | `CmdTableResize`、`CmdTableDelete`：表格工具条尺寸调整与整表删除 | BE-TABLE-KEYS（08 批次 11） |
 | `commands.go` | `CmdBlockHeadingUp`、`CmdBlockHeadingDown`：标题级别提升与降低（段落 ↔ H6…H1） | BE-TYPORA-EDIT（08 批次 11） |
+
+## 附：Phase 4 批次 1（2026-11-18）
+
+依据 [09 §5](09-phase4.md) 的设计决定。新增套件 `TestLargeDocument`、`TestFileStoreGB18030`、`TestSessionsPhase4`（`internal/contracttest/phase4.go`）。
+
+| 文件 | 变更 | 依据 |
+|---|---|---|
+| `text.go` | `DocMeta.Large`（大文件无解析模式）；`DocMeta.Encoding` 允许 `"gb18030"` | D1、D2、D6 |
+| `services.go` | `Session.ConvertToUTF8()`：将旧编码只读会话转为 UTF-8 可编辑会话 | D7 |
+| `commands.go` | `CmdAppCheckUpdates`（`app.checkUpdates`） | D12 |

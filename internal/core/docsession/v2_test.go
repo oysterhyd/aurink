@@ -31,3 +31,16 @@ func TestSessionStore(t *testing.T) {
 		}}
 	})
 }
+
+func TestSessionsPhase4(t *testing.T) {
+	t.Skip("BE-1.8 / BE-2.11")
+	contracttest.TestSessionsPhase4(t, func(t *testing.T) contracttest.SessionPhase4Fixture {
+		h := newHarness(t)
+		h.settings.Files.LargeFileBytes = 1024
+		return contracttest.SessionPhase4Fixture{
+			SessionFixture: contracttest.SessionFixture{New: func() contract.Sessions { return h.manager() },
+				Settle: h.settle, Advance: h.clock.advance, Autosave: 100 * time.Millisecond, Dir: h.dir},
+			LargeFileBytes: 1024,
+		}
+	})
+}
