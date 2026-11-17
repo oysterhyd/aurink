@@ -38,6 +38,29 @@
 
 **产品定位（用户 2026-11-02）：** Aurink 是 Typora 的升级版。Typora 已有的行为和观感以 Typora 为准；Typora 没有的功能（斜杠菜单、格式条、结构导轨、Wiki 链接等）照 02 保留。扩展语法默认全部开启。
 
+# M4 最终评估（v1.0.0 · 2026-11-18）
+
+**结论：负责人侧自动化门禁、性能全表与 Windows 1.0 打包安装验证全部通过（PASS），提交用户进行 Windows 真机终审。** 对照 [05-delivery-plan.md](../05-delivery-plan.md) §8 与 [09-phase4.md](../09-phase4.md) §9 九项最终验收标准逐项核查如下（数据详见 `reports/quality.md`）：
+
+| # | 05 §8 / 09 §9 验收项 | 结论 | 实测证据 |
+|---|---|---|---|
+| 1 | **需求覆盖**（02 P0 100%、P1 100%、09 §3.1 P2 100%） | **PASS** | P0 全项在 M1/M2 验证通过；P1 21 项在 M3 逐项验证通过（`reports/quality.md`）；09 §3.1 纳入的全部 P2 与体验打磨项（5–64 MB 大文件模式、GB18030 只读打开与转 UTF-8、安全 HTML 块子集渲染、单击图片保留下方预览、标签条溢出边缘渐隐、自定义 JSON 主题、快捷键录制与冲突覆盖、`updater/native` 自动更新、全界面无障碍、滚动文件日志）100% 具备自动化测试与本机实测证据。分屏、多窗口、跨文件替换、冲突差异对比、「跟随系统强调色」按 2026-11-18 用户决定 U2 留待 1.x |
+| 2 | **架构一致性** | **PASS** | `tests/arch`（含新增 `internal/assets` 依赖规则）通过；契约变更记录于 `docs/04-contracts.md` 并由 `internal/contracttest` 守护；`go tool mygo vet .` 零告警；`internal/contract` 仅依赖标准库 |
+| 3 | **代码质量** | **PASS** | `scripts/gate.ps1 -AllTargets`（`gofmt`、五目标 `go vet`/`go build`、`-tags mygo_noinspector`、`mygo vet`、全套 `go test -count=1 ./...`、`tools/i18ncheck` 334 条双语文案）全绿；全仓 Go 源码未登记 `TODO`/`FIXME` 数为 **0**；命令注册表与后台入口具备错误包装与 panic 防护 |
+| 4 | **无损保真** | **PASS** | 83 份语料库文件（扩展全开与全关双模式）打开保存字节 100% 一致；3 种子 × 10,000 步随机编辑/撤销/重做/保存属性测试（LF/混合、CRLF、UTF-8 BOM）100% 匹配纯字符串模型；Typora 104 场景对拍 0 pending；5.5 MB CRLF 大文件、GB18030 转 UTF-8、26 种非常规/危险 HTML 块旁路编辑保存字节 100% 无损 |
+| 5 | **性能与资源预算（03 §10 全表）** | **PASS** | 本机 Windows 11 真窗口双轮实测（`tools/windowcheck -perf`，见 `reports/quality.md`）：冷启动首帧 **`103.8–177.8 ms`**（预算 `< 500 ms`）；打开 1 MB 首屏 **`81.7–83.7 ms`**（`< 300 ms`）；打开 5.5 MB 大文件首屏 **`58.3–69.3 ms`**（`< 200 ms`，`Sync` 单键 **`71 µs`**）；200 KB 击键帧工作 p95 **`2.17–2.26 ms`**（`< 8 ms`）；1 MB 击键帧工作 p95 **`3.00–3.12 ms`**、`Enter` 拆段 p95 **`4.58–4.89 ms`**（`< 16 ms`，`Enter` 分配从 48.4 万降至 **`~1,055`**）；1 万块滚动 `1.28–1.34 ms/op`（8.2 shapes/frame）；空闲 **0 帧**；100 KB 文档无渲染服务空闲内存 Working Set **`109.2–133.2 MiB`** / Private Bytes **`122.4–140.2 MiB`**（`< 150 MB`）；`Aurink.exe` **`32.38 MiB`**、安装目录总计 **`32.73 MiB`**（`< 40 MB`） |
+| 6 | **可靠性** | **PASS** | `fsstore` 原子写故障注入、`tests/e2e` kill 进程崩溃恢复、`docsession` 19 格外部修改冲突矩阵、`internal/app` 5×5 MB 滚动日志轮转与真机启动落盘（`%APPDATA%\Aurink\logs\aurink.log`）全部通过 |
+| 7 | **体验与无障碍** | **PASS** | 18 张设计基线对照齐全（M3 遗留的「单击图片保留预览」与「标签条边缘渐隐」两项小差异已在本阶段补齐）；中英文 334 条文案及 `en-XA` 伪本地化零截断；`tests/qa/a11y_test.go` 双语全界面运行时无障碍断言 + `internal/views` 静态 AST 标签审计通过 |
+| 8 | **发布与自动更新（Windows 1.0）** | **PASS（Windows）/ 未验证（macOS·Linux）** | 公开仓库 `oysterhyd/aurink` + Ed25519 密钥与 GitHub Secret 就绪；`go tool mygo build -platform windows/amd64` 产出 `aurink-setup-1.0.0-amd64.exe`（`11.09 MiB`）、签名归档 `aurink-1.0.0-windows-amd64.tar.gz` 与 `update-windows-amd64.json`；本机实测旧版卸载清零、1.0.0 静默安装、安装目录零 `.go`/`.ttf`/`.js` 冗余、许可证齐全、`.md` 文件关联 ProgID 注册、启动与退出正常；`.github/workflows/release.yml`、`CHANGELOG.md`、根目录 `README.md` 就绪。**macOS 与 Linux 安装包及真机运行按用户决定 U3 不在 1.0 发布范围，明确标记为「未构建 / 未验证」** |
+| 9 | **遗留风险与 1.x 演进清单** | **已登记** | 见下节 |
+
+### 1.0 已知限制、风险与 1.x 演进建议
+
+1. **平台与硬件覆盖边界：** v1.0.0 仅面向 `windows/amd64` 发布与真机验证；`windows/arm64` 物理机、低功耗纯核显/无独显老机型、非 100%/150% DPI 缩放档位，以及 macOS / Linux 有窗口运行（系统菜单、IME、Vibrancy、WKWebView/WebKitGTK 渲染、打印与安装包签名公证）均为**未验证**，后续若扩展跨平台发行需按 05 §8 补齐真机验证与平台证书签名。
+2. **Windows 代码签名（SmartScreen）：** 当前构建已启用 Ed25519 自动更新归档签名（保障更新防篡改），但尚未配置商业 Windows Authenticode 代码签名证书（EV/OV 或 Azure Trusted Signing），首次下载运行安装包时 Windows SmartScreen 会弹出未知发布者提示；可在 1.x 按 `release.yml` 预留机制接入证书。
+3. **超大单块极端场景：** 常规 Markdown 编辑走 24 KiB 局部重解析窗口（200 KB p95 < 0.81 ms，1 MB p95 < 3.4 ms），≥ 5 MB 文档自动进入无 AST 源码模式；若在 1–5 MB 文档中编写单个超过 24 KiB 的巨型嵌套容器或未闭合围栏，解析器会按设计回退受计数的全量保守重解析（约 11–14 ms）。
+4. **1.x 功能演进候选：** 源码+预览同步分屏、多窗口同时编辑、跨文件全文替换、外部冲突行级 Diff 视图、导出长图、可选跟随后端系统强调色。
+
 # M3 评估（2026-11-12）
 
 **结论：M3 通过。** 用户于 2026-11-12 确认完成 M3（0.3.0）真机审查。此前真机反馈的 Typora 按键、命令与交互差异已全部通过 `tools/parity`（104 个真机对拍场景，`pending` 清零，仅保留 8 项有意偏离）及 `BE-TYPORA-KEYS`、`BE-TYPORA-EDIT` 等卡修复合入。负责人的各项证据见 [08-phase3.md](../08-phase3.md) §10、`reports/quality.md`、`reports/render/`、`reports/pdf/` 与 `reports/parity/`。

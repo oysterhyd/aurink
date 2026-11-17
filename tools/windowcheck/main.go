@@ -13,6 +13,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"sync"
@@ -113,7 +114,14 @@ $$
 
 // buildStart is when the window's last frame began building: a frame's work
 // runs from it to the end of the paint, without the wait for the display.
-var buildStart time.Time
+var (
+	procStart      = time.Now()
+	buildStart     time.Time
+	firstFrameOnce sync.Once
+	coldStartDur   time.Duration
+	firstFrameCh   = make(chan struct{})
+	anyFramePaint  func()
+)
 
 func (platform) OpenFile(done func(string))                     { done("") }
 func (platform) OpenFolder(done func(string))                   { done("") }
@@ -158,19 +166,23 @@ const demo = `# Aurink 是什么
 func main() {
 	out := flag.String("out", "reports/parity/screens", "where the screens go")
 	design := flag.Bool("design", false, "save only the design system screen")
+	perf := flag.Bool("perf", false, "run only the 03 §10 real-window startup, open, memory, and keystroke measurements")
 	locale := flag.String("locale", "", "show the interface in this language, such as zh-Hans")
 	flag.Parse()
 	if *locale != "" {
 		// For this run only: App.SetLocale would keep the language for later runs.
 		os.Setenv("MYGO_LOCALE", *locale)
 	}
-	if err := os.MkdirAll(*out, 0o755); err != nil {
-		log.Fatal(err)
+	if !*perf {
+		if err := os.MkdirAll(*out, 0o755); err != nil {
+			log.Fatal(err)
+		}
 	}
 	tmp, err := os.MkdirTemp("", "aurink-windowcheck")
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer os.RemoveAll(tmp)
 	mygo.App.WhenReady(func() {
 		if err := fonts.RegisterFonts(); err != nil {
 			log.Fatal(err)
@@ -180,7 +192,10 @@ func main() {
 			return
 		}
 		d := &dispatcher{}
-		files := slowStore{fsstore.New()}
+		var files contract.FileStore = fsstore.New()
+		if !*perf {
+			files = slowStore{files}
+		}
 		store, err := settings.New(filepath.Join(tmp, "settings.json"), files, d, nil)
 		if err != nil {
 			log.Fatal(err)
@@ -207,10 +222,26 @@ func main() {
 			log.Fatal(err)
 		}
 		w = mygo.NewWindow(mygo.WindowOptions{Title: "Aurink", Width: 1280, Height: 800, TitleBarStyle: mygo.TitleBarHidden,
-			HideWindowButtons: true, Content: ui.View(func(c *ui.Context) { buildStart = time.Now(); s.View(c) })})
+			HideWindowButtons: true, Content: ui.View(func(c *ui.Context) {
+				buildStart = time.Now()
+				s.View(c)
+				ui.Box(c.Key("perfProbe")).Absolute().Size(1, 1).PassThrough().Draw(func(_ *ui.Painter, _ ui.Rect) {
+					firstFrameOnce.Do(func() {
+						coldStartDur = time.Since(procStart)
+						close(firstFrameCh)
+					})
+					if anyFramePaint != nil {
+						anyFramePaint()
+					}
+				})
+			})})
 		d.w, p.w = w, w
-		renderer.set(render.New(webviewhost.New(w), render.Options{Page: renderpage.Page(), CacheDir: filepath.Join(tmp, "render-cache")}))
-		go script(w, s, reg, store, tmp, *out)
+		if !*perf {
+			renderer.set(render.New(webviewhost.New(w), render.Options{Page: renderpage.Page(), CacheDir: filepath.Join(tmp, "render-cache")}))
+			go script(w, s, reg, store, tmp, *out)
+		} else {
+			go perfScript(w, s, tmp)
+		}
 	})
 	if err := mygo.App.Run(); err != nil {
 		log.Fatal(err)
@@ -397,6 +428,124 @@ func stress(w *mygo.Window, s *shell.Shell, size int) {
 	slices.Sort(works)
 	fmt.Printf("window %d KB: edit to painted p50 %v p95 %v max %v; frame work p50 %v p95 %v max %v\n", size>>10,
 		times[n/2], times[n*95/100], times[n-1], works[n/2], works[n*95/100], works[n-1])
+}
+
+func perfScript(w *mygo.Window, s *shell.Shell, tmp string) {
+	select {
+	case <-firstFrameCh:
+	case <-time.After(5 * time.Second):
+		log.Fatal("first frame never painted")
+	}
+	fmt.Printf("cold start to first frame: %v\n", coldStartDur)
+
+	measureOpen := func(name string, size int, seed int64) time.Duration {
+		path := filepath.Join(tmp, name)
+		if err := os.WriteFile(path, []byte(corpus.Generate(size, seed)), 0o644); err != nil {
+			log.Fatal(err)
+		}
+		openedCh := make(chan time.Duration, 1)
+		var openStart time.Time
+		on(w, func() {
+			anyFramePaint = func() {
+				sess := s.ActiveSession()
+				if sess != nil && sess.State().Path == path {
+					anyFramePaint = nil
+					select {
+					case openedCh <- time.Since(openStart):
+					default:
+					}
+				}
+			}
+			openStart = time.Now()
+			s.Open(path)
+		})
+		select {
+		case d := <-openedCh:
+			return d
+		case <-time.After(10 * time.Second):
+			log.Fatalf("timed out opening %s", name)
+			return 0
+		}
+	}
+
+	// 1. Idle memory on a 100 KB document without WebView2 render service (03 §10).
+	open100 := measureOpen("idle-100kb.md", 100<<10, 3)
+	time.Sleep(800 * time.Millisecond)
+	runtime.GC()
+	wsBytes, privBytes, osMemOK := processMemory()
+	var ms runtime.MemStats
+	runtime.ReadMemStats(&ms)
+	fmt.Printf("open 100 KB to first paint: %v\n", open100)
+	fmt.Printf("idle memory (100 KB doc, no render service, os=%v): working_set=%.2f MiB private_bytes=%.2f MiB go_heap_alloc=%.2f MiB go_sys=%.2f MiB\n",
+		osMemOK, float64(wsBytes)/(1<<20), float64(privBytes)/(1<<20), float64(ms.HeapAlloc)/(1<<20), float64(ms.Sys)/(1<<20))
+
+	// 2. Open 1 MB document to first painted frame (< 300 ms).
+	open1M := measureOpen("open-1mb.md", 1<<20, 42)
+	fmt.Printf("open 1024 KB to first paint: %v\n", open1M)
+	time.Sleep(250 * time.Millisecond)
+
+	// 3. Open 5.5 MB large document to first painted Source frame (< 200 ms).
+	open5M := measureOpen("open-5632kb.md", (5<<20)+(512<<10), 7)
+	fmt.Printf("open 5632 KB (large-file source mode) to first paint: %v\n", open5M)
+	time.Sleep(250 * time.Millisecond)
+
+	// 4. Keystroke latency & frame work at 200 KB and 1 MB (500 edits each).
+	for _, size := range []int{200 << 10, 1 << 20} {
+		path := filepath.Join(tmp, fmt.Sprintf("stress-%d.md", size))
+		if err := os.WriteFile(path, []byte(corpus.Generate(size, 1)), 0o644); err != nil {
+			log.Fatal(err)
+		}
+		on(w, func() { s.Open(path) })
+		time.Sleep(500 * time.Millisecond)
+		stress(w, s, size)
+	}
+
+	// 5. 1 MB Enter paragraph-split frame work (100 splits) verifying Batch 3 spliceRows.
+	stressEnter(w, s, 1<<20)
+
+	on(w, func() { w.Destroy(); mygo.App.Quit() })
+}
+
+func stressEnter(w *mygo.Window, s *shell.Shell, size int) {
+	const n = 100
+	works := make([]time.Duration, 0, n)
+	painted := make(chan time.Duration, 1)
+	on(w, func() {
+		e := s.ActiveLive()
+		e.OnPainted = func() {
+			select {
+			case painted <- time.Since(buildStart):
+			default:
+			}
+		}
+		e.Model().SetSelection(contract.Caret(size / 2))
+	})
+	time.Sleep(200 * time.Millisecond)
+	for range n {
+		select {
+		case <-painted:
+		default:
+		}
+		on(w, func() {
+			m := s.ActiveSession().Model()
+			at := m.Selection().Primary().Head
+			if _, err := m.Apply(contract.Transaction{
+				Edits:  []contract.TextEdit{{Range: contract.Range{Start: at, End: at}, Text: "\n\nPara"}},
+				Origin: contract.OriginUser,
+			}); err != nil {
+				log.Fatal(err)
+			}
+		})
+		select {
+		case work := <-painted:
+			works = append(works, work)
+		case <-time.After(2 * time.Second):
+			log.Fatal("no frame painted the Enter split")
+		}
+	}
+	slices.Sort(works)
+	fmt.Printf("window %d KB Enter-split: frame work p50 %v p95 %v max %v\n",
+		size>>10, works[n/2], works[n*95/100], works[n-1])
 }
 
 // phase3 saves the screens of the Phase 3 baselines: reading, focus, settings,

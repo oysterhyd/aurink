@@ -296,3 +296,66 @@ Windows 11, AMD Ryzen 7 8845H, 150% scaling (144 DPI). Integrated graphics, macO
 
 - macOS and Linux windowed runtime (IME, fonts, Vibrancy, system menu bar, file associations, WebView/WKWebView/WebKitGTK math & Mermaid rendering, PDF export and native print dialog): **unverified** (CI executes cross-builds and headless suites only; real-machine acceptance belongs to Phase 4 QA-4.1).
 - Integrated-graphics-only machines and non-150% DPI scaling on Windows beyond the owner's single test machine: **unverified**.
+
+## QA-4.1 — Phase 4 / M4 Final Acceptance (09 §7, 03 §10, 05 §8)
+
+Windows 11 (`windows/amd64`), AMD Ryzen 7 8845H w/ Radeon 780M Graphics, 150% scaling (144 DPI), `CGO_ENABLED=0`. Per user decision U3 (`09 §2.2`), v1.0.0 targets Windows (`windows/amd64`) exclusively; macOS and Linux packaging and real-window runtime remain **out of scope / unverified** (cross-compilation and pure-Go static checks across all 5 targets pass in `scripts/gate.ps1 -AllTargets`).
+
+### 03 §10 complete performance & resource budget verification [实测]
+
+| Metric | `03 §10` / `09 §7` Budget | M3 Baseline | M4 Measured Result (2 runs) | Verification Path | Status |
+|---|---|---|---|---|---|
+| Cold start to first painted frame | `< 500 ms` | unmeasured | **`177.8 ms` / `103.8 ms`** | Compiled `tools/windowcheck -perf` (`procStart` → first GPU frame paint) | PASS |
+| Open 1 MB document to first paint | `< 300 ms` | `83 ms` (Tester) | **`81.7 ms` / `83.7 ms`** (real window); `64.4–66.8 ms/op` (`BenchmarkOpen1MB`) | `tools/windowcheck -perf`, `BenchmarkOpen1MB` | PASS |
+| Open 5.5 MB large document (`ModeSource`) | `< 200 ms`, no AST/render | `CodeTooLarge` | **`69.3 ms` / `58.3 ms`** (real window), `0` AST leaf parses, `0` render calls | `tools/windowcheck -perf`, `TestLargeFileMode` | PASS |
+| Keystroke frame work p95 (`≤ 200 KB`) | `< 8 ms` | `4.9–5.1 ms` | **p50 `1.15 ms`, p95 `2.17–2.26 ms`**, max `3.53–4.65 ms` (`BenchmarkTypeFrame200KB`: `1.52–1.69 ms/op`) | `tools/windowcheck -perf` (500 keys), `BenchmarkTypeFrame200KB` | PASS |
+| Keystroke frame work p95 (`≤ 1 MB`) | `< 16 ms` | `15.1–15.4 ms`; `Enter` 484k allocs | **p50 `1.61–1.66 ms`, p95 `3.00–3.12 ms`**, max `6.04–6.05 ms`; **`Enter`-split p50 `2.48–2.74 ms`, p95 `4.58–4.89 ms`**; `Enter` allocs **`~1,055`** (`< 3,000` guard, `0` row rebuilds) | `tools/windowcheck -perf` (500 keys + 100 `Enter` splits), `TestTypingWorkStaysLocal`, `BenchmarkTypeFrame1MB` (`2.88–3.07 ms/op`) | PASS |
+| 5.5 MB Source typing sync | `< 2 ms/key` | full-buffer rescan | **`0.071 ms/op` (`71.0 µs/op`, `38.3 KB/op`, `46 allocs/op`)**; 300 sequential CRLF edits in `0.09 s` (`TestSourceType5MB`) | `BenchmarkSourceSync5MB`, `TestSourceType5MB` | PASS |
+| Scroll 10,000 blocks | 60 fps, no whole-screen relayout | `1.28 ms/op`, `8.2 shapes/frame` | **`1.28–1.34 ms/op`, `8.20 shapes/frame`** | `BenchmarkScroll10kBlocks`, `TestScrollShapesNoWholeScreen` | PASS |
+| Idle CPU / frames | `0` frames (aurora stops after 12 s) | `0` frames | **`0` frames** (`FramePending() == false`) | `TestScenarios`, `TestAurora` | PASS |
+| Idle memory (100 KB doc, no render service) | `< 150 MB` | unmeasured | **Working Set `109.21–133.16 MiB` (`114.5–139.6 MB`), Private Bytes `122.40–140.24 MiB` (`128.3–147.1 MB`)**, Go `HeapAlloc` `7.30 MiB` | `tools/windowcheck -perf` (`K32GetProcessMemoryInfo` after `runtime.GC()`) | PASS |
+| Release binary & installed size | `< 40 MB` | `Aurink.exe` `27.57 MiB` + `11.8 MiB` duplicate resources | **`Aurink.exe`: `32.38 MiB` (`33,957,888` B)**; **installed dir total: `32.73 MiB` (`34,322,880` B)**; installer `aurink-setup-1.0.0-amd64.exe`: **`11.09 MiB` (`11,629,412` B)**; signed update archive `14.16 MiB` | `go tool mygo build -platform windows/amd64` + fresh `%LOCALAPPDATA%\Programs\Aurink` install check | PASS |
+
+Raw `tools/windowcheck -perf` output:
+
+```text
+=== Real-Window Run 1 ===
+cold start to first frame: 177.7551ms
+open 100 KB to first paint: 65.9638ms
+idle memory (100 KB doc, no render service, os=true): working_set=133.16 MiB private_bytes=140.24 MiB go_heap_alloc=7.30 MiB go_sys=29.71 MiB
+open 1024 KB to first paint: 81.6572ms
+open 5632 KB (large-file source mode) to first paint: 69.2859ms
+window 200 KB: edit to painted p50 9.6692ms p95 11.678ms max 23.7096ms; frame work p50 1.1477ms p95 2.2629ms max 3.5271ms
+window 1024 KB: edit to painted p50 9.3534ms p95 11.4928ms max 19.2504ms; frame work p50 1.6113ms p95 3.0018ms max 6.0471ms
+window 1024 KB Enter-split: frame work p50 2.4766ms p95 4.5807ms max 5.8907ms
+=== Real-Window Run 2 ===
+cold start to first frame: 103.8438ms
+open 100 KB to first paint: 45.3257ms
+idle memory (100 KB doc, no render service, os=true): working_set=109.21 MiB private_bytes=122.40 MiB go_heap_alloc=7.30 MiB go_sys=26.23 MiB
+open 1024 KB to first paint: 83.6608ms
+open 5632 KB (large-file source mode) to first paint: 58.3376ms
+window 200 KB: edit to painted p50 9.674ms p95 11.4254ms max 22.2219ms; frame work p50 1.1538ms p95 2.1705ms max 4.6537ms
+window 1024 KB: edit to painted p50 9.3303ms p95 11.8683ms max 20.4927ms; frame work p50 1.6611ms p95 3.1157ms max 6.044ms
+window 1024 KB Enter-split: frame work p50 2.7412ms p95 4.8852ms max 5.1207ms
+```
+
+### Phase 4 P2 hardening, polish & release coverage [实测]
+
+| `09 §3.1` Deliverable | Automated & Real-Machine Evidence | Status |
+|---|---|---|
+| Large-file mode (`5–64 MB`, parser-free `plainAST`, `ModeSource` lock, `> 64 MB` `CodeTooLarge`) | `contracttest.TestLargeDocument`, `contracttest.TestSessionsPhase4`, `tests/qa.TestLargeFileMode`, `BenchmarkSourceSync5MB` | PASS |
+| Legacy `GB18030` / `GBK` read-only open, explicit `ConvertToUTF8()` & `SaveAs` copy | `contracttest.TestFileStoreGB18030`, `tests/qa.TestLegacyGB18030BannerAndConvert`, `tests/qa.TestLegacyGB18030SaveAsCopy` | PASS |
+| Safe HTML block subset (`<p align=center>`, badges, `<details><summary>`, 26 negative XSS/remote/malformed cases) | `tests/ui.TestHTMLBlockSecurityRejections` (26 cases), `tests/ui.TestHTMLBlockSafeSubsetAndDetailsToggle` | PASS |
+| Single-click standalone image keeps preview under revealed source (double-click opens Lightbox) | `tests/ui.TestSingleClickImageKeepsPreviewUnderSource` | PASS |
+| Accessibility (`ui.Role`, localized `Label`, `Checked`/`Expanded`, `ActiveDescendant`, static AST audit) | `tests/qa.TestAccessibilityAllSurfacesAndLocales` (`en` + `zh-Hans`), `tests/qa.TestAccessibilityViewsStaticAudit` | PASS |
+| Custom JSON themes (`%APPDATA%\Aurink\themes\*.json`, corrupt-file isolation, dissolve transition) | `internal/views/theme.TestLoadCustomDirAndTokensInheritance`, `tests/qa.TestCustomThemesLoadSwitchAndCorruptFallback` | PASS |
+| Interactive keybinding recorder (filter, bare-key guard, conflict override, persist, reset) | `tests/qa.TestKeybindingEditorRecordConflictPersistAndReset`, `tests/qa.TestSettingsFitInPseudoLocale` (`en-XA`) | PASS |
+| Tab-bar horizontal overflow smooth pass-through edge fades | `tests/qa.TestTabBarOverflowEdgeFades` | PASS |
+| Rolling file logger (`%APPDATA%\Aurink\logs\aurink.log`, `5×5 MB`) | `internal/app.TestRollingLogRotatesAndCapsFiles`, real-machine launch verification of installed `Aurink.exe` | PASS |
+| Signed auto-updates (`updater/native`), deduplicated Windows 1.0.0 installer, `CHANGELOG.md`, `README.md`, `release.yml` | `tests/qa.TestUpdateCheckMenuAboutPaletteAndToggle`, `go tool mygo build -platform windows/amd64` (`update-windows-amd64.json` Ed25519 signature verified), clean uninstall + fresh install + `.md` ProgID check | PASS |
+
+### Remaining unverified platforms / hardware (v1.0.0)
+
+- **macOS and Linux builds, installers, auto-updates, and windowed runtime**: intentionally excluded from v1.0.0 scope per user decision U3 (`09 §2.2`); marked **unbuilt / unverified** (only `CGO_ENABLED=0` cross-target `go vet` and `go build` run in `gate.ps1 -AllTargets`).
+- **Windows ARM64 (`windows/arm64`) hardware, discrete-less low-end iGPUs, and DPI scales other than 100% (Tester) / 150% (owner's Windows 11 machine)**: **unverified** on physical hardware.
+
