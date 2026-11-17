@@ -76,6 +76,78 @@ func (msgs Messages) LiveeditCopied() string {
 	return Catalog.Format(msgs.locale, "liveedit_copied", nil)
 }
 
+// LiveeditEditor says "Document editor"
+// in the language the app shows.
+//
+// Accessible label of the live Markdown editor surface.
+func LiveeditEditor() string { return In(i18n.Locale()).LiveeditEditor() }
+
+// LiveeditEditor says "Document editor"
+// in the language of msgs.
+//
+// Accessible label of the live Markdown editor surface.
+func (msgs Messages) LiveeditEditor() string {
+	return Catalog.Format(msgs.locale, "liveedit_editor", nil)
+}
+
+// LiveeditEditorOf says "Document: {name}"
+// in the language the app shows.
+//
+// Accessible label of the live Markdown editor surface for a named
+// document.
+func LiveeditEditorOf(name string) string { return In(i18n.Locale()).LiveeditEditorOf(name) }
+
+// LiveeditEditorOf says "Document: {name}"
+// in the language of msgs.
+//
+// Accessible label of the live Markdown editor surface for a named
+// document.
+func (msgs Messages) LiveeditEditorOf(name string) string {
+	return Catalog.Format(msgs.locale, "liveedit_editor_of", map[string]any{"name": name})
+}
+
+// LiveeditReadOnly says "Read-only"
+// in the language the app shows.
+//
+// Accessible description on the editor surface when editing is disabled.
+func LiveeditReadOnly() string { return In(i18n.Locale()).LiveeditReadOnly() }
+
+// LiveeditReadOnly says "Read-only"
+// in the language of msgs.
+//
+// Accessible description on the editor surface when editing is disabled.
+func (msgs Messages) LiveeditReadOnly() string {
+	return Catalog.Format(msgs.locale, "liveedit_read_only", nil)
+}
+
+// SourceEditor says "Source editor"
+// in the language the app shows.
+//
+// Accessible label of the plain Markdown source editor.
+func SourceEditor() string { return In(i18n.Locale()).SourceEditor() }
+
+// SourceEditor says "Source editor"
+// in the language of msgs.
+//
+// Accessible label of the plain Markdown source editor.
+func (msgs Messages) SourceEditor() string {
+	return Catalog.Format(msgs.locale, "source_editor", nil)
+}
+
+// KitDismiss says "Dismiss"
+// in the language the app shows.
+//
+// Closes a notification toast.
+func KitDismiss() string { return In(i18n.Locale()).KitDismiss() }
+
+// KitDismiss says "Dismiss"
+// in the language of msgs.
+//
+// Closes a notification toast.
+func (msgs Messages) KitDismiss() string {
+	return Catalog.Format(msgs.locale, "kit_dismiss", nil)
+}
+
 // ShellNew says "New"
 // in the language the app shows.
 //
@@ -2116,13 +2188,13 @@ func (msgs Messages) KitNext() string {
 	return Catalog.Format(msgs.locale, "kit_next", nil)
 }
 
-// KitCloseFind says "Close"
+// KitCloseFind says "Close Find"
 // in the language the app shows.
 //
 // Closes the find bar.
 func KitCloseFind() string { return In(i18n.Locale()).KitCloseFind() }
 
-// KitCloseFind says "Close"
+// KitCloseFind says "Close Find"
 // in the language of msgs.
 //
 // Closes the find bar.

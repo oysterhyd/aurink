@@ -6,6 +6,7 @@ import (
 	"aurink/internal/views/effects"
 	"aurink/internal/views/motion"
 	"aurink/internal/views/theme"
+	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -68,9 +69,9 @@ type segmentPill struct{ group any }
 // It returns the index clicked, or -1.
 func Segmented(c *ui.Context, t *theme.Tokens, group any, items []string, selected int, live bool) int {
 	clicked := -1
-	ui.Row(c).Padding(3).Radius(10).Background(t.Surface).Children(func() {
+	ui.Row(c).Padding(3).Radius(10).Background(t.Surface).Role(ui.RoleTabList).Children(func() {
 		for i, label := range items {
-			tab := ui.Box(c.Key(i)).Grow(1).Height(26).Role(ui.RoleTab).Label(label)
+			tab := ui.Box(c.Key(i)).Grow(1).Height(26).Role(ui.RoleTab).Label(label).Checked(selected == i).Focusable()
 			tab.Children(func() {
 				if selected == i {
 					pill := ui.Box(c.Key("pill")).Absolute().Fill().Radius(7).Background(t.Sheet)
@@ -105,13 +106,13 @@ func Notice(c *ui.Context, t *theme.Tokens, s *ui.SVG, tone ui.Color, title, det
 				}
 			})
 			if action != "" && act != nil {
-				a := ui.Text(c, action).FontSize(theme.UIStatus).FontWeight(600).TextColor(t.Accent).Padding(4, 6).Role(ui.RoleButton).Label(action)
+				a := ui.Text(c, action).FontSize(theme.UIStatus).FontWeight(600).TextColor(t.Accent).Padding(4, 6).Role(ui.RoleButton).Label(action).Focusable()
 				if a.Clicked() {
 					act()
 				}
 			}
 			if dismiss != nil {
-				if IconButton(c, t, IconClose, "×", 22, 12).Clicked() {
+				if IconButton(c, t, IconClose, locales.KitDismiss(), 22, 12).Clicked() {
 					dismiss()
 				}
 			}

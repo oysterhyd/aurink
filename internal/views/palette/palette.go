@@ -251,8 +251,11 @@ func (p *Palette) View(c *ui.Context, t *theme.Tokens, l Labels, live bool) {
 			}
 		}
 		ui.Column(c).Fill().Children(func() {
-			p.input(c, t, l)
-			p.list(c, t, l)
+			in := p.input(c, t, l)
+			active := p.list(c, t, l)
+			if active.Valid() {
+				in.ActiveDescendant(active)
+			}
 			p.footer(c, t, l)
 		})
 	})
@@ -268,12 +271,13 @@ func (p *Palette) badge(l Labels) string {
 	return l.Files
 }
 
-func (p *Palette) input(c *ui.Context, t *theme.Tokens, l Labels) {
+func (p *Palette) input(c *ui.Context, t *theme.Tokens, l Labels) ui.Element {
+	var in ui.Element
 	ui.Row(c).Height(56).Padding(0, 16).Gap(10).AlignItems(ui.Center).Children(func() {
 		ui.Text(c, p.badge(l)).FontSize(theme.UIBadge).FontWeight(600).TextColor(t.Accent).
 			Padding(3, 8).Radius(6).Background(t.AccentSoft)
-		in := ui.TextInputBase(c.Key("query"), &p.query).Grow(1).FontSize(theme.UIText + 2).
-			Placeholder(l.Placeholder).Label(l.Placeholder).Focus()
+		in = ui.TextInputBase(c.Key("query"), &p.query).Grow(1).FontSize(theme.UIText + 2).
+			Placeholder(l.Placeholder).Label(l.Placeholder).Role(ui.RoleComboBox).Focus()
 		in.OnTextKey(func(k ui.TextKey) bool {
 			if k.Mods != 0 {
 				return false
@@ -295,12 +299,14 @@ func (p *Palette) input(c *ui.Context, t *theme.Tokens, l Labels) {
 		}
 	})
 	ui.Box(c).Height(1).FillWidth().Background(t.Border)
+	return in
 }
 
-func (p *Palette) list(c *ui.Context, t *theme.Tokens, l Labels) {
+func (p *Palette) list(c *ui.Context, t *theme.Tokens, l Labels) ui.Element {
+	var active ui.Element
 	if len(p.hits) == 0 {
 		ui.Text(c, l.Empty).FontSize(theme.UIText).TextColor(t.Muted).Padding(18, 20)
-		return
+		return active
 	}
 	ui.Text(c, p.badge(l)).FontSize(theme.UIBadge).FontWeight(600).TextColor(t.Muted).Padding(12, 17, 4)
 	if p.scroll {
@@ -310,16 +316,20 @@ func (p *Palette) list(c *ui.Context, t *theme.Tokens, l Labels) {
 	// The list builds the rows in view only: 10,000 files cost what ten do.
 	ui.List(c.Key("rows"), &p.rows, len(p.hits), func(i int) {
 		h := p.hits[i]
-		p.row(c.Key(i), t, i, p.items[h.Index], h.Positions)
+		r := p.row(c.Key(i), t, i, p.items[h.Index], h.Positions)
+		if i == p.sel {
+			active = r
+		}
 	}).Grow(1).MinHeight(0).Padding(0, 8, 8)
+	return active
 }
 
 type selPill struct{}
 
-func (p *Palette) row(c *ui.Context, t *theme.Tokens, i int, it Item, pos []int) {
+func (p *Palette) row(c *ui.Context, t *theme.Tokens, i int, it Item, pos []int) ui.Element {
 	p.Built++
 	r := ui.Row(c).Height(40).Padding(0, 10).Gap(10).AlignItems(ui.Center).Radius(theme.RadiusRow).
-		Role(ui.RoleListItem).Label(it.Title).KeepFocus()
+		Role(ui.RoleListItem).Label(it.Title).Checked(i == p.sel).KeepFocus()
 	if r.Hovered() {
 		r.Background(t.Hover)
 	}
@@ -352,6 +362,7 @@ func (p *Palette) row(c *ui.Context, t *theme.Tokens, i int, it Item, pos []int)
 		p.sel = i
 		p.Run()
 	}
+	return r
 }
 
 // highlighted writes title with the runes at pos in the accent color.

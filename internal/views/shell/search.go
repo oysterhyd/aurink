@@ -203,7 +203,7 @@ func (s *Shell) searchStatus(root string) string {
 
 func (s *Shell) searchToggle(c *ui.Context, t *theme.Tokens, text, label string, on *bool) {
 	b := ui.Row(c).Height(22).MinWidth(26).Padding(0, 6).Radius(5).AlignItems(ui.Center).Justify(ui.Center).
-		Role(ui.RoleButton).Label(label).Tooltip(label).KeepFocus()
+		Role(ui.RoleToggleButton).Checked(*on).Label(label).Tooltip(label).KeepFocus()
 	switch {
 	case *on:
 		b.Background(t.AccentSoft)
@@ -232,7 +232,7 @@ func (s *Shell) searchFileRow(c *ui.Context, t *theme.Tokens, root string, fi in
 		rel = ""
 	}
 	row := ui.Row(c).Height(26).FillWidth().Padding(0, 6).Gap(6).AlignItems(ui.Center).Radius(theme.RadiusRow).
-		Role(ui.RoleButton).Label(filepath.Base(f.Path))
+		Role(ui.RoleButton).Label(filepath.Base(f.Path)).Expanded(!w.folded[f.Path]).Focusable()
 	if row.Hovered() {
 		row.Background(t.Hover)
 	}
@@ -256,7 +256,7 @@ func (s *Shell) searchMatchRow(c *ui.Context, t *theme.Tokens, fi, mi int) {
 	f := s.search.results[fi]
 	m := f.Matches[mi]
 	row := ui.Row(c).Height(24).FillWidth().Padding(0, 6).PaddingStart(18).AlignItems(ui.Center).Radius(theme.RadiusRow).
-		Role(ui.RoleButton).Label(m.Preview)
+		Role(ui.RoleButton).Label(m.Preview).Focusable()
 	if row.Hovered() {
 		row.Background(t.Hover)
 	}

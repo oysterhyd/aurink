@@ -9,6 +9,7 @@ import (
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
 	"aurink/internal/views/theme"
+	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -104,6 +105,7 @@ type laid struct {
 	base    int // the row start that the projection's offsets are at
 	display string
 	layout  *ui.TextLayout
+	html    *htmlBlockLayout
 	h       float32 // layout height
 }
 
@@ -197,6 +199,7 @@ type Editor struct {
 	// previews holds each block's last good rendering, which its preview
 	// keeps while the source being typed renders.
 	previews map[contract.BlockID]*renderState
+	htmlOpen map[htmlDetailsKey]bool
 	// frameNow is the frame's clock, which the work started between frames
 	// keeps its times by: the paint compares them with its own.
 	frameNow    time.Time
@@ -331,9 +334,18 @@ func (e *Editor) CheckRows() error {
 // View builds the editor's element: it scrolls itself, since the anchor must be
 // able to correct the offset in the frame that measures a row.
 func (e *Editor) View(c *ui.Context) ui.Element {
+	label := locales.LiveeditEditor()
+	if e.opts.Session != nil {
+		if name := e.opts.Session.State().Name; name != "" {
+			label = locales.LiveeditEditorOf(name)
+		}
+	}
 	box := ui.Box(c).Fill().Focusable().Clip().Bind(&e.handle).Cursor(ui.CursorText).FocusRing(false).
-		Role(ui.RoleTextField).Label("Editor").
+		Role(ui.RoleTextField).Label(label).
 		HandleTextInput(e).HandleInput(e.input).Draw(e.paint).PopoverMenu(e.tableMenu)
+	if e.readOnly() {
+		box.Description(locales.LiveeditReadOnly())
+	}
 	e.services, e.hasView = c.Services(), true
 	e.frameNow = c.Now()
 	// MyGo does not say where files were dropped, and the pointer's last place
@@ -1011,7 +1023,8 @@ func (e *Editor) form(r int) *laid {
 	}
 	p := e.project(b, v.leaf, k)
 	for _, l := range v.forms {
-		if l.proj.Sig == p.Sig && l.key.dark == k.dark && l.key.lead == k.lead {
+		if l.proj.Sig == p.Sig && l.key.dark == k.dark && l.key.lead == k.lead &&
+			(b.Kind != contract.BlockHTML || l.key.hidden() == k.hidden()) {
 			l.proj, l.key, l.base = p, k, b.Lead.Start
 			v.cur = l
 			return l
@@ -1019,10 +1032,22 @@ func (e *Editor) form(r int) *laid {
 	}
 	l := &laid{key: k, proj: p, base: b.Lead.Start, display: e.opts.Projector.DisplayText(&p)}
 	l.m = e.metricsFor(r, b, &l.proj, k.lead, k.listEnd)
-	if k.draft && b.Kind == contract.BlockHeading {
-		l.m.font.Weight = 700 // Typora's draft heading: body size, bold
+	if b.Kind == contract.BlockHTML && k.hidden() && e.revealMode != contract.RevealAlways {
+		if hb := e.layoutHTMLBlock(b, l.m.width); hb != nil {
+			l.html = hb
+			l.m.font = e.ty.BodyFont()
+			l.m.muted = false
+			l.m.above, l.m.below = e.ty.Body*.25, e.ty.Body*.65
+			l.layout = ui.ShapeRichTextWith(nil, l.m.font, ui.TextShape{Width: l.m.width})
+			l.h = hb.height
+		}
 	}
-	e.shape(l, b, "", 0)
+	if l.html == nil {
+		if k.draft && b.Kind == contract.BlockHeading {
+			l.m.font.Weight = 700 // Typora's draft heading: body size, bold
+		}
+		e.shape(l, b, "", 0)
+	}
 	if len(v.forms) >= maxForms {
 		victim := 0
 		for i, f := range v.forms {

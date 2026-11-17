@@ -12,6 +12,31 @@
   "@liveedit_copied": {
     "description": "What the copy button of a code block says just after copying."
   },
+  "liveedit_editor": "Document editor",
+  "@liveedit_editor": {
+    "description": "Accessible label of the live Markdown editor surface."
+  },
+  "liveedit_editor_of": "Document: {name}",
+  "@liveedit_editor_of": {
+    "description": "Accessible label of the live Markdown editor surface for a named document.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "liveedit_read_only": "Read-only",
+  "@liveedit_read_only": {
+    "description": "Accessible description on the editor surface when editing is disabled."
+  },
+  "source_editor": "Source editor",
+  "@source_editor": {
+    "description": "Accessible label of the plain Markdown source editor."
+  },
+  "kit_dismiss": "Dismiss",
+  "@kit_dismiss": {
+    "description": "Closes a notification toast."
+  },
   "shell_new": "New",
   "@shell_new": {
     "description": "Creates a new document."
@@ -659,7 +684,7 @@
   "@kit_next": {
     "description": "Goes to the next match."
   },
-  "kit_close_find": "Close",
+  "kit_close_find": "Close Find",
   "@kit_close_find": {
     "description": "Closes the find bar."
   },

@@ -79,8 +79,8 @@ func (e *Editor) TableBar(c *ui.Context) {
 	y := max(top-32, 4)
 	left, right := e.contentX(), e.viewW-e.contentX()-e.width
 	ui.Row(c.Key("tableLeft")).Absolute().Left(left - 4).Top(y).Height(28).Gap(2).AlignItems(ui.Center).
-		Label(locales.LiveeditTableBar()).Children(func() {
-		if e.tableTool(c.Key("size"), kit.IconGrid, locales.LiveeditTableSize(), e.tableGrid).Clicked() {
+		Role(ui.RoleToolbar).Label(locales.LiveeditTableBar()).Children(func() {
+		if e.tableTool(c.Key("size"), kit.IconGrid, locales.LiveeditTableSize(), e.tableGrid, true).Clicked() {
 			e.tableGrid = !e.tableGrid
 			e.gridRows, e.gridCols = rows+1, cols
 		}
@@ -95,7 +95,7 @@ func (e *Editor) TableBar(c *ui.Context) {
 			{"right", kit.IconAlignRight, locales.LiveeditAlignRight(), contract.AlignRight},
 		} {
 			// As in Typora, the lit alignment clicked again goes back to none.
-			if e.tableTool(c.Key(a.key), a.icon, a.label, align == a.align).Clicked() {
+			if e.tableTool(c.Key(a.key), a.icon, a.label, align == a.align, true).Clicked() {
 				to := a.align
 				if align == a.align {
 					to = contract.AlignNone
@@ -104,12 +104,13 @@ func (e *Editor) TableBar(c *ui.Context) {
 			}
 		}
 	})
-	ui.Row(c.Key("tableRight")).Absolute().Right(right - 4).Top(y).Height(28).Gap(2).AlignItems(ui.Center).Children(func() {
-		e.tableTool(c.Key("more"), kit.IconMore, locales.LiveeditTableMore(), menu).PopoverMenuButton(func(m *ui.Menu) {
+	ui.Row(c.Key("tableRight")).Absolute().Right(right - 4).Top(y).Height(28).Gap(2).AlignItems(ui.Center).
+		Role(ui.RoleToolbar).Label(locales.LiveeditTableBar()).Children(func() {
+		e.tableTool(c.Key("more"), kit.IconMore, locales.LiveeditTableMore(), menu, false).PopoverMenuButton(func(m *ui.Menu) {
 			e.tableMenuOpen = true
 			e.tableMenu(m)
 		})
-		if e.tableTool(c.Key("delete"), kit.IconTrash, locales.LiveeditDeleteTable(), false).Clicked() {
+		if e.tableTool(c.Key("delete"), kit.IconTrash, locales.LiveeditDeleteTable(), false, false).Clicked() {
 			e.tableEdit(contract.EditCommand{ID: contract.CmdTableDelete})
 		}
 	})
@@ -120,10 +121,17 @@ func (e *Editor) TableBar(c *ui.Context) {
 
 // tableTool is an icon button of the table toolbar; it leaves the focus in the
 // document, so the caret stays in its cell.
-func (e *Editor) tableTool(c *ui.Context, icon *ui.SVG, label string, on bool) ui.Element {
+func (e *Editor) tableTool(c *ui.Context, icon *ui.SVG, label string, on, toggle bool) ui.Element {
 	t := e.t
+	role := ui.RoleButton
+	if toggle {
+		role = ui.RoleToggleButton
+	}
 	b := ui.Row(c).Size(28, 28).Justify(ui.Center).AlignItems(ui.Center).Radius(6).
-		Role(ui.RoleButton).Label(label).Tooltip(label).KeepFocus()
+		Role(role).Label(label).Tooltip(label).KeepFocus()
+	if toggle {
+		b.Checked(on)
+	}
 	color := t.Muted
 	switch {
 	case on:

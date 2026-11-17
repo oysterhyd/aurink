@@ -76,9 +76,18 @@ type imageBox struct {
 // imageBoxes lists a row's loaded images and their boxes in the view.
 func (e *Editor) imageBoxes(r int) []imageBox {
 	l := e.current(r)
-	objs := l.layout.Objects()
 	x0, y0 := e.contentX()+l.m.x, e.rowTextY(r)
 	var out []imageBox
+	if l.html != nil {
+		for _, im := range l.html.images {
+			if e.image(im.src).src == nil {
+				continue
+			}
+			out = append(out, imageBox{im.src, ui.Rect{X: x0 + im.box.X, Y: y0 + im.box.Y, W: im.box.W, H: im.box.H}})
+		}
+		return out
+	}
+	objs := l.layout.Objects()
 	k := 0
 	for i := range l.proj.Segments {
 		s := &l.proj.Segments[i]
@@ -94,6 +103,13 @@ func (e *Editor) imageBoxes(r int) []imageBox {
 			continue
 		}
 		out = append(out, imageBox{s.Object.Source, ui.Rect{X: x0 + o.X, Y: y0 + o.Y, W: o.W, H: o.H}})
+	}
+	if l.m.preview > 0 {
+		if o := e.previewObject(r, e.block(r), &l.proj); o != nil && o.Kind == contract.ObjImage {
+			if box, ok := e.imagePreviewRect(r, l, o); ok {
+				out = append(out, imageBox{o.Source, box})
+			}
+		}
 	}
 	return out
 }

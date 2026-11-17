@@ -133,7 +133,7 @@ func (e *Editor) metricsFor(r int, b *contract.Block, p *contract.BlockProjectio
 		m.above, m.below = ty.Body*.25, ty.Body*.6
 	}
 	m.width = max(m.width-m.x, 1)
-	if h := e.previewHeight(b, e.previewObject(b, p)); h > 0 {
+	if h := e.previewHeight(b, e.previewObject(r, b, p), m.width); h > 0 {
 		m.preview = h
 		m.below += h
 	}

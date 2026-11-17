@@ -102,7 +102,7 @@ func (e *Editor) LinkBar(c *ui.Context) {
 	left := max(e.contentX(), min(cx-60, e.contentX()+e.width-360))
 	bar := ui.Row(c).Absolute().Left(left).Top(cy+ch+8).Height(36).Padding(5, 5, 5, 12).Gap(6).AlignItems(ui.Center).
 		Radius(12).Border(1, t.Border).Shadow(0, 8, 24, 0, t.ShadowColor).Material(effects.Glass(t, effects.Panel)).
-		Label(locales.LiveeditLink())
+		Role(ui.RoleToolbar).Label(locales.LiveeditLink())
 	bar.Children(func() {
 		ui.Text(c, link.Dest).Font(theme.Mono).FontSize(theme.UIBadge).TextColor(t.Muted).SingleLine().MaxWidth(220)
 		if !e.readOnly() && !dest.Empty() {

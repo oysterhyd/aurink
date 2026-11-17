@@ -83,6 +83,9 @@ func (e *Editor) linkAt(x, y float32) string {
 		return ""
 	}
 	l := e.current(r)
+	if l.html != nil {
+		return e.htmlLinkAt(r, l, x, y)
+	}
 	pos := l.layout.PositionAt(ui.Point{X: x - e.contentX() - l.m.x, Y: y - e.rowTextY(r)})
 	src := e.opts.Projector.ToSource(&l.proj, pos.Index, contract.Downstream)
 	for i := range l.proj.Segments {
@@ -125,6 +128,9 @@ func (e *Editor) rowCommand(ev ui.InputEvent) bool {
 		return false
 	}
 	if e.tocClick(r, ev.X, ev.Y) {
+		return true
+	}
+	if e.htmlClick(r, ev) {
 		return true
 	}
 	if c := e.taskBoxAt(r, ev.X, ev.Y); c != nil {

@@ -149,10 +149,10 @@ func (s *Shell) catTitle(i int) string {
 }
 
 func (s *Shell) settingsNav(c *ui.Context, t *theme.Tokens) {
-	ui.Column(c.Key("nav")).Width(176).Padding(18, 10).Gap(2).Background(t.Surface).Children(func() {
+	ui.Column(c.Key("nav")).Width(176).Padding(18, 10).Gap(2).Background(t.Surface).Role(ui.RoleTabList).Children(func() {
 		for i := range catShortcuts + 1 {
 			label := s.catTitle(i)
-			b := ui.Box(c.Key(i)).Height(32).Role(ui.RoleTab).Label(label)
+			b := ui.Box(c.Key(i)).Height(32).Role(ui.RoleTab).Label(label).Checked(i == s.set.cat).Focusable()
 			b.Children(func() {
 				if i == s.set.cat {
 					pill := ui.Box(c.Key("pill")).Absolute().Fill().Radius(8).Background(t.AccentSoft)
@@ -193,9 +193,9 @@ func (s *Shell) row(c *ui.Context, t *theme.Tokens, key, label, hint string, con
 // choice is a segmented control over options; it returns the clicked index or -1.
 func (s *Shell) choice(c *ui.Context, t *theme.Tokens, key string, options []string, selected int) int {
 	clicked := -1
-	ui.Row(c.Key(key)).Padding(2).Radius(8).Background(t.Surface).Children(func() {
+	ui.Row(c.Key(key)).Padding(2).Radius(8).Background(t.Surface).Role(ui.RoleRadioGroup).Children(func() {
 		for i, label := range options {
-			b := ui.Box(c.Key(i)).Height(26).Role(ui.RoleRadio).Label(label).Checked(i == selected)
+			b := ui.Box(c.Key(i)).Height(26).Role(ui.RoleRadio).Label(label).Checked(i == selected).Focusable()
 			b.Children(func() {
 				if i == selected {
 					pill := ui.Box(c.Key("pill")).Absolute().Fill().Radius(6).Background(t.Sheet).Shadow(0, 1, 2, 0, t.ShadowColor)
@@ -278,7 +278,7 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 	v := s.o.Settings.Get()
 	a := v.Appearance
 	// The theme cards: a window with a sheet and two lines of text.
-	ui.Row(c.Key("themes")).Gap(12).Padding(10, 0, 14, 0).Children(func() {
+	ui.Row(c.Key("themes")).Gap(12).Padding(10, 0, 14, 0).Role(ui.RoleRadioGroup).Label(locales.SettingsAppearance()).Children(func() {
 		cards := []struct {
 			mode, label string
 			dark        int // 0 light, 1 dark, 2 both
@@ -287,7 +287,7 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 		}
 		for _, card := range cards {
 			on := a.Theme == card.mode || (card.mode == "system" && a.Theme == "")
-			b := ui.Column(c.Key(card.mode)).Grow(1).Basis(0).Gap(6).Role(ui.RoleRadio).Label(card.label).Checked(on)
+			b := ui.Column(c.Key(card.mode)).Grow(1).Basis(0).Gap(6).Role(ui.RoleRadio).Label(card.label).Checked(on).Focusable()
 			b.Children(func() {
 				light, dark := theme.For(theme.Options{Hue: float32(a.AccentHue)}), theme.For(theme.Options{Dark: true, Hue: float32(a.AccentHue)})
 				ring := t.Border
@@ -323,11 +323,11 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 		}
 	})
 	s.row(c, t, "accent", locales.SettingsAccent(), locales.SettingsAccentHint(), func() {
-		ui.Row(c).Gap(8).Children(func() {
+		ui.Row(c).Gap(8).Role(ui.RoleRadioGroup).Label(locales.SettingsAccent()).Children(func() {
 			for _, h := range accentHues {
 				on := a.AccentHue == h.hue
 				sw := ui.Box(c.Key(h.hue)).Size(22, 22).Radius(11).Background(theme.For(theme.Options{Hue: float32(h.hue)}).Accent).
-					Role(ui.RoleRadio).Label(h.name()).Checked(on)
+					Role(ui.RoleRadio).Label(h.name()).Checked(on).Focusable()
 				if on {
 					sw.Border(2, t.Sheet).Shadow(0, 0, 0, 2, theme.For(theme.Options{Hue: float32(h.hue)}).Accent)
 				}

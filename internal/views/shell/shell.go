@@ -550,7 +550,7 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 			s.sidebar = !s.sidebar
 		}
 		// The tabs scroll when they do not fit; the new button stays beside them.
-		ui.ScrollHorizontal(c.Key("tabs")).Shrink(1).MinWidth(0).Gap(tabGap).AlignItems(ui.Center).Children(func() {
+		ui.ScrollHorizontal(c.Key("tabs")).Shrink(1).MinWidth(0).Gap(tabGap).AlignItems(ui.Center).Role(ui.RoleTabList).Children(func() {
 			// A copy: dragging reorders s.docs while the tabs are built.
 			for _, d := range slices.Clone(s.docs) {
 				s.tab(c.Key(d.s.ID()), t, d)
@@ -583,7 +583,7 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
 	st := d.s.State()
 	active := d == s.active
-	tab := ui.Box(c).Height(30).Role(ui.RoleTab).Label(st.Name)
+	tab := ui.Box(c).Height(30).Role(ui.RoleTab).Label(st.Name).Checked(active).Focusable()
 	clicked := tab.Clicked()
 	hover := tab.Hovered()
 	if dx, _, ok := tab.Dragged(); ok && dx != 0 {
@@ -644,7 +644,7 @@ func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
 
 func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {
 	om := ui.Row(c).Size(280, 30).Padding(0, 10).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusButton).
-		Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.ShellOmnibox())
+		Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.ShellOmnibox()).Focusable()
 	// The palette grows out of the omnibox and goes back into it (02 §5.4).
 	if !s.pal.IsOpen() && !s.still {
 		om.Transition(s.matched(&motion.Gentle, palette.Match))
@@ -676,7 +676,7 @@ func (s *Shell) brandMenu(c *ui.Context, t *theme.Tokens) {
 		return
 	}
 	b := ui.Row(c.Key("fileMenu")).Size(30, 30).Center().
-		Radius(theme.RadiusButton).Role(ui.RoleButton).Label(locales.ShellFileMenu())
+		Radius(theme.RadiusButton).Role(ui.RoleMenuButton).Label(locales.ShellFileMenu()).Focusable()
 	if b.Hovered() {
 		b.Background(t.Hover)
 	}
@@ -717,7 +717,8 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 		label = locales.ShellViewTypewriter()
 	}
 	// The tabs give way to it: it keeps its one line however many are open.
-	b := ui.Row(c.Key("view")).Shrink(0).Height(30).Padding(0, 8).Gap(4).AlignItems(ui.Center).Radius(theme.RadiusButton).Role(ui.RoleButton).Label(label)
+	b := ui.Row(c.Key("view")).Shrink(0).Height(30).Padding(0, 8).Gap(4).AlignItems(ui.Center).Radius(theme.RadiusButton).
+		Role(ui.RoleMenuButton).Label(label).Focusable()
 	if b.Hovered() {
 		b.Background(t.Hover)
 	}
@@ -764,7 +765,8 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 
 func (s *Shell) windowButtons(c *ui.Context, t *theme.Tokens) {
 	button := func(key string, icon *ui.SVG, label string, closing bool) ui.Element {
-		b := ui.Row(c.Key(key)).Size(theme.WindowButton, theme.TitleBar).Justify(ui.Center).AlignItems(ui.Center).Role(ui.RoleButton).Label(label)
+		b := ui.Row(c.Key(key)).Size(theme.WindowButton, theme.TitleBar).Justify(ui.Center).AlignItems(ui.Center).
+			Role(ui.RoleButton).Label(label).Focusable()
 		tone := t.Muted
 		if b.Hovered() {
 			if closing {
@@ -826,7 +828,8 @@ func (s *Shell) openDocuments(c *ui.Context, t *theme.Tokens) {
 		ui.Text(c, locales.ShellOpenDocuments()).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(8, 8, 6)
 		for _, d := range s.docs {
 			st := d.s.State()
-			row := ui.Row(c.Key(d.s.ID())).Padding(6, 8).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusRow).Role(ui.RoleButton).Label(st.Name)
+			row := ui.Row(c.Key(d.s.ID())).Padding(6, 8).Gap(8).AlignItems(ui.Center).Radius(theme.RadiusRow).
+				Role(ui.RoleButton).Label(st.Name).Checked(d == s.active).Focusable()
 			if d == s.active {
 				row.Background(t.SurfaceHover)
 			} else if row.Hovered() {
@@ -937,7 +940,7 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 			s.focusNext = false
 			d.live.Focus()
 		}
-		d.live.View(c.Key("live"))
+		liveBox := d.live.View(c.Key("live"))
 		if !s.renderWarned && d.live.RenderUnavailable() {
 			// Once a run: math and diagrams show as source (02 §5.9).
 			s.renderWarned = true
@@ -950,7 +953,9 @@ func (s *Shell) editor(c *ui.Context, t *theme.Tokens, d *doc) {
 		d.live.TableBar(c.Key("tableBar"))
 		d.live.LinkBar(c.Key("linkBar"))
 		d.live.FormatBar(c.Key("formatBar"))
-		d.live.SlashMenu(c.Key("slashMenu"))
+		if active := d.live.SlashMenu(c.Key("slashMenu")); active.Valid() {
+			liveBox.ActiveDescendant(active)
+		}
 		s.findBar(c, t, d)
 	}
 }

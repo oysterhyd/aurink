@@ -348,15 +348,17 @@ func (e *Editor) slashImage() {
 type slashPill struct{}
 
 // SlashMenu builds the panel under the "/" (02 §5.3): the list on the left,
-// grouped, with a sliding pill; the choice's preview on the right.
-func (e *Editor) SlashMenu(c *ui.Context) {
+// grouped, with a sliding pill; the choice's preview on the right. It returns
+// the active menu item or grid cell for ActiveDescendant.
+func (e *Editor) SlashMenu(c *ui.Context) ui.Element {
+	var active ui.Element
 	q, ok := e.slashQuery()
 	if !ok {
 		e.slash.open = false
-		return
+		return active
 	}
 	if e.preedit != "" {
-		return // the input method's candidates are where the panel would be
+		return active // the input method's candidates are where the panel would be
 	}
 	sm := &e.slash
 	x, y, h := e.caretRect()
@@ -380,20 +382,20 @@ func (e *Editor) SlashMenu(c *ui.Context) {
 		var label, desc, syntax string
 		switch sm.step {
 		case slashSize:
-			e.slashGrid(c)
+			active = e.slashGrid(c)
 			label = locales.LiveeditSlashSizeN(strconv.Itoa(sm.rows), strconv.Itoa(sm.cols))
 			desc = locales.LiveeditSlashSizeDesc()
 			syntax = tableSyntax(min(sm.rows, 3), min(sm.cols, 4))
 		case slashLanguage:
 			_, langs := e.slashMatches(q)
-			e.slashList(c, q, len(langs))
+			active = e.slashList(c, q, len(langs))
 			if len(langs) > 0 {
 				l := langs[min(sm.sel, len(langs)-1)]
 				label, desc, syntax = locales.LiveeditSlashLanguage(), locales.LiveeditSlashLanguageDesc(), "```"+l+"\n\n```"
 			}
 		default:
 			items, _ := e.slashMatches(q)
-			e.slashList(c, q, len(items))
+			active = e.slashList(c, q, len(items))
 			if len(items) > 0 {
 				it := items[min(sm.sel, len(items)-1)]
 				label, desc, syntax = it.label, it.desc, it.syntax
@@ -410,11 +412,13 @@ func (e *Editor) SlashMenu(c *ui.Context) {
 				Padding(10).Radius(8).Background(t.CodeBg).Border(1, t.Border).FillWidth()
 		})
 	})
+	return active
 }
 
 // slashList is the left column: the items under their groups, or the
 // languages.
-func (e *Editor) slashList(c *ui.Context, q string, n int) {
+func (e *Editor) slashList(c *ui.Context, q string, n int) ui.Element {
+	var active ui.Element
 	sm := &e.slash
 	t := e.t
 	col := ui.Column(c).Width(slashListW).FillHeight().Padding(5)
@@ -468,7 +472,10 @@ func (e *Editor) slashList(c *ui.Context, q string, n int) {
 				glyph, label = items[i].glyph, items[i].label
 			}
 			b := ui.Row(c.Key(k)).Height(slashRowH).Padding(0, 8).Gap(9).AlignItems(ui.Center).Radius(8).
-				Role(ui.RoleMenuItem).Label(label).KeepFocus()
+				Role(ui.RoleMenuItem).Label(label).Checked(i == sel).KeepFocus()
+			if i == sel {
+				active = b
+			}
 			b.Children(func() {
 				if i == sel {
 					p := ui.Box(c.Key("pill")).Absolute().Fill().Radius(8).Background(t.AccentSoft)
@@ -492,11 +499,13 @@ func (e *Editor) slashList(c *ui.Context, q string, n int) {
 			}
 		}).Grow(1).MinHeight(0)
 	})
+	return active
 }
 
 // slashGrid is the size step: a grid of cells, the chosen size lit; a cell
 // under the pointer chooses its size, a click inserts it.
-func (e *Editor) slashGrid(c *ui.Context) {
+func (e *Editor) slashGrid(c *ui.Context) ui.Element {
+	var active ui.Element
 	sm := &e.slash
 	t := e.t
 	const cell, gap = 20, 4
@@ -507,7 +516,11 @@ func (e *Editor) slashGrid(c *ui.Context) {
 				ui.Row(c.Key(r)).Gap(gap).Children(func() {
 					for k := 1; k <= tableMaxCols; k++ {
 						b := ui.Box(c.Key(k)).Size(cell, cell).Radius(4).Border(1, t.Border).KeepFocus().
-							Role(ui.RoleButton).Label(locales.LiveeditSlashSizeN(strconv.Itoa(r), strconv.Itoa(k)))
+							Role(ui.RoleMenuItem).Label(locales.LiveeditSlashSizeN(strconv.Itoa(r), strconv.Itoa(k))).
+							Checked(r <= sm.rows && k <= sm.cols)
+						if r == sm.rows && k == sm.cols {
+							active = b
+						}
 						if r <= sm.rows && k <= sm.cols {
 							b.Background(t.AccentSoft).Border(1, t.Accent.Alpha(.6))
 						} else {
@@ -526,6 +539,7 @@ func (e *Editor) slashGrid(c *ui.Context) {
 			}
 		})
 	})
+	return active
 }
 
 // tableSyntax is the Markdown of an empty table, for the preview.

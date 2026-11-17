@@ -89,8 +89,12 @@ func (e *Editor) paintRows(p *ui.Painter, r ui.Rect) {
 		if selFrom != selTo && selFrom < b.Trailer.End && selTo > b.Lead.Start {
 			e.fillRange(p, l, b, x, y, selFrom, selTo, t.Selection)
 		}
-		p.TextLayout(l.layout, x, y, t.Text)
-		rc.paintObjects()
+		if l.html != nil {
+			rc.paintHTMLBlock(l.html)
+		} else {
+			p.TextLayout(l.layout, x, y, t.Text)
+			rc.paintObjects()
+		}
 		rc.paintContainers()
 		w.front(&rc)
 		rc.paintPreview()

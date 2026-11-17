@@ -112,7 +112,7 @@ func (e *Editor) FormatBar(c *ui.Context) {
 func (e *Editor) fmtButton(c *ui.Context, glyph func(*ui.Context) ui.Element, label string, id contract.CommandID, state contract.TriState) bool {
 	t := e.t
 	b := ui.Row(c).Size(30, 28).Radius(7).Justify(ui.Center).AlignItems(ui.Center).
-		Role(ui.RoleButton).Label(label).KeepFocus()
+		Role(ui.RoleToggleButton).Checked(state == contract.On).Label(label).Tooltip(label).KeepFocus()
 	tone := t.Text
 	switch {
 	case state == contract.On:
@@ -146,7 +146,7 @@ func (e *Editor) transform(c *ui.Context, f contract.FormatState) {
 		label = locales.LiveeditQuote()
 	}
 	b := ui.Row(c.Key("transform")).Height(28).Padding(0, 6, 0, 8).Gap(3).Radius(7).AlignItems(ui.Center).
-		Role(ui.RoleButton).Label(locales.LiveeditTransform()).KeepFocus()
+		Role(ui.RoleMenuButton).Label(locales.LiveeditTransform()).Value(label).KeepFocus()
 	if b.Hovered() {
 		b.Background(t.Hover)
 	}

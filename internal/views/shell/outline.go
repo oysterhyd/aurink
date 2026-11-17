@@ -75,9 +75,9 @@ func (s *Shell) outlinePanel(c *ui.Context, t *theme.Tokens) {
 	}
 	ui.List(c.Key("outline"), &s.outline.rows, len(hs), func(i int) {
 		h := hs[i]
-		row := ui.Row(c.Key(h.id)).Height(28).Padding(0, 8).PaddingStart(8 + float32(h.level-minLevel)*14).
-			AlignItems(ui.Center).Radius(theme.RadiusRow).Role(ui.RoleButton).Label(h.title)
 		on := h.id == current
+		row := ui.Row(c.Key(h.id)).Height(28).Padding(0, 8).PaddingStart(8 + float32(h.level-minLevel)*14).
+			AlignItems(ui.Center).Radius(theme.RadiusRow).Role(ui.RoleButton).Label(h.title).Checked(on).Focusable()
 		if !on && row.Hovered() {
 			row.Background(t.Hover)
 		}

@@ -15,6 +15,7 @@ import (
 	"aurink/internal/contract"
 	"aurink/internal/views/kit"
 	"aurink/internal/views/theme"
+	"aurink/locales"
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/editor"
 )
@@ -53,7 +54,7 @@ func New(m contract.DocumentModel, t *theme.Tokens) *Editor {
 	e.snap = buf.Snapshot()
 	e.version, e.docVer = e.snap.Version(), m.Version()
 	e.st = &editor.State{Buffer: buf, SoftWrap: !large, NoAutoClose: true, ReadOnly: m.ReadOnly(),
-		Font: ui.Font{Family: theme.Mono, Size: 13}, LineHeight: 1.6, OnInput: e.input}
+		Label: locales.SourceEditor(), Font: ui.Font{Family: theme.Mono, Size: 13}, LineHeight: 1.6, OnInput: e.input}
 	e.dominant = m.Meta().Dominant
 	e.SetTheme(t)
 	// MyGo's finder with Aurink's bar (02 §5.14, D16): its matches are drawn in
@@ -130,6 +131,7 @@ func (e *Editor) SetTheme(t *theme.Tokens) {
 // frame after it writes back; Sync does it sooner for those who need it.
 func (e *Editor) View(c *ui.Context) ui.Element {
 	e.Sync()
+	e.st.Label = locales.SourceEditor()
 	return editor.View(c, e.st).Fill()
 }
 
