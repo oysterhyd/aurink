@@ -1089,9 +1089,62 @@
   "@settings_ext_math_hint": {
     "description": "Extension's description."
   },
-  "settings_shortcuts_hint": "View only",
+  "settings_shortcuts_hint": "Click a shortcut to record a new key; Esc cancels",
   "@settings_shortcuts_hint": {
     "description": "The shortcuts page's note."
+  },
+  "settings_custom_themes": "Custom Themes",
+  "@settings_custom_themes": {
+    "description": "Settings row for user JSON themes."
+  },
+  "settings_custom_themes_hint": "JSON files in the themes folder",
+  "@settings_custom_themes_hint": {
+    "description": "Description for custom themes row."
+  },
+  "settings_open_themes_folder": "Open Themes Folder",
+  "@settings_open_themes_folder": {
+    "description": "Button that opens the user themes folder."
+  },
+  "settings_theme_bad": "Theme file could not be loaded",
+  "@settings_theme_bad": {
+    "description": "Notice shown when a custom theme JSON file is invalid."
+  },
+  "settings_shortcuts_search": "Filter shortcuts…",
+  "@settings_shortcuts_search": {
+    "description": "Placeholder and label for filtering shortcuts."
+  },
+  "settings_shortcuts_record": "Press shortcut…",
+  "@settings_shortcuts_record": {
+    "description": "Prompt shown while recording a keybinding."
+  },
+  "settings_shortcuts_unbound": "Unassigned",
+  "@settings_shortcuts_unbound": {
+    "description": "Shown when a command has no active shortcut."
+  },
+  "settings_shortcuts_need_mod": "Include Ctrl, Alt, or F1–F12",
+  "@settings_shortcuts_need_mod": {
+    "description": "Warning when a bare key is pressed while recording."
+  },
+  "settings_shortcuts_conflict": "Used by {cmd}",
+  "@settings_shortcuts_conflict": {
+    "description": "Warning when a recorded shortcut is already bound to another command.",
+    "placeholders": {
+      "cmd": {
+        "type": "String"
+      }
+    }
+  },
+  "settings_shortcuts_override": "Override",
+  "@settings_shortcuts_override": {
+    "description": "Button confirming override of a conflicting shortcut."
+  },
+  "settings_shortcuts_reset": "Reset",
+  "@settings_shortcuts_reset": {
+    "description": "Button resetting one command's shortcut to default."
+  },
+  "settings_shortcuts_reset_all": "Reset All",
+  "@settings_shortcuts_reset_all": {
+    "description": "Button resetting all customized shortcuts to defaults."
   },
   "settings_about": "About Aurink",
   "@settings_about": {

@@ -3598,18 +3598,188 @@ func (msgs Messages) SettingsExtMathHint() string {
 	return Catalog.Format(msgs.locale, "settings_ext_math_hint", nil)
 }
 
-// SettingsShortcutsHint says "View only"
+// SettingsShortcutsHint says "Click a shortcut to record a new key; Esc cancels"
 // in the language the app shows.
 //
 // The shortcuts page's note.
 func SettingsShortcutsHint() string { return In(i18n.Locale()).SettingsShortcutsHint() }
 
-// SettingsShortcutsHint says "View only"
+// SettingsShortcutsHint says "Click a shortcut to record a new key; Esc cancels"
 // in the language of msgs.
 //
 // The shortcuts page's note.
 func (msgs Messages) SettingsShortcutsHint() string {
 	return Catalog.Format(msgs.locale, "settings_shortcuts_hint", nil)
+}
+
+// SettingsCustomThemes says "Custom Themes"
+// in the language the app shows.
+//
+// Settings row for user JSON themes.
+func SettingsCustomThemes() string { return In(i18n.Locale()).SettingsCustomThemes() }
+
+// SettingsCustomThemes says "Custom Themes"
+// in the language of msgs.
+//
+// Settings row for user JSON themes.
+func (msgs Messages) SettingsCustomThemes() string {
+	return Catalog.Format(msgs.locale, "settings_custom_themes", nil)
+}
+
+// SettingsCustomThemesHint says "JSON files in the themes folder"
+// in the language the app shows.
+//
+// Description for custom themes row.
+func SettingsCustomThemesHint() string { return In(i18n.Locale()).SettingsCustomThemesHint() }
+
+// SettingsCustomThemesHint says "JSON files in the themes folder"
+// in the language of msgs.
+//
+// Description for custom themes row.
+func (msgs Messages) SettingsCustomThemesHint() string {
+	return Catalog.Format(msgs.locale, "settings_custom_themes_hint", nil)
+}
+
+// SettingsOpenThemesFolder says "Open Themes Folder"
+// in the language the app shows.
+//
+// Button that opens the user themes folder.
+func SettingsOpenThemesFolder() string { return In(i18n.Locale()).SettingsOpenThemesFolder() }
+
+// SettingsOpenThemesFolder says "Open Themes Folder"
+// in the language of msgs.
+//
+// Button that opens the user themes folder.
+func (msgs Messages) SettingsOpenThemesFolder() string {
+	return Catalog.Format(msgs.locale, "settings_open_themes_folder", nil)
+}
+
+// SettingsThemeBad says "Theme file could not be loaded"
+// in the language the app shows.
+//
+// Notice shown when a custom theme JSON file is invalid.
+func SettingsThemeBad() string { return In(i18n.Locale()).SettingsThemeBad() }
+
+// SettingsThemeBad says "Theme file could not be loaded"
+// in the language of msgs.
+//
+// Notice shown when a custom theme JSON file is invalid.
+func (msgs Messages) SettingsThemeBad() string {
+	return Catalog.Format(msgs.locale, "settings_theme_bad", nil)
+}
+
+// SettingsShortcutsSearch says "Filter shortcuts…"
+// in the language the app shows.
+//
+// Placeholder and label for filtering shortcuts.
+func SettingsShortcutsSearch() string { return In(i18n.Locale()).SettingsShortcutsSearch() }
+
+// SettingsShortcutsSearch says "Filter shortcuts…"
+// in the language of msgs.
+//
+// Placeholder and label for filtering shortcuts.
+func (msgs Messages) SettingsShortcutsSearch() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_search", nil)
+}
+
+// SettingsShortcutsRecord says "Press shortcut…"
+// in the language the app shows.
+//
+// Prompt shown while recording a keybinding.
+func SettingsShortcutsRecord() string { return In(i18n.Locale()).SettingsShortcutsRecord() }
+
+// SettingsShortcutsRecord says "Press shortcut…"
+// in the language of msgs.
+//
+// Prompt shown while recording a keybinding.
+func (msgs Messages) SettingsShortcutsRecord() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_record", nil)
+}
+
+// SettingsShortcutsUnbound says "Unassigned"
+// in the language the app shows.
+//
+// Shown when a command has no active shortcut.
+func SettingsShortcutsUnbound() string { return In(i18n.Locale()).SettingsShortcutsUnbound() }
+
+// SettingsShortcutsUnbound says "Unassigned"
+// in the language of msgs.
+//
+// Shown when a command has no active shortcut.
+func (msgs Messages) SettingsShortcutsUnbound() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_unbound", nil)
+}
+
+// SettingsShortcutsNeedMod says "Include Ctrl, Alt, or F1–F12"
+// in the language the app shows.
+//
+// Warning when a bare key is pressed while recording.
+func SettingsShortcutsNeedMod() string { return In(i18n.Locale()).SettingsShortcutsNeedMod() }
+
+// SettingsShortcutsNeedMod says "Include Ctrl, Alt, or F1–F12"
+// in the language of msgs.
+//
+// Warning when a bare key is pressed while recording.
+func (msgs Messages) SettingsShortcutsNeedMod() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_need_mod", nil)
+}
+
+// SettingsShortcutsConflict says "Used by {cmd}"
+// in the language the app shows.
+//
+// Warning when a recorded shortcut is already bound to another command.
+func SettingsShortcutsConflict(cmd string) string {
+	return In(i18n.Locale()).SettingsShortcutsConflict(cmd)
+}
+
+// SettingsShortcutsConflict says "Used by {cmd}"
+// in the language of msgs.
+//
+// Warning when a recorded shortcut is already bound to another command.
+func (msgs Messages) SettingsShortcutsConflict(cmd string) string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_conflict", map[string]any{"cmd": cmd})
+}
+
+// SettingsShortcutsOverride says "Override"
+// in the language the app shows.
+//
+// Button confirming override of a conflicting shortcut.
+func SettingsShortcutsOverride() string { return In(i18n.Locale()).SettingsShortcutsOverride() }
+
+// SettingsShortcutsOverride says "Override"
+// in the language of msgs.
+//
+// Button confirming override of a conflicting shortcut.
+func (msgs Messages) SettingsShortcutsOverride() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_override", nil)
+}
+
+// SettingsShortcutsReset says "Reset"
+// in the language the app shows.
+//
+// Button resetting one command's shortcut to default.
+func SettingsShortcutsReset() string { return In(i18n.Locale()).SettingsShortcutsReset() }
+
+// SettingsShortcutsReset says "Reset"
+// in the language of msgs.
+//
+// Button resetting one command's shortcut to default.
+func (msgs Messages) SettingsShortcutsReset() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_reset", nil)
+}
+
+// SettingsShortcutsResetAll says "Reset All"
+// in the language the app shows.
+//
+// Button resetting all customized shortcuts to defaults.
+func SettingsShortcutsResetAll() string { return In(i18n.Locale()).SettingsShortcutsResetAll() }
+
+// SettingsShortcutsResetAll says "Reset All"
+// in the language of msgs.
+//
+// Button resetting all customized shortcuts to defaults.
+func (msgs Messages) SettingsShortcutsResetAll() string {
+	return Catalog.Format(msgs.locale, "settings_shortcuts_reset_all", nil)
 }
 
 // SettingsAbout says "About Aurink"

@@ -141,6 +141,9 @@ func (r *Registry) rebuild() {
 	var chords []contract.Chord
 	r.keys = make(map[contract.CommandID][]contract.Chord)
 	add := func(binding contract.KeyBinding) {
+		if binding.Chord.Key == "" {
+			return
+		}
 		ids := owners[binding.Chord]
 		for _, id := range ids {
 			if id == binding.Command {

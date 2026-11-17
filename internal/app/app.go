@@ -146,6 +146,7 @@ func newApplication() (*application, error) {
 	a.sessions = sessions
 	registry := commands.New()
 	registry.SetDefaults(commands.DefaultBindings())
+	registry.SetUserBindings(base.Keymap)
 	ws := workspace.New(watch.New(), trash.New(), dispatcher, workspace.Options{ShowAll: base.Files.ShowAllFiles})
 	assets := workspace.NewAssets(base.Files.ImageDir, base.Files.CopyImages)
 	index := newFileIndex(ws, dispatcher)
@@ -165,6 +166,14 @@ func newApplication() (*application, error) {
 		SetLanguage:   mygo.App.SetLocale,
 		Version:       mygo.App.Version(),
 		Licenses:      licenses,
+		ThemesDir:     filepath.Join(data, "themes"),
+		OpenPath: func(path string) {
+			go func() {
+				if err := mygo.Shell.OpenPath(path); err != nil {
+					slog.Warn("open path failed", "path", path, "error", err)
+				}
+			}()
+		},
 	})
 	// The settings store is the language's source; files settings reach the
 	// sessions as they change.

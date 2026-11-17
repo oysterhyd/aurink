@@ -4,6 +4,7 @@ package shell
 
 import (
 	"errors"
+	"log/slog"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -109,6 +110,10 @@ type Options struct {
 	// line for each bundled library with its license.
 	Version  string
 	Licenses []string
+	// ThemesDir holds user custom theme JSON files (PathUserData/themes); ""
+	// disables custom theme loading. OpenPath opens a folder in the OS shell.
+	ThemesDir string
+	OpenPath  func(path string)
 }
 
 const maxNotices = 4
@@ -150,17 +155,22 @@ type Shell struct {
 	off     func()
 	offSet  func()
 
-	dark      bool
-	themeSet  bool
-	themeGen  int
-	origin    ui.Point
-	live      bool
-	cpu       bool
-	tokens    map[theme.Options]*theme.Tokens
-	notices   []*notice
-	services  ui.Services
-	hasServ   bool
-	focusNext bool
+	dark         bool
+	themeSet     bool
+	themeGen     int
+	origin       ui.Point
+	prevTheme    *theme.Tokens
+	customThemes []theme.CustomTheme
+	badThemes    map[string]bool
+	tabFadeLeft  bool
+	tabFadeRight bool
+	live         bool
+	cpu          bool
+	tokens       map[theme.Options]*theme.Tokens
+	notices      []*notice
+	services     ui.Services
+	hasServ      bool
+	focusNext    bool
 	// reading is reading mode, for the window (D17); zoom is the document's
 	// zoom in steps of zoomStep.
 	reading bool
@@ -201,7 +211,8 @@ const tabGap = 6
 
 // New returns a shell over the sessions, with a tab for each already open.
 func New(o Options) *Shell {
-	s := &Shell{o: o, tokens: map[theme.Options]*theme.Tokens{}, widths: map[*doc]float32{}}
+	s := &Shell{o: o, tokens: map[theme.Options]*theme.Tokens{}, widths: map[*doc]float32{}, badThemes: map[string]bool{}}
+	s.reloadCustomThemes()
 	s.pal = palette.New(o.Fuzzy, paletteSource{s})
 	s.watchWorkspace()
 	s.off = o.Sessions.Subscribe(s.sessionsChanged)
@@ -390,9 +401,64 @@ func (s *Shell) prefs() contract.EditPrefs {
 	return p
 }
 
+// reloadCustomThemes reads ThemesDir and notifies once per corrupt theme file.
+func (s *Shell) reloadCustomThemes() {
+	if s.o.ThemesDir == "" {
+		s.customThemes = nil
+		return
+	}
+	themes, errs := theme.LoadCustomDir(s.o.ThemesDir)
+	s.customThemes = themes
+	for _, err := range errs {
+		msg := err.Error()
+		if s.badThemes[msg] {
+			continue
+		}
+		s.badThemes[msg] = true
+		slog.Warn("custom theme load failed", "error", err)
+		s.Notify(contract.Notice{Level: contract.NoticeWarning, Message: locales.SettingsThemeBad(), Detail: msg})
+	}
+	cur := s.o.Settings.Get().Appearance.Theme
+	if strings.HasPrefix(cur, theme.CustomPrefix) {
+		if ct, ok := s.customTheme(cur); ok {
+			s.dark = ct.Dark
+		}
+	}
+}
+
+func (s *Shell) customTheme(id string) (*theme.CustomTheme, bool) {
+	for i := range s.customThemes {
+		if s.customThemes[i].ID == id {
+			return &s.customThemes[i], true
+		}
+	}
+	return nil, false
+}
+
+// CustomThemes returns the loaded custom themes, for tests.
+func (s *Shell) CustomThemes() []theme.CustomTheme {
+	return slices.Clone(s.customThemes)
+}
+
+// TabFades reports whether the horizontal tab bar's left and right overflow
+// edge fades were shown in the last frame, for tests.
+func (s *Shell) TabFades() (left, right bool) {
+	return s.tabFadeLeft, s.tabFadeRight
+}
+
 // palette returns the tokens of the settings, in the same value for the same options.
 func (s *Shell) palette(dark bool) *theme.Tokens {
 	a := s.o.Settings.Get().Appearance
+	if strings.HasPrefix(a.Theme, theme.CustomPrefix) {
+		if ct, ok := s.customTheme(a.Theme); ok {
+			return ct.Tokens(theme.Options{
+				Dark:     ct.Dark,
+				LowPower: a.ReduceTransparency,
+				Still:    s.still,
+				Hue:      ct.AccentHue,
+			})
+		}
+	}
 	o := theme.Options{Dark: dark, LowPower: a.ReduceTransparency, Still: s.still, Hue: float32(a.AccentHue)}
 	t := s.tokens[o]
 	if t == nil {
@@ -403,6 +469,12 @@ func (s *Shell) palette(dark bool) *theme.Tokens {
 }
 
 func (s *Shell) applyTheme() {
+	a := s.o.Settings.Get().Appearance
+	if strings.HasPrefix(a.Theme, theme.CustomPrefix) {
+		if ct, ok := s.customTheme(a.Theme); ok {
+			s.dark = ct.Dark
+		}
+	}
 	t := s.palette(s.dark)
 	for _, d := range s.docs {
 		d.live.SetTheme(t)
@@ -415,6 +487,7 @@ func (s *Shell) applyTheme() {
 
 // ToggleTheme flips light and dark, dissolving out from a point of the window.
 func (s *Shell) ToggleTheme(at ui.Point) {
+	s.prevTheme = s.palette(s.dark)
 	s.dark = !s.dark
 	s.themeGen++
 	s.origin = at
@@ -432,10 +505,16 @@ func (s *Shell) ToggleTheme(at ui.Point) {
 func (s *Shell) followSystem(c *ui.Context) {
 	mode := s.o.Settings.Get().Appearance.Theme
 	want := s.dark
-	switch mode {
-	case "dark":
+	switch {
+	case strings.HasPrefix(mode, theme.CustomPrefix):
+		if ct, ok := s.customTheme(mode); ok {
+			want = ct.Dark
+		} else {
+			want = c.Theme().Dark
+		}
+	case mode == "dark":
 		want = true
-	case "light":
+	case mode == "light":
 		want = false
 	default:
 		want = c.Theme().Dark
@@ -476,8 +555,12 @@ func (s *Shell) View(c *ui.Context) {
 			return
 		}
 		// The old theme stays underneath while the new one dissolves in (ADR-004).
+		oldTheme := s.prevTheme
+		if oldTheme == nil {
+			oldTheme = s.palette(!s.dark)
+		}
 		s.live = false
-		s.window(c.Key("old"), s.palette(!s.dark))
+		s.window(c.Key("old"), oldTheme)
 		s.live = true
 		over := ui.Box(c.Key("new")).Absolute().Fill()
 		a := s.o.Settings.Get().Appearance
@@ -549,13 +632,9 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 		if kit.IconButton(c.Key("toggleSidebar"), t, kit.IconSidebar, locales.ShellToggleSidebar(), 30, 16).Clicked() {
 			s.sidebar = !s.sidebar
 		}
-		// The tabs scroll when they do not fit; the new button stays beside them.
-		ui.ScrollHorizontal(c.Key("tabs")).Shrink(1).MinWidth(0).Gap(tabGap).AlignItems(ui.Center).Role(ui.RoleTabList).Children(func() {
-			// A copy: dragging reorders s.docs while the tabs are built.
-			for _, d := range slices.Clone(s.docs) {
-				s.tab(c.Key(d.s.ID()), t, d)
-			}
-		})
+		// The tabs scroll when they do not fit; smooth edge fades mask overflow,
+		// and the new button stays beside them.
+		s.tabStrip(c, t)
 		s.reveal = false
 		if kit.IconButton(c.Key("new"), t, kit.IconPlus, locales.ShellNew(), 26, 14).Clicked() {
 			s.run(contract.CmdFileNew)
@@ -580,7 +659,43 @@ func (s *Shell) titleBar(c *ui.Context, t *theme.Tokens) {
 	})
 }
 
-func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
+func (s *Shell) tabStrip(c *ui.Context, t *theme.Tokens) {
+	const fadeW = 24
+	docs := slices.Clone(s.docs)
+	strip := ui.Row(c.Key("tabStrip")).Shrink(1).MinWidth(0).AlignItems(ui.Center)
+	strip.Children(func() {
+		tabs := ui.ScrollHorizontal(c.Key("tabs")).Shrink(1).MinWidth(0).Gap(tabGap).AlignItems(ui.Center).Role(ui.RoleTabList)
+		tabsRect := tabs.Bounds()
+		var firstRect, lastRect ui.Rect
+		tabs.Children(func() {
+			for i, d := range docs {
+				r := s.tab(c.Key(d.s.ID()), t, d)
+				if i == 0 {
+					firstRect = r
+				}
+				if i == len(docs)-1 {
+					lastRect = r
+				}
+			}
+		})
+		if len(docs) > 0 && tabsRect.W > 0 && firstRect.W > 0 && lastRect.W > 0 {
+			s.tabFadeLeft = firstRect.X < tabsRect.X-1
+			s.tabFadeRight = lastRect.X+lastRect.W > tabsRect.X+tabsRect.W+1
+		} else {
+			s.tabFadeLeft, s.tabFadeRight = false, false
+		}
+		if s.tabFadeLeft {
+			ui.Box(c.Key("tabFadeLeft")).Absolute().Top(0).Bottom(0).Left(0).Width(fadeW).PassThrough().
+				Gradient(t.Window, t.Window.Alpha(0), 90)
+		}
+		if s.tabFadeRight {
+			ui.Box(c.Key("tabFadeRight")).Absolute().Top(0).Bottom(0).Right(0).Width(fadeW).PassThrough().
+				Gradient(t.Window.Alpha(0), t.Window, 90)
+		}
+	})
+}
+
+func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) ui.Rect {
 	st := d.s.State()
 	active := d == s.active
 	tab := ui.Box(c).Height(30).Role(ui.RoleTab).Label(st.Name).Checked(active).Focusable()
@@ -599,8 +714,9 @@ func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
 		// The others glide aside as the dragged tab passes them.
 		tab.Transition(s.matched(&motion.Smooth, tabMatch{d}))
 	}
-	if r := tab.Bounds(); r.W > 0 {
-		s.widths[d] = r.W
+	bounds := tab.Bounds()
+	if bounds.W > 0 {
+		s.widths[d] = bounds.W
 	}
 	if active && s.reveal {
 		tab.ScrollIntoView()
@@ -640,6 +756,7 @@ func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) {
 	if clicked {
 		s.activate(d)
 	}
+	return bounds
 }
 
 func (s *Shell) omnibox(c *ui.Context, t *theme.Tokens) {

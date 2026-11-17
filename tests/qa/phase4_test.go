@@ -2,6 +2,7 @@ package qa
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -206,5 +207,193 @@ func TestLegacyGB18030SaveAsCopy(t *testing.T) {
 	a.want(a.disk(copyPath), md)
 	if a.s.ActiveSession().State().ReadOnly || a.s.ActiveSession().Model().Meta().Encoding != "utf-8" {
 		t.Fatal("SaveAs did not unlock session as UTF-8")
+	}
+}
+
+// TestCustomThemesLoadSwitchAndCorruptFallback verifies loading custom JSON
+// themes from PathUserData/themes, warning once on corrupt files without
+// crashing, switching & persisting custom themes across restarts, and opening
+// the themes folder (09 D10, FE-2.8).
+func TestCustomThemesLoadSwitchAndCorruptFallback(t *testing.T) {
+	a := newApp(t)
+	themesDir := filepath.Join(a.data, "themes")
+	if err := os.MkdirAll(themesDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(themesDir, "solarized.json"), []byte(`{
+		"name": "Solarized Paper",
+		"dark": false,
+		"accentHue": 175,
+		"colors": {"window": "#EEE8D5", "sheet": "#FDF6E3", "text": "#586E75", "accent": "#2AA198"}
+	}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(themesDir, "nord.json"), []byte(`{
+		"name": "Nord Night",
+		"dark": true,
+		"accentHue": 210,
+		"colors": {"window": "#2E3440", "sheet": "#3B4252", "text": "#ECEFF4", "accent": "#88C0D0"}
+	}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(themesDir, "broken.json"), []byte(`{corrupt`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	a.openSettings()
+	if !a.shows(locales.SettingsThemeBad()) {
+		t.Fatal("missing warning notice for corrupt custom theme JSON")
+	}
+	if len(a.s.CustomThemes()) != 2 {
+		t.Fatalf("CustomThemes len = %d, want 2", len(a.s.CustomThemes()))
+	}
+	a.click(locales.SettingsOpenThemesFolder())
+	if len(a.p.openedPaths) != 1 || a.p.openedPaths[0] != themesDir {
+		t.Fatalf("openedPaths = %v, want [%s]", a.p.openedPaths, themesDir)
+	}
+
+	a.click("Nord Night")
+	a.animate()
+	if a.settings().Appearance.Theme != "custom:nord" || !a.s.Dark() {
+		t.Fatalf("after Nord Night: theme=%q dark=%v", a.settings().Appearance.Theme, a.s.Dark())
+	}
+
+	a.click("Solarized Paper")
+	a.animate()
+	if a.settings().Appearance.Theme != "custom:solarized" || a.s.Dark() {
+		t.Fatalf("after Solarized Paper: theme=%q dark=%v", a.settings().Appearance.Theme, a.s.Dark())
+	}
+
+	// Select Nord Night, reboot, and confirm persistence across restarts.
+	a.click("Nord Night")
+	a.animate()
+	a.click(locales.SettingsClose())
+	a.boot()
+	if a.settings().Appearance.Theme != "custom:nord" || !a.s.Dark() {
+		t.Fatalf("after reboot: theme=%q dark=%v, want custom:nord / true", a.settings().Appearance.Theme, a.s.Dark())
+	}
+}
+
+// TestKeybindingEditorRecordConflictPersistAndReset verifies shortcut search,
+// bare-key rejection, Escape cancel, conflict prompt & override, live execution,
+// persistence across restarts, and Reset All (09 D11, FE-2.8).
+func TestKeybindingEditorRecordConflictPersistAndReset(t *testing.T) {
+	a := newApp(t)
+	a.open("doc.md", "# Keymap\n\nBody\n")
+	a.openSettings()
+	a.category(4) // Shortcuts
+
+	// 1. Click New's shortcut pill to start recording; bare key 'K' must be rejected.
+	newPill := locales.ShellNew() + ": " + "Ctrl N"
+	if ui.Cmd != ui.Ctrl {
+		newPill = locales.ShellNew() + ": " + "⌘ N"
+	}
+	a.click(newPill)
+	a.animate()
+	if !a.shows(locales.SettingsShortcutsRecord()) {
+		t.Fatal("clicking shortcut row did not start recording")
+	}
+	a.key(0, ui.KeyK)
+	if !a.shows(locales.SettingsShortcutsNeedMod()) {
+		t.Fatal("bare key was not rejected with modifier hint")
+	}
+
+	// 2. Escape cancels recording without closing Settings.
+	a.key(0, ui.KeyEscape)
+	if !a.s.SettingsOpen() || a.shows(locales.SettingsShortcutsRecord()) {
+		t.Fatalf("Escape while recording: settingsOpen=%v stillRecording=%v", a.s.SettingsOpen(), a.shows(locales.SettingsShortcutsRecord()))
+	}
+
+	// 3. Record Ctrl+O onto New: conflicts with Open!
+	a.click(newPill)
+	a.animate()
+	a.key(ui.Cmd, ui.KeyO)
+	a.animate()
+	wantConflict := locales.SettingsShortcutsConflict(locales.ShellOpen())
+	if !a.shows(wantConflict) || !a.shows(locales.SettingsShortcutsOverride()) {
+		t.Fatalf("missing conflict prompt %q (texts=%v)", wantConflict, a.tt.Texts())
+	}
+
+	// 4. Confirm Override: Ctrl+O resolves to CmdFileNew, CmdFileOpen is unbound, and Ctrl+N no longer resolves to CmdFileNew.
+	a.click(locales.SettingsShortcutsOverride())
+	a.animate()
+	ctrlO := contract.Chord{Mods: contract.ModPrimary, Key: "O"}
+	ctrlN := contract.Chord{Mods: contract.ModPrimary, Key: "N"}
+	if got, ok := a.reg.Resolve(ctrlO); !ok || got != contract.CmdFileNew {
+		t.Fatalf("Resolve(Ctrl+O) = (%q, %v), want CmdFileNew", got, ok)
+	}
+	if _, ok := a.reg.Resolve(ctrlN); ok {
+		t.Fatal("old default Ctrl+N still resolved after rebinding")
+	}
+	if len(a.reg.KeysFor(contract.CmdFileOpen)) != 0 {
+		t.Fatalf("overridden CmdFileOpen still has keys: %v", a.reg.KeysFor(contract.CmdFileOpen))
+	}
+
+	// Close Settings and press Ctrl+O in the window: creates a 2nd tab!
+	a.click(locales.SettingsClose())
+	a.animate()
+	tabsBefore := len(a.s.Sessions())
+	a.tt.Key(ui.Cmd, ui.KeyO)
+	a.settle()
+	if len(a.s.Sessions()) != tabsBefore+1 {
+		t.Fatalf("pressing rebound Ctrl+O resulted in %d tabs, want %d", len(a.s.Sessions()), tabsBefore+1)
+	}
+
+	// 5. Reboot: custom binding persists in settings.json and loads into registry.
+	a.boot()
+	if got, ok := a.reg.Resolve(ctrlO); !ok || got != contract.CmdFileNew {
+		t.Fatalf("after reboot: Resolve(Ctrl+O) = (%q, %v), want CmdFileNew", got, ok)
+	}
+
+	// 6. Open Settings -> Shortcuts -> Reset All restores DefaultBindings().
+	a.openSettings()
+	a.category(4)
+	a.click(locales.SettingsShortcutsResetAll())
+	a.animate()
+	if got, ok := a.reg.Resolve(ctrlN); !ok || got != contract.CmdFileNew {
+		t.Fatalf("after Reset All: Resolve(Ctrl+N) = (%q, %v), want CmdFileNew", got, ok)
+	}
+	if got, ok := a.reg.Resolve(ctrlO); !ok || got != contract.CmdFileOpen {
+		t.Fatalf("after Reset All: Resolve(Ctrl+O) = (%q, %v), want CmdFileOpen", got, ok)
+	}
+}
+
+// TestTabBarOverflowEdgeFades verifies that horizontal tab overflow draws
+// smooth pass-through edge fades on the overflowing side(s) without blocking
+// tab clicks (09 §3.1, §6 Batch 5, FE-2.8).
+func TestTabBarOverflowEdgeFades(t *testing.T) {
+	a := newApp(t)
+	a.open("tab-01.md", "# 1\n")
+	a.open("tab-02.md", "# 2\n")
+	a.animate()
+	if left, right := a.s.TabFades(); left || right {
+		t.Fatalf("2 tabs showed overflow fades: left=%v right=%v", left, right)
+	}
+
+	for i := 3; i <= 14; i++ {
+		a.open(fmt.Sprintf("tab-%02d.md", i), fmt.Sprintf("# %d\n", i))
+	}
+	a.animate()
+	// Last tab is scrolled into view on open -> left side overflows!
+	if left, _ := a.s.TabFades(); !left {
+		t.Fatal("14 tabs scrolled to end did not show left overflow fade")
+	}
+
+	// Jump to tab 1 -> right side overflows!
+	a.run(contract.CmdNavGoToTab1)
+	a.animate()
+	if left, right := a.s.TabFades(); left || !right {
+		t.Fatalf("14 tabs scrolled to start: left=%v right=%v, want false/true", left, right)
+	}
+
+	// Jump to middle tab 6 -> both sides overflow, and clicking a visible tab still works!
+	a.run(contract.CmdNavGoToTab6)
+	a.animate()
+	if left, right := a.s.TabFades(); !left || !right {
+		t.Fatalf("14 tabs at middle tab 6: left=%v right=%v, want true/true", left, right)
+	}
+	a.click("tab-05.md")
+	if a.s.ActiveSession().State().Name != "tab-05.md" {
+		t.Fatalf("active tab = %q, want tab-05.md", a.s.ActiveSession().State().Name)
 	}
 }

@@ -50,16 +50,17 @@ func (t *timer) Stop() bool {
 }
 
 type platform struct {
-	open, save string
-	export     string
-	kinds      []string // what ExportPath was asked for
-	folder     string
-	trashOK    bool
-	choice     shell.Choice
-	asked      []string
-	saves      int
-	mins, maxs int
-	closes     int
+	open, save  string
+	export      string
+	kinds       []string // what ExportPath was asked for
+	folder      string
+	trashOK     bool
+	choice      shell.Choice
+	asked       []string
+	saves       int
+	openedPaths []string
+	mins, maxs  int
+	closes      int
 }
 
 func (p *platform) OpenFile(done func(string))   { done(p.open) }
@@ -213,6 +214,7 @@ func (a *app) boot() {
 	store.Subscribe(aurinkapp.FollowSettings(a.ws, a.assets, a.sessions, qaExts))
 	a.reg = commands.New()
 	a.reg.SetDefaults(commands.DefaultBindings())
+	a.reg.SetUserBindings(base.Keymap)
 	a.recent = workspace.NewRecent(filepath.Join(a.data, "recent.json"), a.q)
 	a.printer = &fakePrinter{}
 	exports := &aurinkapp.Exports{Files: files, D: a.q, Exts: qaExts, Settings: store, Renderer: a.render,
@@ -227,7 +229,8 @@ func (a *app) boot() {
 		Print: func(md string, opts contract.ExportOptions, done func(error)) {
 			exports.PrintPage(md, opts, func(page string, err error) { a.printed = append(a.printed, page); done(err) })
 		},
-		SetLanguage: func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"}})
+		SetLanguage: func(tag string) { a.lang = tag; a.tt.SetLocale(tag) }, Version: "9.9.9", Licenses: []string{"MyGo — MIT"},
+		ThemesDir: filepath.Join(a.data, "themes"), OpenPath: func(p string) { a.p.openedPaths = append(a.p.openedPaths, p) }})
 	if err := a.reg.Register(a.s.Commands()...); err != nil {
 		t.Fatal(err)
 	}

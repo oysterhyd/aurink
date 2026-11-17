@@ -3,7 +3,9 @@ package shell
 import (
 	"fmt"
 	"math"
+	"os"
 	"slices"
+	"strings"
 
 	"aurink/internal/contract"
 	"aurink/internal/views/effects"
@@ -46,13 +48,24 @@ func (r sliderRange) snap(v float64) float64 {
 	return math.Round(max(r.lo, min(v, r.hi))/r.step) * r.step
 }
 
+type shortcutConflict struct {
+	cmd    contract.CommandID
+	chord  contract.Chord
+	others []contract.CommandID
+}
+
 // settingsView is the dialog's state. Sliders and switches bind values the
 // toolkit writes between frames; they live here, synced from the store.
 type settingsView struct {
-	open, about bool
-	cat         int
-	floats      map[string]*float64
-	bools       map[string]*bool
+	open, about   bool
+	cat           int
+	floats        map[string]*float64
+	bools         map[string]*bool
+	shortcutQuery string
+	recording     contract.CommandID
+	focusRec      bool
+	recWarn       string
+	conflict      *shortcutConflict
 }
 
 func (v *settingsView) float(key string) *float64 {
@@ -81,6 +94,10 @@ func (v *settingsView) bool(key string) *bool {
 
 // OpenSettings shows the settings dialog.
 func (s *Shell) OpenSettings() {
+	s.reloadCustomThemes()
+	s.set.recording = ""
+	s.set.recWarn = ""
+	s.set.conflict = nil
 	s.set.open = true
 	s.invalidate()
 }
@@ -90,6 +107,9 @@ func (s *Shell) SettingsOpen() bool { return s.set.open }
 
 // CloseSettings hides the settings dialog, as Esc does. For tools and tests.
 func (s *Shell) CloseSettings() {
+	s.set.recording = ""
+	s.set.recWarn = ""
+	s.set.conflict = nil
 	s.set.open = false
 	s.invalidate()
 }
@@ -322,6 +342,9 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 			}
 		}
 	})
+	if s.o.ThemesDir != "" || len(s.customThemes) > 0 {
+		s.customThemesSection(c, t, a.Theme)
+	}
 	s.row(c, t, "accent", locales.SettingsAccent(), locales.SettingsAccentHint(), func() {
 		ui.Row(c).Gap(8).Role(ui.RoleRadioGroup).Label(locales.SettingsAccent()).Children(func() {
 			for _, h := range accentHues {
@@ -387,12 +410,73 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 	})
 }
 
-// setTheme chooses light, dark or the system's, dissolving from a point.
-func (s *Shell) setTheme(mode string, at ui.Point) {
-	s.update(func(v *contract.Settings) { v.Appearance.Theme = mode })
-	if mode != "system" && (mode == "dark") != s.dark {
-		s.ToggleTheme(at)
+func (s *Shell) customThemesSection(c *ui.Context, t *theme.Tokens, activeMode string) {
+	s.row(c, t, "customThemes", locales.SettingsCustomThemes(), locales.SettingsCustomThemesHint(), func() {
+		if s.o.ThemesDir != "" && s.o.OpenPath != nil {
+			b := ui.Row(c.Key("openThemes")).Height(28).Padding(0, 10).AlignItems(ui.Center).Radius(8).
+				Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.SettingsOpenThemesFolder()).Focusable()
+			if b.Hovered() {
+				b.Background(t.SurfaceHover)
+			}
+			b.Children(func() {
+				ui.Text(c, locales.SettingsOpenThemesFolder()).FontSize(theme.UIStatus).SingleLine()
+			})
+			if b.Clicked() {
+				_ = os.MkdirAll(s.o.ThemesDir, 0o755)
+				s.o.OpenPath(s.o.ThemesDir)
+			}
+		}
+	})
+	if len(s.customThemes) > 0 {
+		ui.Row(c.Key("customThemeList")).Wrap().Gap(8).Padding(0, 0, 10, 0).
+			Role(ui.RoleRadioGroup).Label(locales.SettingsCustomThemes()).Children(func() {
+			for _, ct := range s.customThemes {
+				on := activeMode == ct.ID
+				sample := ct.Tokens(theme.Options{Dark: ct.Dark, Hue: ct.AccentHue})
+				chip := ui.Row(c.Key(ct.ID)).Height(30).Padding(0, 10).Gap(8).AlignItems(ui.Center).Radius(8).
+					Background(t.Surface).Border(1, t.Border).Role(ui.RoleRadio).Label(ct.Name).Checked(on).Focusable()
+				if on {
+					chip.Background(t.AccentSoft).Border(1.5, t.Accent)
+				} else if chip.Hovered() {
+					chip.Background(t.SurfaceHover)
+				}
+				chip.Children(func() {
+					ui.Box(c).Size(12, 12).Radius(6).Background(sample.Sheet).Border(2, sample.Accent)
+					w := 400
+					if on {
+						w = 600
+					}
+					ui.Text(c, ct.Name).FontSize(theme.UIStatus).FontWeight(w).SingleLine()
+				})
+				if chip.Clicked() && !on {
+					id := ct.ID
+					r := chip.Bounds()
+					s.setTheme(id, ui.Point{X: r.X + r.W/2, Y: r.Y + r.H/2})
+				}
+			}
+		})
 	}
+}
+
+// setTheme chooses light, dark, system, or a custom theme ID, dissolving from a point.
+func (s *Shell) setTheme(mode string, at ui.Point) {
+	old := s.palette(s.dark)
+	wantDark := s.dark
+	switch {
+	case strings.HasPrefix(mode, theme.CustomPrefix):
+		if ct, ok := s.customTheme(mode); ok {
+			wantDark = ct.Dark
+		}
+	case mode == "dark":
+		wantDark = true
+	case mode == "light":
+		wantDark = false
+	}
+	s.prevTheme = old
+	s.dark = wantDark
+	s.themeGen++
+	s.origin = at
+	s.update(func(v *contract.Settings) { v.Appearance.Theme = mode })
 }
 
 func (s *Shell) editorPage(c *ui.Context, t *theme.Tokens) {
@@ -495,27 +579,280 @@ func (s *Shell) extensionsPage(c *ui.Context, t *theme.Tokens) {
 	}
 }
 
-// shortcutsPage lists every command that has a key, in the registry's order.
+// shortcutsPage lists registered commands with search filtering, interactive
+// chord recording, conflict detection/override, and per-item / global reset
+// (09 D11, FE-2.8).
 func (s *Shell) shortcutsPage(c *ui.Context, t *theme.Tokens) {
+	keymap := s.o.Settings.Get().Keymap
+	ui.Row(c.Key("shortcutTop")).Gap(8).Padding(4, 0, 6, 0).AlignItems(ui.Center).Children(func() {
+		ui.SearchField(c.Key("shortcutFilter"), &s.set.shortcutQuery).
+			Placeholder(locales.SettingsShortcutsSearch()).
+			Label(locales.SettingsShortcutsSearch()).
+			Grow(1).Shrink(1).MinWidth(0)
+		resetAll := ui.Row(c.Key("resetAll")).Height(30).Padding(0, 10).AlignItems(ui.Center).Radius(8).
+			Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.SettingsShortcutsResetAll()).Focusable()
+		if len(keymap) == 0 {
+			resetAll.Opacity(0.45)
+		} else if resetAll.Hovered() {
+			resetAll.Background(t.SurfaceHover)
+		}
+		resetAll.Children(func() {
+			ui.Text(c, locales.SettingsShortcutsResetAll()).FontSize(theme.UIStatus).SingleLine()
+		})
+		if resetAll.Clicked() && len(keymap) > 0 {
+			s.resetAllShortcuts()
+		}
+	})
 	ui.Text(c, locales.SettingsShortcutsHint()).FontSize(theme.UIStatus).TextColor(t.Muted).Padding(0, 0, 10, 0)
+
+	q := strings.ToLower(strings.TrimSpace(s.set.shortcutQuery))
+	overridden := map[contract.CommandID]bool{}
+	for _, kb := range keymap {
+		overridden[kb.Command] = true
+	}
+
 	for _, cmd := range s.o.Commands.All() {
 		keys := s.o.Commands.KeysFor(cmd.ID)
-		if len(keys) == 0 {
-			continue
-		}
+		title := Title(cmd.Title)
 		var labels []string
 		for _, k := range keys {
 			labels = append(labels, chordLabel(k))
 		}
-		s.row(c, t, string(cmd.ID), Title(cmd.Title), "", func() {
-			ui.Row(c).Gap(4).Children(func() {
-				for i, l := range labels {
-					ui.Text(c.Key(i), l).FontSize(theme.UIBadge).TextColor(t.Muted).Padding(2, 8).Radius(6).
-						Border(1, t.Border).Background(t.Surface)
+		if q != "" {
+			matched := strings.Contains(strings.ToLower(title), q) ||
+				strings.Contains(strings.ToLower(string(cmd.ID)), q)
+			if !matched {
+				for _, l := range labels {
+					if strings.Contains(strings.ToLower(l), q) {
+						matched = true
+						break
+					}
+				}
+			}
+			if !matched {
+				continue
+			}
+		}
+
+		isRec := s.set.recording == cmd.ID
+		var subHint string
+		if isRec && s.set.recWarn != "" {
+			subHint = s.set.recWarn
+		} else if s.set.conflict != nil && s.set.conflict.cmd == cmd.ID {
+			subHint = locales.SettingsShortcutsConflict(s.conflictNames(s.set.conflict.others))
+		}
+
+		id := cmd.ID
+		custom := overridden[id]
+		s.row(c, t, string(id), title, subHint, func() {
+			ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
+				if s.set.conflict != nil && s.set.conflict.cmd == id {
+					cf := *s.set.conflict
+					ui.Text(c, chordLabel(cf.chord)).FontSize(theme.UIBadge).FontWeight(600).TextColor(t.Warning).
+						Padding(3, 8).Radius(6).Border(1, t.Warning).Background(t.Surface)
+					overBtn := ui.Row(c.Key("override")).Height(26).Padding(0, 8).AlignItems(ui.Center).Radius(6).
+						Background(t.InkButton).Role(ui.RoleButton).Label(locales.SettingsShortcutsOverride()).Focusable()
+					overBtn.Children(func() {
+						ui.Text(c, locales.SettingsShortcutsOverride()).FontSize(theme.UIBadge).FontWeight(600).TextColor(t.OnInkButton).SingleLine()
+					})
+					if overBtn.Clicked() {
+						s.applyShortcut(cf.cmd, cf.chord, cf.others)
+						s.set.conflict = nil
+					}
+					cancelBtn := ui.Row(c.Key("cancelConflict")).Height(26).Padding(0, 8).AlignItems(ui.Center).Radius(6).
+						Background(t.Surface).Border(1, t.Border).Role(ui.RoleButton).Label(locales.ShellCancel()).Focusable()
+					cancelBtn.Children(func() {
+						ui.Text(c, locales.ShellCancel()).FontSize(theme.UIBadge).SingleLine()
+					})
+					if cancelBtn.Clicked() {
+						s.set.conflict = nil
+					}
+					return
+				}
+
+				if isRec {
+					rec := ui.Row(c.Key("recorder")).Height(26).Padding(0, 10).AlignItems(ui.Center).Radius(6).
+						Background(t.AccentSoft).Border(1.5, t.Accent).
+						Role(ui.RoleButton).Label(locales.SettingsShortcutsRecord()).Focusable().
+						HandleInput(func(ev ui.InputEvent) bool {
+							return s.handleShortcutRecord(id, ev)
+						})
+					if s.set.focusRec {
+						s.set.focusRec = false
+						rec.Focus()
+					}
+					rec.Children(func() {
+						ui.Text(c, locales.SettingsShortcutsRecord()).FontSize(theme.UIBadge).FontWeight(600).TextColor(t.Accent).SingleLine()
+					})
+				} else {
+					curText := locales.SettingsShortcutsUnbound()
+					if len(labels) > 0 {
+						curText = strings.Join(labels, ", ")
+					}
+					btnLabel := title + ": " + curText
+					pill := ui.Row(c.Key("bind")).MinHeight(26).Padding(2, 8).Gap(4).AlignItems(ui.Center).Radius(6).
+						Border(1, t.Border).Background(t.Surface).Role(ui.RoleButton).Label(btnLabel).Focusable()
+					if pill.Hovered() {
+						pill.Background(t.SurfaceHover)
+					}
+					pill.Children(func() {
+						if len(labels) == 0 {
+							ui.Text(c, locales.SettingsShortcutsUnbound()).FontSize(theme.UIBadge).TextColor(t.Faint).SingleLine()
+							return
+						}
+						for i, l := range labels {
+							if i > 0 {
+								ui.Text(c.Key("sep"+fmt.Sprint(i)), "·").FontSize(theme.UIBadge).TextColor(t.Faint)
+							}
+							tone := t.Muted
+							if custom {
+								tone = t.Accent
+							}
+							ui.Text(c.Key(i), l).FontSize(theme.UIBadge).TextColor(tone).SingleLine()
+						}
+					})
+					if pill.Clicked() {
+						s.set.recording = id
+						s.set.focusRec = true
+						s.set.recWarn = ""
+						s.set.conflict = nil
+					}
+				}
+
+				if custom {
+					rst := ui.Row(c.Key("reset")).Height(26).Padding(0, 8).AlignItems(ui.Center).Radius(6).
+						Background(t.Surface).Border(1, t.Border).
+						Role(ui.RoleButton).Label(locales.SettingsShortcutsReset() + " " + title).Focusable()
+					if rst.Hovered() {
+						rst.Background(t.SurfaceHover)
+					}
+					rst.Children(func() {
+						ui.Text(c, locales.SettingsShortcutsReset()).FontSize(theme.UIBadge).TextColor(t.Muted).SingleLine()
+					})
+					if rst.Clicked() {
+						s.resetShortcut(id)
+					}
 				}
 			})
 		})
 	}
+}
+
+func (s *Shell) conflictNames(ids []contract.CommandID) string {
+	var names []string
+	for _, id := range ids {
+		if cmd, ok := s.o.Commands.Lookup(id); ok {
+			names = append(names, Title(cmd.Title))
+		} else {
+			names = append(names, string(id))
+		}
+	}
+	return strings.Join(names, ", ")
+}
+
+func (s *Shell) handleShortcutRecord(id contract.CommandID, ev ui.InputEvent) bool {
+	if ev.Kind != ui.InputKeyDown {
+		return false
+	}
+	if ev.Key == ui.KeyEscape && ev.Mods == 0 {
+		s.set.recording = ""
+		s.set.recWarn = ""
+		s.invalidate()
+		return true
+	}
+	name, ok := keyName(ev.Key)
+	if !ok {
+		return false
+	}
+	ch := contract.Chord{Mods: contractMods(ev.Mods), Key: name}
+	if ch.Mods&(contract.ModPrimary|contract.ModAlt) == 0 && !isFunctionKey(name) {
+		s.set.recWarn = locales.SettingsShortcutsNeedMod()
+		s.invalidate()
+		return true
+	}
+	var others []contract.CommandID
+	for _, cmd := range s.o.Commands.All() {
+		if cmd.ID == id {
+			continue
+		}
+		if slices.Contains(s.o.Commands.KeysFor(cmd.ID), ch) {
+			others = append(others, cmd.ID)
+		}
+	}
+	s.set.recording = ""
+	s.set.recWarn = ""
+	if len(others) > 0 {
+		s.set.conflict = &shortcutConflict{cmd: id, chord: ch, others: others}
+		s.invalidate()
+		return true
+	}
+	s.applyShortcut(id, ch, nil)
+	return true
+}
+
+func (s *Shell) applyShortcut(id contract.CommandID, ch contract.Chord, unbind []contract.CommandID) {
+	var next []contract.KeyBinding
+	s.update(func(v *contract.Settings) {
+		drop := map[contract.CommandID]bool{id: true}
+		for _, u := range unbind {
+			drop[u] = true
+		}
+		kept := make([]contract.KeyBinding, 0, len(v.Keymap)+1+len(unbind))
+		for _, kb := range v.Keymap {
+			if drop[kb.Command] {
+				if kb.Command != id && kb.Chord != ch && kb.Chord.Key != "" {
+					kept = append(kept, kb)
+				}
+				continue
+			}
+			kept = append(kept, kb)
+		}
+		for _, u := range unbind {
+			hasRemaining := false
+			for _, kb := range kept {
+				if kb.Command == u {
+					hasRemaining = true
+					break
+				}
+			}
+			if !hasRemaining {
+				kept = append(kept, contract.KeyBinding{Command: u})
+			}
+		}
+		kept = append(kept, contract.KeyBinding{Command: id, Chord: ch})
+		v.Keymap = kept
+		next = slices.Clone(kept)
+	})
+	s.o.Commands.SetUserBindings(next)
+	s.invalidate()
+}
+
+func (s *Shell) resetShortcut(id contract.CommandID) {
+	s.set.recording = ""
+	s.set.recWarn = ""
+	if s.set.conflict != nil && s.set.conflict.cmd == id {
+		s.set.conflict = nil
+	}
+	var next []contract.KeyBinding
+	s.update(func(v *contract.Settings) {
+		v.Keymap = slices.DeleteFunc(slices.Clone(v.Keymap), func(kb contract.KeyBinding) bool {
+			return kb.Command == id
+		})
+		next = slices.Clone(v.Keymap)
+	})
+	s.o.Commands.SetUserBindings(next)
+	s.invalidate()
+}
+
+func (s *Shell) resetAllShortcuts() {
+	s.set.recording = ""
+	s.set.recWarn = ""
+	s.set.conflict = nil
+	s.update(func(v *contract.Settings) {
+		v.Keymap = nil
+	})
+	s.o.Commands.SetUserBindings(nil)
+	s.invalidate()
 }
 
 // aboutView is the about dialog: the name, the version and what ships inside.

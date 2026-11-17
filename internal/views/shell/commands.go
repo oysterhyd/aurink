@@ -357,6 +357,9 @@ func Title(key string) string {
 
 // bindCommands gives every registered command its shortcuts.
 func (s *Shell) bindCommands(c *ui.Context) {
+	if s.set.open && s.set.recording != "" {
+		return
+	}
 	for _, cmd := range s.o.Commands.All() {
 		for _, ch := range s.o.Commands.KeysFor(cmd.ID) {
 			key, ok := keyOf(ch.Key)
@@ -383,14 +386,34 @@ func modsOf(m contract.Mods) ui.Modifiers {
 	return out
 }
 
+func contractMods(m ui.Modifiers) contract.Mods {
+	var out contract.Mods
+	if m&ui.Cmd != 0 {
+		out |= contract.ModPrimary
+	}
+	if m&ui.Shift != 0 {
+		out |= contract.ModShift
+	}
+	if m&ui.Alt != 0 {
+		out |= contract.ModAlt
+	}
+	return out
+}
+
 var namedKeys = map[string]ui.Key{
 	"A": ui.KeyA, "B": ui.KeyB, "C": ui.KeyC, "D": ui.KeyD, "E": ui.KeyE, "F": ui.KeyF, "G": ui.KeyG,
 	"H": ui.KeyH, "I": ui.KeyI, "J": ui.KeyJ, "K": ui.KeyK, "L": ui.KeyL, "M": ui.KeyM, "N": ui.KeyN,
 	"O": ui.KeyO, "P": ui.KeyP, "Q": ui.KeyQ, "R": ui.KeyR, "S": ui.KeyS, "T": ui.KeyT, "U": ui.KeyU,
 	"V": ui.KeyV, "W": ui.KeyW, "X": ui.KeyX, "Y": ui.KeyY, "Z": ui.KeyZ, "/": ui.KeySlash,
 	"Tab": ui.KeyTab, "`": ui.KeyBackquote, "[": ui.KeyBracketLeft, "]": ui.KeyBracketRight,
-	"=": ui.KeyEqual, "-": ui.KeyMinus,
+	"=": ui.KeyEqual, "-": ui.KeyMinus, ",": ui.KeyComma, ".": ui.KeyPeriod,
+	";": ui.KeySemicolon, "'": ui.KeyQuote, "\\": ui.KeyBackslash,
+	"Enter": ui.KeyEnter, "Backspace": ui.KeyBackspace, "Delete": ui.KeyDelete, "Space": ui.KeySpace,
+	"Up": ui.KeyUp, "Down": ui.KeyDown, "Left": ui.KeyLeft, "Right": ui.KeyRight,
+	"Home": ui.KeyHome, "End": ui.KeyEnd, "PageUp": ui.KeyPageUp, "PageDown": ui.KeyPageDown,
 }
+
+var keyNames map[ui.Key]string
 
 func init() {
 	for i := range 10 {
@@ -400,11 +423,28 @@ func init() {
 		ui.KeyF7, ui.KeyF8, ui.KeyF9, ui.KeyF10, ui.KeyF11, ui.KeyF12} {
 		namedKeys["F"+strconv.Itoa(i+1)] = k
 	}
+	keyNames = make(map[ui.Key]string, len(namedKeys))
+	for name, k := range namedKeys {
+		keyNames[k] = name
+	}
 }
 
 func keyOf(name string) (ui.Key, bool) {
 	k, ok := namedKeys[name]
 	return k, ok
+}
+
+func keyName(k ui.Key) (string, bool) {
+	name, ok := keyNames[k]
+	return name, ok
+}
+
+func isFunctionKey(name string) bool {
+	if !strings.HasPrefix(name, "F") {
+		return false
+	}
+	n, err := strconv.Atoi(name[1:])
+	return err == nil && n >= 1 && n <= 12
 }
 
 // find opens the find bar of the active tab, or steps through its matches

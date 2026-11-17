@@ -2,6 +2,7 @@ package settings
 
 import (
 	"math"
+	"strings"
 
 	"aurink/internal/contract"
 )
@@ -30,7 +31,11 @@ func normalize(v *contract.Settings) {
 	d := Defaults()
 	v.Version = contract.SettingsVersion
 	a, e, f := &v.Appearance, &v.Editor, &v.Files
-	a.Theme = choice(a.Theme, d.Appearance.Theme, "system", "light", "dark")
+	if strings.HasPrefix(a.Theme, "custom:") && len(strings.TrimSpace(strings.TrimPrefix(a.Theme, "custom:"))) > 0 && len(a.Theme) <= 128 {
+		a.Theme = "custom:" + strings.TrimSpace(strings.TrimPrefix(a.Theme, "custom:"))
+	} else {
+		a.Theme = choice(a.Theme, d.Appearance.Theme, "system", "light", "dark")
+	}
 	a.AccentHue = min(max(a.AccentHue, 0), 359)
 	a.FontSize = bounded(a.FontSize, 8, 72, d.Appearance.FontSize)
 	a.LineHeight = bounded(a.LineHeight, 1, 3, d.Appearance.LineHeight)
