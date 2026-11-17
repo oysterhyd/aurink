@@ -20,7 +20,7 @@
 
 ## 2. 仓库
 
-- 工作目录 `D:\mygo\project\Aurink_claude`，主分支 `main`，远端 `github.com/oysterhyd/aurink`（私有）。Codex 的 worktree 放在 `D:\mygo\project\Aurink_claude-wt\<卡ID>`，分支只在本地，验收合并后删除。
+- 工作目录 `D:\mygo\project\Aurink_claude`，主分支 `main`，远端 `github.com/oysterhyd/aurink`（2026-11-18 改为公开仓库，用于 GitHub Releases 自动更新）。Codex 的 worktree 放在 `D:\mygo\project\Aurink_claude-wt\<卡ID>`，分支只在本地，验收合并后删除。
 - 负责人直接提交到 `main`，不走 PR。提交前跑本地门禁（§5.1），小步提交，提交信息说明做了什么。
 
 ## 3. 代码规则

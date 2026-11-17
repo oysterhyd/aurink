@@ -2,7 +2,7 @@
 
 > 状态：**规划完成；§5 决策项已于 2026-10-31 全部确认；M0–M3 均已通过（2026-11-12 用户确认 M3 真机验收），待进入 Phase 4**。评估见 [adr/README.md](adr/README.md)，实施记录见 [06](06-phase1.md)、[07](07-phase2.md)、[08](08-phase3.md)。
 >
-> 仓库：<https://github.com/oysterhyd/aurink>（私有）· 集成分支 `main` · CI：`.github/workflows/ci.yml`
+> 仓库：<https://github.com/oysterhyd/aurink>（公开）· 集成分支 `main` · CI：`.github/workflows/ci.yml`
 
 ## 1. 一句话结论
 

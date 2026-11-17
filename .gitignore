@@ -23,3 +23,5 @@ desktop.ini
 *.swp
 .claude/settings.local.json
 bash.exe.stackdump
+WATCHDOG.yml
+mygo-update.key
