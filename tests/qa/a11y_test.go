@@ -216,12 +216,16 @@ func TestAccessibilityAllSurfacesAndLocales(t *testing.T) {
 			a.mustFind(t,
 				locales.LiveeditSlashMenu(),
 				locales.LiveeditHeadingN("1"),
-				locales.LiveeditSlashTable(),
+				locales.LiveeditSlashBullets(),
 			)
 			if !a.tt.Focused(docLabel) {
 				t.Fatal("slash menu stole keyboard focus from live editor")
 			}
-			a.key(0, ui.KeyDown)
+			for range 8 {
+				a.key(0, ui.KeyDown)
+			}
+			a.animate()
+			a.mustFind(t, locales.LiveeditSlashTable())
 			if !a.tt.Focused(docLabel) {
 				t.Fatal("arrow navigation in slash menu lost editor focus")
 			}

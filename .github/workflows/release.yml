@@ -42,7 +42,7 @@ jobs:
           go-version-file: go.mod
           cache-dependency-path: "**/go.sum"
       - name: Cache NSIS
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~\AppData\Local\mygo\nsis-*
           key: nsis-${{ hashFiles('go.sum') }}
@@ -51,10 +51,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          TAG="v$(jq -r .version mygo.json)"
+          VER="$(jq -r .version mygo.json)"
+          TAG="v$VER"
           if ! gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            awk -v ver="$VER" '
+              /^## / { if (found) exit; if (index($0, "## " ver) == 1 || index($0, "## [" ver "]") == 1) { found=1; next } }
+              found { print }
+            ' CHANGELOG.md > "$RUNNER_TEMP/release-notes.md"
             gh release create "$TAG" --repo "$GITHUB_REPOSITORY" \
-              --draft --title "Aurink $TAG" --notes-file CHANGELOG.md
+              --draft --title "Aurink $TAG" --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
       - name: Build and upload signed Windows release
         env:
