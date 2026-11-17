@@ -16,17 +16,20 @@ const (
 	bannerNone bannerKind = iota
 	bannerConflict
 	bannerDeleted
+	bannerEncoding
 	bannerReadOnly
 	bannerLarge
 )
 
 // bannerOf is the banner a document's state calls for, the most urgent first.
-func bannerOf(st contract.DocState) bannerKind {
+func bannerOf(st contract.DocState, encoding string) bannerKind {
 	switch {
 	case st.Conflict:
 		return bannerConflict
 	case st.Deleted:
 		return bannerDeleted
+	case st.ReadOnly && encoding == "gb18030":
+		return bannerEncoding
 	case st.ReadOnly:
 		return bannerReadOnly
 	case st.LargeFile:
@@ -40,7 +43,7 @@ func bannerOf(st contract.DocState) bannerKind {
 // which keeps its scroll offset: the text slides down as the banner collapses
 // in and stays on the line it was at (07 FE-2.5).
 func (s *Shell) banner(c *ui.Context, t *theme.Tokens, d *doc) {
-	kind := bannerOf(d.s.State())
+	kind := bannerOf(d.s.State(), d.s.Model().Meta().Encoding)
 	if kind == bannerNone {
 		return
 	}
@@ -52,6 +55,8 @@ func (s *Shell) banner(c *ui.Context, t *theme.Tokens, d *doc) {
 		icon, tone, title, detail = kit.IconWarn, t.Warning, locales.ShellBannerConflict(), locales.ShellBannerConflictDetail()
 	case bannerDeleted:
 		icon, tone, title, detail = kit.IconTrash, t.Danger, locales.ShellBannerDeleted(), locales.ShellBannerDeletedDetail()
+	case bannerEncoding:
+		icon, tone, title, detail = kit.IconLock, t.Warning, locales.ShellBannerEncoding(), locales.ShellBannerEncodingDetail()
 	case bannerReadOnly:
 		icon, tone, title, detail = kit.IconLock, t.Muted, locales.ShellBannerReadOnly(), locales.ShellBannerReadOnlyDetail()
 	default:
@@ -71,21 +76,30 @@ func (s *Shell) banner(c *ui.Context, t *theme.Tokens, d *doc) {
 			ui.Text(c, detail).FontSize(theme.UIStatus).TextColor(t.Muted).SingleLine().Shrink(1).Grow(1)
 			switch kind {
 			case bannerConflict:
-				if bannerButton(c, t, locales.ShellKeepMine(), true).Clicked() {
+				if bannerButton(c.Key("keepMine"), t, locales.ShellKeepMine(), true).Clicked() {
 					d.s.KeepMine(s.reportErr)
 				}
-				if bannerButton(c, t, locales.ShellLoadTheirs(), false).Clicked() {
+				if bannerButton(c.Key("loadTheirs"), t, locales.ShellLoadTheirs(), false).Clicked() {
 					d.s.LoadTheirs(s.reportErr)
 				}
 			case bannerDeleted:
-				if bannerButton(c, t, locales.ShellSaveAgain(), true).Clicked() {
+				if bannerButton(c.Key("saveAgain"), t, locales.ShellSaveAgain(), true).Clicked() {
 					s.save(d, nil)
 				}
-				if bannerButton(c, t, locales.ShellCloseTab(), false).Clicked() {
+				if bannerButton(c.Key("closeTab"), t, locales.ShellCloseTab(), false).Clicked() {
 					s.closeDoc(d)
 				}
+			case bannerEncoding:
+				if bannerButton(c.Key("convert"), t, locales.ShellConvertUtf8(), true).Clicked() {
+					d.s.ConvertToUTF8()
+					s.focusNext = true
+					s.invalidate()
+				}
+				if bannerButton(c.Key("saveAs"), t, locales.ShellSaveAs(), false).Clicked() {
+					s.saveAs(d, s.reportErr)
+				}
 			case bannerReadOnly:
-				if bannerButton(c, t, locales.ShellSaveAs(), false).Clicked() {
+				if bannerButton(c.Key("saveAs"), t, locales.ShellSaveAs(), false).Clicked() {
 					s.saveAs(d, s.reportErr)
 				}
 			}

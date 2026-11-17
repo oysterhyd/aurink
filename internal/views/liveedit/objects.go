@@ -62,7 +62,7 @@ func (e *Editor) objectSize(o *contract.ObjectRef, m *rowMetrics) (w, h float32,
 	case contract.ObjFrontMatter:
 		return m.width, headerH, true
 	case contract.ObjTOC:
-		n := max(len(e.ast.Outline()), 1)
+		n := max(len(e.outline()), 1)
 		return m.width, float32(n)*tocLineH + 2*tocPadY, true
 	}
 	return 0, 0, false
@@ -134,7 +134,7 @@ func (rc *rowContext) paintHeader(meta *contract.FrontMatterMeta, box ui.Rect) {
 // tocEntries are the table of contents' lines: each heading, indented by its
 // level under the shallowest.
 func (e *Editor) tocEntries() (out []contract.Heading, top int) {
-	out = e.ast.Outline()
+	out = e.outline()
 	top = 6
 	for _, h := range out {
 		top = min(top, h.Level)

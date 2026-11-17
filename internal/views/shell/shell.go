@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
@@ -281,7 +282,21 @@ func (s *Shell) attach(x contract.Session) *doc {
 			}
 		},
 		OnError: s.fail})
-	d.offs = append(d.offs, x.OnState(func(contract.DocState) { s.invalidate() }))
+	d.offs = append(d.offs, x.OnState(func(st contract.DocState) {
+		if st.LargeFile && d.mode != editorapi.ModeSource {
+			if s.reading && s.active == d {
+				s.setReading(false)
+			}
+			s.switchMode(d, editorapi.ModeSource)
+		}
+		s.invalidate()
+	}))
+	if x.State().LargeFile {
+		d.mode = editorapi.ModeSource
+		d.source = source.New(x.Model(), s.palette(s.dark))
+		d.source.SetMotion(s.live)
+		d.source.Enter(0)
+	}
 	s.docs = append(s.docs, d)
 	if s.active == nil {
 		s.activate(d)
@@ -300,6 +315,9 @@ func (s *Shell) detach(d *doc) {
 }
 
 func (s *Shell) activate(d *doc) {
+	if s.reading && d.s.State().LargeFile {
+		s.setReading(false)
+	}
 	s.active = d
 	s.focusNext = true
 	s.reveal = true
@@ -709,7 +727,8 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 	})
 	// Drawn in the window: at 150% scale the native Windows menu clips its widest item.
 	b.PopoverMenuButton(func(m *ui.Menu) {
-		if m.Item(locales.ShellViewLive()).Checked(s.active.mode == editorapi.ModeLive).Chosen() {
+		large := s.active.s.State().LargeFile
+		if m.Item(locales.ShellViewLive()).Checked(s.active.mode == editorapi.ModeLive).Disabled(large).Chosen() {
 			s.setMode(s.active, editorapi.ModeLive)
 		}
 		if m.Item(locales.ShellViewSource()).Checked(s.active.mode == editorapi.ModeSource).Chosen() {
@@ -718,7 +737,7 @@ func (s *Shell) viewMenu(c *ui.Context, t *theme.Tokens) {
 		// The writing modes and the zoom, as Typora's View menu has them.
 		m.Separator()
 		writing := s.active.mode == editorapi.ModeLive
-		if m.Item(locales.ShellReading()).Checked(s.reading).Chosen() {
+		if m.Item(locales.ShellReading()).Checked(s.reading).Disabled(large).Chosen() {
 			s.run(contract.CmdViewRead)
 		}
 		if m.Item(locales.ShellFocus()).Checked(writing && s.active.live.FocusMode()).Disabled(!writing).Chosen() {
@@ -1027,7 +1046,24 @@ func (s *Shell) wordCount(c *ui.Context, d *doc) int {
 func CountWords(text string) int {
 	n := 0
 	in := false
-	for _, r := range text {
+	for i := 0; i < len(text); {
+		b := text[i]
+		if b < utf8.RuneSelf {
+			i++
+			switch {
+			case b >= 'a' && b <= 'z' || b >= 'A' && b <= 'Z' || b >= '0' && b <= '9':
+				if !in {
+					n++
+				}
+				in = true
+			case b == '\'' || b == '-' || b == '_':
+			default:
+				in = false
+			}
+			continue
+		}
+		r, w := utf8.DecodeRuneInString(text[i:])
+		i += w
 		switch {
 		case unicode.Is(unicode.Han, r) || unicode.Is(unicode.Hiragana, r) || unicode.Is(unicode.Katakana, r) || unicode.Is(unicode.Hangul, r):
 			n++
@@ -1037,7 +1073,6 @@ func CountWords(text string) int {
 				n++
 			}
 			in = true
-		case r == '\'' || r == '-' || r == '_':
 		default:
 			in = false
 		}
@@ -1259,7 +1294,7 @@ func (s *Shell) setMode(d *doc, m editorapi.Mode) {
 
 // switchMode shows a tab in the live or the source view.
 func (s *Shell) switchMode(d *doc, m editorapi.Mode) {
-	if d.mode == m {
+	if d.mode == m || m != editorapi.ModeSource && d.s.State().LargeFile {
 		return
 	}
 	switch m {
@@ -1366,6 +1401,9 @@ func (s *Shell) Status() string {
 // Check verifies each document's rows against its tree.
 func (s *Shell) Check() error {
 	for _, d := range s.docs {
+		if d.s.State().LargeFile {
+			continue
+		}
 		if err := d.live.CheckRows(); err != nil {
 			return err
 		}

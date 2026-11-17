@@ -3,6 +3,7 @@ package liveedit
 import (
 	"fmt"
 	"maps"
+	"slices"
 	"time"
 
 	"aurink/internal/contract"
@@ -133,10 +134,11 @@ type Editor struct {
 	ast   contract.AST
 	off   func()
 
-	rows   []row
-	rowOf  map[contract.BlockID]int
-	astLen int
-	hs     heights
+	rows    []row
+	rowOf   map[contract.BlockID]int
+	leafBuf []int
+	astLen  int
+	hs      heights
 
 	// The selection is always in source bytes, as the model has it.
 	anchor, head        int
@@ -168,6 +170,7 @@ type Editor struct {
 	moreOverscan  bool
 
 	headings      []headingMark
+	outlineCache  []contract.Heading
 	headingsStale bool
 	tocRows       []int
 	linkDefs      map[string]contract.LinkDef
@@ -461,7 +464,8 @@ func (e *Editor) onEvent(ev contract.DocEvent) {
 }
 
 // syncRows carries the rows over an edit. An edit inside rows that all survive, the
-// ordinary keystroke, touches only them; anything else walks the rows once.
+// ordinary keystroke, touches only them; a local block split or merge splices only
+// the affected slice (09 D5); anything else walks the rows once.
 func (e *Editor) syncRows(ev contract.DocEvent) {
 	fast := ev.Kind == contract.DocTextChanged && e.ast.Len() == e.astLen && e.ast.LeafCount() == len(e.rows)
 	var dirty []int
@@ -483,14 +487,15 @@ func (e *Editor) syncRows(ev contract.DocEvent) {
 			dirty = append(dirty, r)
 		}
 	}
-	tables := !fast
-	if fast {
+	tables := false
+	switch {
+	case fast:
+		headingChanged := false
 		for _, r := range dirty {
 			b := e.block(r)
 			was := e.rows[r].kind
 			if was == contract.BlockHeading || b.Kind == contract.BlockHeading {
-				e.headingsStale = true
-				e.dropTOC()
+				headingChanged = true
 			}
 			if was == contract.BlockLinkDef || b.Kind == contract.BlockLinkDef || e.inFootnote(b) {
 				tables = true
@@ -498,11 +503,25 @@ func (e *Editor) syncRows(ev contract.DocEvent) {
 			e.rows[r].kind = b.Kind
 			e.dropForms(r)
 		}
-	} else {
+		if headingChanged {
+			e.headingsStale = true
+			e.dropTOC()
+		} else if !e.headingsStale && !shiftHeadings(e.outlineCache, ev.Changes) {
+			e.headingsStale = true
+			e.dropTOC()
+		}
+	case ev.Kind == contract.DocTextChanged && len(ev.Changes) > 0 && len(e.rows) > 0 && e.ast.LeafCount() > 0:
+		var ok bool
+		if tables, ok = e.spliceRows(ev); !ok {
+			e.rebuildRows(ev.Dirty)
+			tables = true
+		}
+	default:
 		e.rebuildRows(ev.Dirty)
 		if ev.Kind == contract.DocReplaced {
 			e.dropAllForms()
 		}
+		tables = true
 	}
 	// A cached projection is good only if no change touches its bytes (04 §4.3.6).
 	for _, c := range ev.Changes {
@@ -516,6 +535,299 @@ func (e *Editor) syncRows(ev contract.DocEvent) {
 		}
 		e.linkDefs, e.footnotes = links, notes
 	}
+}
+
+// outline returns the document's headings, cached across edits that do not
+// touch any heading.
+func (e *Editor) outline() []contract.Heading {
+	if e.headingsStale {
+		e.outlineCache = slices.Clone(e.ast.Outline())
+		e.headingsStale = false
+	}
+	return e.outlineCache
+}
+
+func shiftHeadings(hs []contract.Heading, changes []contract.Change) bool {
+	if len(changes) == 0 || len(hs) == 0 {
+		return true
+	}
+	ci, delta := 0, 0
+	for i := range hs {
+		r := hs[i].Range
+		for ci < len(changes) && changes[ci].OldEnd <= r.Start {
+			c := changes[ci]
+			delta += (c.NewEnd - c.NewStart) - (c.OldEnd - c.OldStart)
+			ci++
+		}
+		if ci < len(changes) && changes[ci].OldStart < r.End {
+			return false
+		}
+		hs[i].Range = contract.Range{Start: r.Start + delta, End: r.End + delta}
+	}
+	return true
+}
+
+// spliceRows updates e.rows locally around ev.Changes when the untouched prefix
+// and suffix retain their block identities and AST index shifts.
+func (e *Editor) spliceRows(ev contract.DocEvent) (tables bool, ok bool) {
+	e.leafBuf = e.leafBuf[:0]
+	for l := range e.ast.Leaves() {
+		e.leafBuf = append(e.leafBuf, l)
+	}
+	oldN, newN := len(e.rows), len(e.leafBuf)
+	rowDelta := newN - oldN
+	astDelta := e.ast.Len() - e.astLen
+
+	startLeaf := e.ast.LeafAt(max(0, ev.Changes[0].NewStart-1))
+	endLeaf := e.ast.LeafAt(min(e.text.Len(), ev.Changes[len(ev.Changes)-1].NewEnd+1))
+	lo, _ := slices.BinarySearch(e.leafBuf, startLeaf)
+	hi, _ := slices.BinarySearch(e.leafBuf, endLeaf)
+
+	prefix := min(max(0, lo-2), min(oldN, newN))
+	suffix := min(max(0, newN-(hi+3)), min(oldN-prefix, newN-prefix))
+	if prefix <= 2 {
+		prefix = 0
+		suffix = min(suffix, min(oldN, newN))
+	}
+
+	// Never split a table across the splice boundary on either the old or new side.
+	stepBackPrefix := func() {
+		for prefix > 0 && (e.rows[prefix-1].cols > 0 || e.rows[prefix].cols > 0 || e.ast.Block(e.leafBuf[prefix]).Kind == contract.BlockTableCell) {
+			prefix--
+		}
+		if prefix <= 2 {
+			prefix = 0
+		}
+	}
+	stepBackSuffix := func() {
+		for suffix > 0 && (e.rows[oldN-suffix].cols > 0 || (oldN-suffix > 0 && e.rows[oldN-suffix-1].cols > 0) || e.ast.Block(e.leafBuf[newN-suffix]).Kind == contract.BlockTableCell) {
+			suffix--
+		}
+		if prefix == 0 && newN-suffix == 1 && suffix > 0 {
+			suffix--
+		}
+	}
+	stepBackPrefix()
+	stepBackSuffix()
+
+	// Align prefix and suffix anchors by leaf index and block ID.
+	for steps := 0; prefix > 0; steps++ {
+		if steps > 128 {
+			return false, false
+		}
+		if e.rows[prefix-1].leaf == e.leafBuf[prefix-1] && e.ast.Block(e.leafBuf[prefix-1]).ID == e.rows[prefix-1].id {
+			break
+		}
+		prefix--
+		stepBackPrefix()
+	}
+	for steps := 0; suffix > 0; steps++ {
+		if steps > 128 {
+			return false, false
+		}
+		if e.rows[oldN-suffix].leaf+astDelta == e.leafBuf[newN-suffix] && e.ast.Block(e.leafBuf[newN-suffix]).ID == e.rows[oldN-suffix].id {
+			break
+		}
+		suffix--
+		stepBackSuffix()
+	}
+
+	oldLo, oldHi := prefix, oldN-suffix
+	newLo, newHi := prefix, newN-suffix
+	if oldHi-oldLo > 256 || newHi-newLo > 256 {
+		return false, false
+	}
+
+	for i := 0; i < prefix; i++ {
+		if e.rows[i].leaf != e.leafBuf[i] {
+			return false, false
+		}
+	}
+	for k := 1; k <= suffix; k++ {
+		if e.rows[oldN-k].leaf+astDelta != e.leafBuf[newN-k] {
+			return false, false
+		}
+	}
+
+	astLo := 1
+	if newLo > 0 {
+		astLo = e.leafBuf[newLo-1] + 1
+	}
+	astHi := e.ast.Len()
+	if newHi < newN {
+		astHi = e.leafBuf[newHi]
+	}
+	if astHi-astLo > 512 {
+		return false, false
+	}
+
+	var distantDirty []int
+	for _, id := range ev.Dirty {
+		if r, exists := e.rowOf[id]; exists {
+			if r >= oldLo && r < oldHi {
+				continue
+			}
+			newR := r
+			if r >= oldHi {
+				newR = r + rowDelta
+			}
+			if newR < 0 || newR >= newN {
+				return false, false
+			}
+			b := e.ast.Block(e.leafBuf[newR])
+			if b.ID != id || b.Kind != e.rows[r].kind || b.Kind == contract.BlockTableCell {
+				return false, false
+			}
+			distantDirty = append(distantDirty, newR)
+			continue
+		}
+		if id == e.ast.Block(0).ID || e.ancestorOfChange(id, ev.Changes) {
+			continue
+		}
+		inWindow := false
+		for j := astLo; j < astHi; j++ {
+			if e.ast.Block(j).ID == id {
+				inWindow = true
+				break
+			}
+		}
+		if !inWindow {
+			return false, false
+		}
+	}
+
+	var anchorID contract.BlockID
+	if e.anchorIdx < len(e.rows) {
+		anchorID = e.rows[e.anchorIdx].id
+	}
+	headingChanged := false
+	oldMid := make(map[contract.BlockID]row, oldHi-oldLo)
+	for r := oldLo; r < oldHi; r++ {
+		prev := e.rows[r]
+		if prev.kind == contract.BlockHeading {
+			headingChanged = true
+		}
+		if prev.kind == contract.BlockLinkDef {
+			tables = true
+		}
+		oldMid[prev.id] = prev
+		delete(e.rowOf, prev.id)
+	}
+
+	mid := make([]row, 0, newHi-newLo)
+	for newR := newLo; newR < newHi; newR++ {
+		l := e.leafBuf[newR]
+		b := e.ast.Block(l)
+		v := row{id: b.ID, leaf: l, kind: b.Kind}
+		if prev, had := oldMid[b.ID]; had {
+			v.forms, v.cur, v.h = prev.forms, prev.cur, prev.h
+			delete(oldMid, b.ID)
+		}
+		if b.Kind == contract.BlockHeading {
+			headingChanged = true
+		}
+		if b.Kind == contract.BlockLinkDef || e.inFootnote(b) {
+			tables = true
+		}
+		if b.Kind == contract.BlockTableCell {
+			parent := e.ast.Block(b.Parent)
+			v.cols, v.header = 0, parent.Header
+			for range e.ast.Children(b.Parent) {
+				v.cols++
+			}
+			if n := len(mid); n > 0 && mid[n-1].cols > 0 && e.ast.Block(mid[n-1].leaf).Parent == b.Parent {
+				v.col = mid[n-1].col + 1
+			}
+		}
+		mid = append(mid, v)
+	}
+	for _, prev := range oldMid {
+		e.laidN -= len(prev.forms)
+	}
+
+	if astDelta != 0 {
+		for r := oldHi; r < oldN; r++ {
+			e.rows[r].leaf += astDelta
+		}
+	}
+	if newN > cap(e.rows) {
+		grown := make([]row, oldN, max(newN, cap(e.rows)*2))
+		copy(grown, e.rows)
+		e.rows = grown
+	}
+	if rowDelta > 0 {
+		e.rows = e.rows[:newN]
+		copy(e.rows[newHi:], e.rows[oldHi:oldN])
+	} else if rowDelta < 0 {
+		copy(e.rows[newHi:], e.rows[oldHi:oldN])
+		clear(e.rows[newN:oldN])
+		e.rows = e.rows[:newN]
+	}
+	copy(e.rows[newLo:newHi], mid)
+
+	for r := newLo; r < newHi; r++ {
+		e.rowOf[e.rows[r].id] = r
+	}
+	if rowDelta != 0 {
+		for r := newHi; r < newN; r++ {
+			e.rowOf[e.rows[r].id] = r
+		}
+	}
+	e.astLen = e.ast.Len()
+
+	for _, id := range ev.Dirty {
+		if r, exists := e.rowOf[id]; exists {
+			e.dropForms(r)
+		}
+	}
+	for _, r := range distantDirty {
+		e.dropForms(r)
+	}
+	if newLo > 0 {
+		e.dropForms(newLo - 1)
+	}
+
+	// Keep e.tocRows sorted across the splice.
+	kept := e.tocRows[:0]
+	inserted := false
+	insertMidTOC := func() {
+		if inserted {
+			return
+		}
+		inserted = true
+		for r := newLo; r < newHi; r++ {
+			if e.rows[r].kind == contract.BlockTOC {
+				kept = append(kept, r)
+			}
+		}
+	}
+	for _, r := range e.tocRows {
+		if r < oldLo {
+			kept = append(kept, r)
+			continue
+		}
+		insertMidTOC()
+		if r >= oldHi {
+			kept = append(kept, r+rowDelta)
+		}
+	}
+	insertMidTOC()
+	e.tocRows = kept
+
+	if r, exists := e.rowOf[anchorID]; exists {
+		e.anchorIdx = r
+	} else {
+		e.anchorIdx = e.rowAt(e.model.Selection().Primary().Head)
+	}
+	if headingChanged {
+		e.headingsStale = true
+		e.dropTOC()
+	} else if !e.headingsStale && !shiftHeadings(e.outlineCache, ev.Changes) {
+		e.headingsStale = true
+		e.dropTOC()
+	}
+	e.resetHeights()
+	return tables, true
 }
 
 func (e *Editor) ancestorOfChange(id contract.BlockID, changes []contract.Change) bool {
@@ -823,11 +1135,7 @@ func (e *Editor) composed() *laid {
 }
 
 func (e *Editor) resetHeights() {
-	hs := make([]float32, len(e.rows))
-	for i := range e.rows {
-		hs[i] = e.rows[i].h
-	}
-	e.hs.reset(hs)
+	e.hs.resetRows(e.rows)
 	e.estimate()
 }
 

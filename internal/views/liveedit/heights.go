@@ -31,6 +31,35 @@ func (h *heights) reset(hs []float32) {
 	}
 }
 
+// resetRows rebuilds the Fenwick sums directly from rows without allocating
+// once the backing slices are large enough.
+func (h *heights) resetRows(rows []row) {
+	n := len(rows)
+	if cap(h.measured) < n+1 {
+		h.measured = make([]float64, n+1, max(n+1, cap(h.measured)*2))
+		h.unknown = make([]int32, n+1, max(n+1, cap(h.unknown)*2))
+	} else {
+		h.measured = h.measured[:n+1]
+		h.unknown = h.unknown[:n+1]
+		clear(h.measured)
+		clear(h.unknown)
+	}
+	for i := range rows {
+		x := rows[i].h
+		if x > 0 {
+			h.measured[i+1] = float64(x)
+		} else if x == 0 {
+			h.unknown[i+1] = 1
+		}
+	}
+	for i := 1; i <= n; i++ {
+		if j := i + i&-i; j <= n {
+			h.measured[j] += h.measured[i]
+			h.unknown[j] += h.unknown[i]
+		}
+	}
+}
+
 func (h *heights) add(p int, dm float64, du int32) {
 	for i := p + 1; i < len(h.measured); i += i & -i {
 		h.measured[i] += dm

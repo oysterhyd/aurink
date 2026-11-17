@@ -8,39 +8,52 @@ import (
 	"github.com/egoist/mygo/ui/markdown/parser"
 )
 
-func (s *Snapshot) derive() {
-	s.derivedOnce.Do(func() {
-		s.notes = map[string]int{}
-		s.defs = map[string]contract.LinkDef{}
+func (s *Snapshot) deriveOutline() {
+	s.outlineOnce.Do(func() {
 		slugs := map[string]bool{}
 		for i := range s.entries {
+			if s.entries[i].data.block.Kind != contract.BlockHeading {
+				continue
+			}
 			b := s.Block(i)
-			switch b.Kind {
-			case contract.BlockHeading:
-				var title strings.Builder
-				for _, n := range s.Inlines(i) {
-					switch n.Kind {
-					case contract.InlineText, contract.InlineCode, contract.InlineEscape, contract.InlineEntity, contract.InlineMath, contract.InlineEmoji:
-						title.WriteString(n.Text)
-					case contract.InlineSoftBreak, contract.InlineLineBreak:
-						title.WriteByte(' ')
-					}
+			var title strings.Builder
+			for _, n := range s.Inlines(i) {
+				switch n.Kind {
+				case contract.InlineText, contract.InlineCode, contract.InlineEscape, contract.InlineEntity, contract.InlineMath, contract.InlineEmoji:
+					title.WriteString(n.Text)
+				case contract.InlineSoftBreak, contract.InlineLineBreak:
+					title.WriteByte(' ')
 				}
-				t := title.String()
-				base := slug(t)
-				key := base
-				for n := 1; slugs[key]; n++ {
-					key = base + "-" + decimal(n)
-				}
-				slugs[key] = true
-				s.outline = append(s.outline, contract.Heading{Block: b.ID, Index: i, Level: b.Level, Text: t, Slug: key, Range: b.Range})
+			}
+			t := title.String()
+			base := slug(t)
+			key := base
+			for n := 1; slugs[key]; n++ {
+				key = base + "-" + decimal(n)
+			}
+			slugs[key] = true
+			s.outline = append(s.outline, contract.Heading{Block: b.ID, Index: i, Level: b.Level, Text: t, Slug: key, Range: b.Range})
+		}
+	})
+}
+
+func (s *Snapshot) deriveDefs() {
+	if !s.hasDefinitions {
+		return
+	}
+	s.defsOnce.Do(func() {
+		s.notes = map[string]int{}
+		s.defs = map[string]contract.LinkDef{}
+		for i := range s.entries {
+			switch s.entries[i].data.block.Kind {
 			case contract.BlockFootnoteDef:
+				b := s.Block(i)
 				key := normalizeLabel(b.Label)
 				if _, ok := s.notes[key]; !ok {
 					s.notes[key] = i
 				}
 			case contract.BlockLinkDef:
-				s.readDefinitions(b.Range)
+				s.readDefinitions(s.Block(i).Range)
 			}
 		}
 	})
@@ -108,8 +121,11 @@ func (s *Snapshot) readDefinitions(r contract.Range) {
 			if n.Kind == parser.Link {
 				finish := r.End
 				for i := range s.entries {
+					if s.entries[i].data.block.Kind != contract.BlockLinkDef {
+						continue
+					}
 					b := s.Block(i)
-					if b.Kind == contract.BlockLinkDef && b.Range.Contains(end) {
+					if b.Range.Contains(end) {
 						finish = max(finish, b.Range.End)
 					}
 				}
@@ -162,11 +178,11 @@ func cleanDefinitionLabel(label string) string {
 }
 
 // Outline returns headings with GitHub-style unique slugs, in source order.
-func (s *Snapshot) Outline() []contract.Heading { s.derive(); return s.outline }
+func (s *Snapshot) Outline() []contract.Heading { s.deriveOutline(); return s.outline }
 
 // Footnotes returns normalized labels and their first definition's block index.
 func (s *Snapshot) Footnotes() map[string]int {
-	s.derive()
+	s.deriveDefs()
 	out := make(map[string]int, len(s.notes))
 	for k, v := range s.notes {
 		out[k] = v
@@ -176,7 +192,7 @@ func (s *Snapshot) Footnotes() map[string]int {
 
 // LinkDefs returns normalized reference labels and their first definitions.
 func (s *Snapshot) LinkDefs() map[string]contract.LinkDef {
-	s.derive()
+	s.deriveDefs()
 	out := make(map[string]contract.LinkDef, len(s.defs))
 	for k, v := range s.defs {
 		out[k] = v

@@ -161,6 +161,9 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		if isLeaf(x.data.block.Kind) {
 			region.leaves = append(region.leaves, i-begin+1)
 		}
+		if x.data.block.Kind == contract.BlockLinkDef || x.data.block.Kind == contract.BlockFootnoteDef {
+			region.hasDefinitions = true
+		}
 	}
 	blocks = blocks[:anchorNew]
 	blocks[0].Range.End, blocks[0].Content.End, blocks[0].Next = cutNew-start, cutNew-start, len(blocks)

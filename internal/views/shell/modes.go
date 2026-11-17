@@ -73,7 +73,7 @@ func (s *Shell) typography() theme.Typography {
 // file's: the session stays writable, and leaving gives each tab back the view
 // it had (D17).
 func (s *Shell) setReading(on bool) {
-	if on == s.reading || on && s.active == nil {
+	if on == s.reading || on && (s.active == nil || s.active.s.State().LargeFile) {
 		return
 	}
 	s.reading = on
@@ -90,7 +90,7 @@ func (s *Shell) setReading(on bool) {
 
 // readDoc shows a tab in reading mode; a tab activated in reading mode reads too.
 func (s *Shell) readDoc(d *doc) {
-	if d.live.Mode() == editorapi.ModeRead {
+	if d.s.State().LargeFile || d.live.Mode() == editorapi.ModeRead {
 		return
 	}
 	d.readFrom = d.mode

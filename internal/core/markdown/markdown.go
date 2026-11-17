@@ -180,7 +180,8 @@ type Snapshot struct {
 	lazyMu         sync.Mutex
 	lazy           *parser.Document
 	lazyInput      parserInput
-	derivedOnce    sync.Once
+	outlineOnce    sync.Once
+	defsOnce       sync.Once
 	outline        []contract.Heading
 	notes          map[string]int
 	defs           map[string]contract.LinkDef

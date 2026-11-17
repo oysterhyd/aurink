@@ -16,6 +16,7 @@ import (
 // from these alone. Title holds a key of Title.
 func (s *Shell) Commands() []contract.Command {
 	hasDoc := func() bool { return s.active != nil }
+	notLarge := func() bool { return s.active != nil && !s.active.s.State().LargeFile }
 	cmds := []contract.Command{
 		{ID: contract.CmdFileNew, Title: "new", Run: func() error { s.o.Sessions.New(); return nil }},
 		{ID: contract.CmdFileOpen, Title: "open", Run: func() error {
@@ -41,9 +42,9 @@ func (s *Shell) Commands() []contract.Command {
 			s.invalidate()
 			return nil
 		}},
-		{ID: contract.CmdViewLive, Title: "live", Enabled: hasDoc, Checked: func() bool { return s.active != nil && s.active.mode == editorapi.ModeLive },
+		{ID: contract.CmdViewLive, Title: "live", Enabled: notLarge, Checked: func() bool { return s.active != nil && s.active.mode == editorapi.ModeLive },
 			Run: func() error { s.setMode(s.active, editorapi.ModeLive); return nil }},
-		{ID: contract.CmdViewSource, Title: "source", Enabled: hasDoc, Checked: func() bool { return s.active != nil && s.active.mode == editorapi.ModeSource },
+		{ID: contract.CmdViewSource, Title: "source", Enabled: notLarge, Checked: func() bool { return s.active != nil && s.active.mode == editorapi.ModeSource },
 			Run: func() error {
 				// The shortcut toggles, as there is no key for going back otherwise.
 				if s.active.mode == editorapi.ModeSource {
@@ -78,7 +79,7 @@ func (s *Shell) Commands() []contract.Command {
 		{ID: contract.CmdNavSearchWorkspace, Title: "searchWorkspace", Run: func() error { s.searchWorkspace(); return nil }},
 		{ID: contract.CmdNavQuickOpen, Title: "quickOpen", Run: func() error { s.openPalette(palette.ModeFiles); return nil }},
 		{ID: contract.CmdNavPalette, Title: "palette", Run: func() error { s.openPalette(palette.ModeCommands); return nil }},
-		{ID: contract.CmdNavGoToHeading, Title: "goToHeading", Enabled: hasDoc, Run: func() error { s.openPalette(palette.ModeHeadings); return nil }},
+		{ID: contract.CmdNavGoToHeading, Title: "goToHeading", Enabled: notLarge, Run: func() error { s.openPalette(palette.ModeHeadings); return nil }},
 		{ID: contract.CmdFileReopenClosed, Title: "reopenClosed", Enabled: func() bool { return len(s.closed) > 0 },
 			Run: func() error { s.reopenClosed(); return nil }},
 		{ID: contract.CmdNavNextTab, Title: "nextTab", Enabled: func() bool { return len(s.docs) > 1 },
@@ -241,6 +242,7 @@ func (s *Shell) editCommands() []contract.Command {
 		{"tableFormat", contract.EditCommand{ID: contract.CmdTableFormat}},
 	}
 	hasDoc := func() bool { return s.active != nil }
+	notLarge := func() bool { return s.active != nil && !s.active.s.State().LargeFile }
 	// Reading mode is read-only: copying works, editing and the writing modes do not.
 	editable := func() bool { return live() && !s.reading }
 	var out []contract.Command
@@ -253,7 +255,7 @@ func (s *Shell) editCommands() []contract.Command {
 		}})
 	}
 	return append(out,
-		contract.Command{ID: contract.CmdViewRead, Title: "reading", Enabled: hasDoc,
+		contract.Command{ID: contract.CmdViewRead, Title: "reading", Enabled: notLarge,
 			Checked: func() bool { return s.reading },
 			Run:     func() error { s.setReading(!s.reading); return nil }},
 		contract.Command{ID: contract.CmdViewZoomIn, Title: "zoomIn", Enabled: hasDoc, Run: func() error { s.zoomBy(1); return nil }},

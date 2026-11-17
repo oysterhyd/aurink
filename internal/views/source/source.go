@@ -26,9 +26,13 @@ const maxLineDiff = 2048
 type Editor struct {
 	model    contract.DocumentModel
 	st       *editor.State
-	mirror   string // the buffer's text at the last sync
-	version  uint64 // the buffer's version at the last sync
-	crlf     []int  // mirror offsets of newlines that are \r\n in the document
+	snap     editor.Snapshot  // the buffer's text at the last sync
+	version  uint64           // the buffer's version at the last sync
+	docVer   contract.Version // the document's version at the last sync
+	crlf     []int            // mirror offsets of newlines that are \r\n in the document
+	local    []int            // scratch for incremental crlf updates
+	chunksA  []string         // scratch for snapSpan
+	chunksB  []string         // scratch for snapSpan
 	dominant string
 	writing  bool
 	off      func()
@@ -41,10 +45,14 @@ func New(m contract.DocumentModel, t *theme.Tokens) *Editor {
 	e := &Editor{model: m}
 	text := m.Text().String()
 	e.index(text)
+	large := m.Meta().Large
 	buf := editor.NewBuffer(text)
-	buf.SetLanguage(editor.LanguageFor("a.md"))
-	e.mirror, e.version = buf.String(), buf.Version()
-	e.st = &editor.State{Buffer: buf, SoftWrap: true, NoAutoClose: true, ReadOnly: m.ReadOnly(),
+	if !large {
+		buf.SetLanguage(editor.LanguageFor("a.md"))
+	}
+	e.snap = buf.Snapshot()
+	e.version, e.docVer = e.snap.Version(), m.Version()
+	e.st = &editor.State{Buffer: buf, SoftWrap: !large, NoAutoClose: true, ReadOnly: m.ReadOnly(),
 		Font: ui.Font{Family: theme.Mono, Size: 13}, LineHeight: 1.6, OnInput: e.input}
 	e.dominant = m.Meta().Dominant
 	e.SetTheme(t)
@@ -55,8 +63,22 @@ func New(m contract.DocumentModel, t *theme.Tokens) *Editor {
 		kit.FindBar(c, e.t, bar, f, e.motion)
 	}
 	e.off = m.Subscribe(func(ev contract.DocEvent) {
-		if ev.Kind != contract.DocSelectionChanged && !e.writing {
-			e.pull()
+		switch ev.Kind {
+		case contract.DocReadOnlyChanged:
+			e.st.ReadOnly = m.ReadOnly()
+		case contract.DocMetaChanged:
+			meta := m.Meta()
+			e.dominant = meta.Dominant
+			e.st.SoftWrap = !meta.Large
+			if meta.Large {
+				e.st.Buffer.SetLanguage(nil)
+			} else {
+				e.st.Buffer.SetLanguage(editor.LanguageFor("a.md"))
+			}
+		case contract.DocTextChanged, contract.DocReplaced:
+			if !e.writing {
+				e.pull()
+			}
 		}
 	})
 	return e
@@ -177,39 +199,123 @@ func lf(s string) string { return strings.ReplaceAll(s, "\r\n", "\n") }
 
 // pull brings the buffer to the document's text, when something else changed it.
 func (e *Editor) pull() {
+	if e.model.Version() == e.docVer && e.st.Buffer.Version() == e.version {
+		return
+	}
 	text := e.model.Text().String()
 	e.index(text)
 	want := lf(text)
-	if want == e.mirror {
-		return
+	cur := e.st.Buffer.String()
+	if want != cur {
+		from, oldEnd, newEnd := span(cur, want)
+		e.st.Buffer.Edit(editor.Edit{Start: from, End: oldEnd, Text: want[from:newEnd]})
 	}
-	from, oldEnd, newEnd := span(e.mirror, want)
-	e.st.Buffer.Edit(editor.Edit{Start: from, End: oldEnd, Text: want[from:newEnd]})
-	e.mirror, e.version = want, e.st.Buffer.Version()
+	e.snap = e.st.Buffer.Snapshot()
+	e.version, e.docVer = e.snap.Version(), e.model.Version()
 }
 
 // Sync writes the buffer's edits to the document.
 func (e *Editor) Sync() {
-	v := e.st.Buffer.Version()
-	if v == e.version {
+	now := e.st.Buffer.Snapshot()
+	if now.Version() == e.version {
 		return
 	}
-	e.version = v
-	now := e.st.Buffer.String()
-	if now == e.mirror {
+	e.version = now.Version()
+	from, oldEnd, newEnd, changed := e.snapSpan(e.snap, now)
+	if !changed {
+		e.snap = now
 		return
 	}
-	edits := e.diff(e.mirror, now)
+	edits, from, oldEnd, newEnd := e.diff(e.snap, now, from, oldEnd, newEnd)
 	e.writing = true
 	_, err := e.model.Apply(contract.Transaction{Edits: edits, Origin: contract.OriginCommand, Label: "editing_undo_typing"})
 	e.writing = false
 	if err != nil {
 		// The document refused: it stays the truth.
+		e.docVer = 0
 		e.pull()
 		return
 	}
-	e.mirror = now
-	e.index(e.model.Text().String())
+	oldSnap := e.snap
+	e.snap = now
+	e.docVer = e.model.Version()
+	e.updateCRLF(oldSnap, now, from, oldEnd, newEnd)
+}
+
+// snapSpan skips shared rope chunks from both ends before comparing bytes in the
+// edited chunk range, keeping Sync O(edited chunk) on multi-megabyte buffers.
+func (e *Editor) snapSpan(a, b editor.Snapshot) (from, oldEnd, newEnd int, changed bool) {
+	e.chunksA = e.chunksA[:0]
+	a.Chunks(0, a.Len(), func(s string) bool { e.chunksA = append(e.chunksA, s); return true })
+	e.chunksB = e.chunksB[:0]
+	b.Chunks(0, b.Len(), func(s string) bool { e.chunksB = append(e.chunksB, s); return true })
+	ia, ib := 0, 0
+	for ia < len(e.chunksA) && ib < len(e.chunksB) && e.chunksA[ia] == e.chunksB[ib] {
+		from += len(e.chunksA[ia])
+		ia++
+		ib++
+	}
+	if ia == len(e.chunksA) && ib == len(e.chunksB) {
+		return 0, 0, 0, false
+	}
+	ja, jb := len(e.chunksA)-1, len(e.chunksB)-1
+	tail := 0
+	for ja >= ia && jb >= ib && e.chunksA[ja] == e.chunksB[jb] {
+		tail += len(e.chunksA[ja])
+		ja--
+		jb--
+	}
+	midA := a.Slice(from, a.Len()-tail)
+	midB := b.Slice(from, b.Len()-tail)
+	f, oe, ne := span(midA, midB)
+	if f == oe && f == ne {
+		return 0, 0, 0, false
+	}
+	return from + f, from + oe, from + ne, true
+}
+
+// updateCRLF splices e.crlf over the edited mirror span instead of rescanning
+// the full document text on every keystroke (09 D4).
+func (e *Editor) updateCRLF(oldSnap, newSnap editor.Snapshot, from, oldEnd, newEnd int) {
+	docText := e.model.Text()
+	if docText.Len() == newSnap.Len() {
+		e.crlf = e.crlf[:0]
+		return
+	}
+	mLo := max(0, from-2)
+	oldMHi := min(oldSnap.Len(), oldEnd+2)
+	mHi := newEnd + (oldMHi - oldEnd)
+	loIdx := sort.SearchInts(e.crlf, mLo)
+	hiIdx := sort.SearchInts(e.crlf, oldMHi)
+	tailCRLF := len(e.crlf) - hiIdx
+	docLo := mLo + loIdx
+	docHi := docText.Len() - (newSnap.Len() - mHi) - tailCRLF
+	if docLo < 0 || docHi < docLo || docHi > docText.Len() {
+		e.index(docText.String())
+		return
+	}
+	sub := docText.Slice(contract.Range{Start: docLo, End: docHi})
+	e.local = e.local[:0]
+	removed := 0
+	for at := 0; ; {
+		i := strings.Index(sub[at:], "\r\n")
+		if i < 0 {
+			break
+		}
+		pos := at + i
+		e.local = append(e.local, mLo+pos-removed)
+		removed++
+		at = pos + 2
+	}
+	mirrorDelta := newSnap.Len() - oldSnap.Len()
+	for i := hiIdx; i < len(e.crlf); i++ {
+		e.crlf[i] += mirrorDelta
+	}
+	e.crlf = slices.Replace(e.crlf, loIdx, hiIdx, e.local...)
+	if newSnap.Len()+len(e.crlf) != docText.Len() {
+		e.docVer = 0
+		e.pull()
+	}
 }
 
 // span returns the part of two texts that differs: both start differing at from, and
@@ -228,31 +334,32 @@ func span(a, b string) (from, oldEnd, newEnd int) {
 
 // diff turns a change of the mirror into edits of the document that leave every line
 // it did not touch as it was, with its own line ending.
-func (e *Editor) diff(old, now string) []contract.TextEdit {
-	from, oldEnd, newEnd := span(old, now)
-	if !strings.Contains(old[from:oldEnd], "\n") {
-		return []contract.TextEdit{e.edit(from, oldEnd, now[from:newEnd])}
+func (e *Editor) diff(old, now editor.Snapshot, from, oldEnd, newEnd int) ([]contract.TextEdit, int, int, int) {
+	if !strings.Contains(old.Slice(from, oldEnd), "\n") {
+		return []contract.TextEdit{e.edit(from, oldEnd, now.Slice(from, newEnd))}, from, oldEnd, newEnd
 	}
 	// Widen to whole lines and compare those.
-	from = strings.LastIndexByte(old[:from], '\n') + 1
+	from = old.LineStart(old.LineOf(from))
 	// The tails left out must be the same text.
-	tail := min(len(old)-wholeLine(old, oldEnd), len(now)-wholeLine(now, newEnd))
-	oldEnd, newEnd = len(old)-tail, len(now)-tail
-	a, b := strings.SplitAfter(old[from:oldEnd], "\n"), strings.SplitAfter(now[from:newEnd], "\n")
+	tail := min(old.Len()-wholeLine(old, oldEnd), now.Len()-wholeLine(now, newEnd))
+	oldEnd, newEnd = old.Len()-tail, now.Len()-tail
+	oldPart, newPart := old.Slice(from, oldEnd), now.Slice(from, newEnd)
+	a, b := strings.SplitAfter(oldPart, "\n"), strings.SplitAfter(newPart, "\n")
 	if len(a) > maxLineDiff || len(b) > maxLineDiff {
-		return []contract.TextEdit{e.edit(from, oldEnd, now[from:newEnd])}
+		return []contract.TextEdit{e.edit(from, oldEnd, newPart)}, from, oldEnd, newEnd
 	}
-	return e.lineEdits(from, a, b)
+	return e.lineEdits(from, a, b), from, oldEnd, newEnd
 }
 
-func wholeLine(s string, off int) int {
-	if off > 0 && s[off-1] == '\n' {
+func wholeLine(s editor.Snapshot, off int) int {
+	if off > 0 && s.Slice(off-1, off) == "\n" {
 		return off
 	}
-	if i := strings.IndexByte(s[off:], '\n'); i >= 0 {
-		return off + i + 1
+	end := s.LineEnd(s.LineOf(off))
+	if end < s.Len() {
+		return end + 1
 	}
-	return len(s)
+	return s.Len()
 }
 
 // edit replaces a span of the mirror. New newlines take the document's usual ending.

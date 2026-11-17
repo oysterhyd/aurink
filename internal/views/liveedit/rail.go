@@ -32,8 +32,11 @@ func (e *Editor) railMarks() (ticks []railTick, hits []float32) {
 	at := func(off int) float32 {
 		return float32(max(0, min(e.rowTop(e.rowAt(off))/total, 1)))
 	}
+	rowY := func(r int) float32 {
+		return float32(max(0, min(e.rowTop(r)/total, 1)))
+	}
 	cur, _ := e.VisibleHeading()
-	for _, h := range e.ast.Outline() {
+	for _, h := range e.outline() {
 		w := float32(6)
 		switch h.Level {
 		case 1:
@@ -44,7 +47,13 @@ func (e *Editor) railMarks() (ticks []railTick, hits []float32) {
 		if h.Block == cur {
 			w = 16
 		}
-		ticks = append(ticks, railTick{y: at(h.Range.Start), w: w, off: h.Range.Start, text: h.Text, cur: h.Block == cur})
+		y := float32(0)
+		if r, ok := e.rowOf[h.Block]; ok {
+			y = rowY(r)
+		} else {
+			y = at(h.Range.Start)
+		}
+		ticks = append(ticks, railTick{y: y, w: w, off: h.Range.Start, text: h.Text, cur: h.Block == cur})
 	}
 	for i, r := range e.find {
 		if i == railHitsMax {

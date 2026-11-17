@@ -447,13 +447,14 @@ func sameBytes(old *Snapshot, i int, src string, b contract.Block) bool {
 func definitionBytes(s *Snapshot) string {
 	var out strings.Builder
 	for i := range s.entries {
-		b := s.Block(i)
-		if b.Kind == contract.BlockLinkDef || b.Kind == contract.BlockFootnoteDef {
-			out.WriteString(b.Label)
-			out.WriteByte(0)
-			out.WriteString(s.text.Slice(b.Range))
-			out.WriteByte(0)
+		if kind := s.entries[i].data.block.Kind; kind != contract.BlockLinkDef && kind != contract.BlockFootnoteDef {
+			continue
 		}
+		b := s.Block(i)
+		out.WriteString(b.Label)
+		out.WriteByte(0)
+		out.WriteString(s.text.Slice(b.Range))
+		out.WriteByte(0)
 	}
 	return out.String()
 }

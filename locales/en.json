@@ -108,9 +108,9 @@
   "@shell_welcome": {
     "description": "The line under the name on the welcome page."
   },
-  "shell_too_large": "This file is over 5 MB and cannot be opened yet",
+  "shell_too_large": "This file is over 64 MB and cannot be opened",
   "@shell_too_large": {
-    "description": "A notice when a file is too large."
+    "description": "A notice when a file exceeds the 64 MB hard cap."
   },
   "shell_not_found": "The file no longer exists",
   "@shell_not_found": {
@@ -727,13 +727,29 @@
   "@shell_banner_read_only_detail": {
     "description": "Under the read-only banner's title."
   },
+  "shell_banner_encoding": "GB18030 encoding (read-only).",
+  "@shell_banner_encoding": {
+    "description": "The banner of a legacy GB18030/GBK document opened read-only."
+  },
+  "shell_banner_encoding_detail": "Convert to UTF-8 to edit, or save a copy.",
+  "@shell_banner_encoding_detail": {
+    "description": "Under the legacy encoding banner's title."
+  },
+  "shell_convert_utf8": "Convert to UTF-8 and Edit",
+  "@shell_convert_utf8": {
+    "description": "Converts a legacy-encoded document to UTF-8 in memory and unlocks editing."
+  },
   "shell_banner_large": "Large file mode.",
   "@shell_banner_large": {
     "description": "The banner of a document opened in large file mode."
   },
-  "shell_banner_large_detail": "Some live rendering is off to keep it fast.",
+  "shell_banner_large_detail": "Opened in Source view to keep editing fast.",
   "@shell_banner_large_detail": {
     "description": "Under the large file banner's title."
+  },
+  "shell_large_no_outline": "Outline is off in large file mode",
+  "@shell_large_no_outline": {
+    "description": "Shown in the sidebar outline panel when the active file is in large file mode."
   },
   "shell_deleted_status": "Deleted, not written",
   "@shell_deleted_status": {

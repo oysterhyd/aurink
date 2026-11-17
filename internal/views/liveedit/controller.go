@@ -136,7 +136,7 @@ func (e *Editor) VisibleHeading() (contract.BlockID, bool) {
 	// above show in the margin but belong to the section before.
 	r := max(0, min(e.hs.at(e.scroll+padTop+2), len(e.rows)-1))
 	off := e.block(r).Range.Start
-	o := e.ast.Outline()
+	o := e.outline()
 	i := sort.Search(len(o), func(k int) bool { return o[k].Range.Start > off })
 	if i == 0 {
 		return 0, false
@@ -262,7 +262,7 @@ const (
 // TitleAbove returns the text of the document's first level-1 heading and
 // whether the view has scrolled past it, for reading mode's title.
 func (e *Editor) TitleAbove() (string, bool) {
-	for _, h := range e.ast.Outline() {
+	for _, h := range e.outline() {
 		if h.Level != 1 {
 			continue
 		}

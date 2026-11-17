@@ -52,6 +52,10 @@ func (s *Shell) headings(d *doc) []heading {
 
 func (s *Shell) outlinePanel(c *ui.Context, t *theme.Tokens) {
 	d := s.active
+	if d != nil && d.s.State().LargeFile {
+		ui.Text(c, locales.ShellLargeNoOutline()).FontSize(theme.UIText).TextColor(t.Muted).Padding(12, 16)
+		return
+	}
 	var hs []heading
 	if d != nil {
 		hs = s.headings(d)

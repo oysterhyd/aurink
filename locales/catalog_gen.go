@@ -414,16 +414,16 @@ func (msgs Messages) ShellWelcome() string {
 	return Catalog.Format(msgs.locale, "shell_welcome", nil)
 }
 
-// ShellTooLarge says "This file is over 5 MB and cannot be opened yet"
+// ShellTooLarge says "This file is over 64 MB and cannot be opened"
 // in the language the app shows.
 //
-// A notice when a file is too large.
+// A notice when a file exceeds the 64 MB hard cap.
 func ShellTooLarge() string { return In(i18n.Locale()).ShellTooLarge() }
 
-// ShellTooLarge says "This file is over 5 MB and cannot be opened yet"
+// ShellTooLarge says "This file is over 64 MB and cannot be opened"
 // in the language of msgs.
 //
-// A notice when a file is too large.
+// A notice when a file exceeds the 64 MB hard cap.
 func (msgs Messages) ShellTooLarge() string {
 	return Catalog.Format(msgs.locale, "shell_too_large", nil)
 }
@@ -2354,6 +2354,50 @@ func (msgs Messages) ShellBannerReadOnlyDetail() string {
 	return Catalog.Format(msgs.locale, "shell_banner_read_only_detail", nil)
 }
 
+// ShellBannerEncoding says "GB18030 encoding (read-only)."
+// in the language the app shows.
+//
+// The banner of a legacy GB18030/GBK document opened read-only.
+func ShellBannerEncoding() string { return In(i18n.Locale()).ShellBannerEncoding() }
+
+// ShellBannerEncoding says "GB18030 encoding (read-only)."
+// in the language of msgs.
+//
+// The banner of a legacy GB18030/GBK document opened read-only.
+func (msgs Messages) ShellBannerEncoding() string {
+	return Catalog.Format(msgs.locale, "shell_banner_encoding", nil)
+}
+
+// ShellBannerEncodingDetail says "Convert to UTF-8 to edit, or save a copy."
+// in the language the app shows.
+//
+// Under the legacy encoding banner's title.
+func ShellBannerEncodingDetail() string { return In(i18n.Locale()).ShellBannerEncodingDetail() }
+
+// ShellBannerEncodingDetail says "Convert to UTF-8 to edit, or save a copy."
+// in the language of msgs.
+//
+// Under the legacy encoding banner's title.
+func (msgs Messages) ShellBannerEncodingDetail() string {
+	return Catalog.Format(msgs.locale, "shell_banner_encoding_detail", nil)
+}
+
+// ShellConvertUtf8 says "Convert to UTF-8 and Edit"
+// in the language the app shows.
+//
+// Converts a legacy-encoded document to UTF-8 in memory and unlocks
+// editing.
+func ShellConvertUtf8() string { return In(i18n.Locale()).ShellConvertUtf8() }
+
+// ShellConvertUtf8 says "Convert to UTF-8 and Edit"
+// in the language of msgs.
+//
+// Converts a legacy-encoded document to UTF-8 in memory and unlocks
+// editing.
+func (msgs Messages) ShellConvertUtf8() string {
+	return Catalog.Format(msgs.locale, "shell_convert_utf8", nil)
+}
+
 // ShellBannerLarge says "Large file mode."
 // in the language the app shows.
 //
@@ -2368,18 +2412,34 @@ func (msgs Messages) ShellBannerLarge() string {
 	return Catalog.Format(msgs.locale, "shell_banner_large", nil)
 }
 
-// ShellBannerLargeDetail says "Some live rendering is off to keep it fast."
+// ShellBannerLargeDetail says "Opened in Source view to keep editing fast."
 // in the language the app shows.
 //
 // Under the large file banner's title.
 func ShellBannerLargeDetail() string { return In(i18n.Locale()).ShellBannerLargeDetail() }
 
-// ShellBannerLargeDetail says "Some live rendering is off to keep it fast."
+// ShellBannerLargeDetail says "Opened in Source view to keep editing fast."
 // in the language of msgs.
 //
 // Under the large file banner's title.
 func (msgs Messages) ShellBannerLargeDetail() string {
 	return Catalog.Format(msgs.locale, "shell_banner_large_detail", nil)
+}
+
+// ShellLargeNoOutline says "Outline is off in large file mode"
+// in the language the app shows.
+//
+// Shown in the sidebar outline panel when the active file is in large file
+// mode.
+func ShellLargeNoOutline() string { return In(i18n.Locale()).ShellLargeNoOutline() }
+
+// ShellLargeNoOutline says "Outline is off in large file mode"
+// in the language of msgs.
+//
+// Shown in the sidebar outline panel when the active file is in large file
+// mode.
+func (msgs Messages) ShellLargeNoOutline() string {
+	return Catalog.Format(msgs.locale, "shell_large_no_outline", nil)
 }
 
 // ShellDeletedStatus says "Deleted, not written"

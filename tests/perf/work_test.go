@@ -10,17 +10,16 @@ import (
 )
 
 // TestTypingWorkStaysLocal guards keystroke cost by counting work instead of
-// timing it (07 §7), so a busy CI machine cannot fail it and a slow change
-// cannot hide behind a loose wall-clock limit. Measured on 2026-11-02: typing
-// walks no rows, lays out 1-2 rows and allocates about 760 times per key at
-// 200 KB and at 1 MB alike; Enter walks the rows once and allocates about 98k
-// (200 KB) and 484k (1 MB) times. The bounds give 2x headroom.
+// timing it (07 §7, 09 D5), so a busy CI machine cannot fail it and a slow
+// change cannot hide behind a loose wall-clock limit. Measured on 2026-11-18:
+// typing and Enter alike walk zero full row tables, lay out 1-3 rows, and
+// allocate ~770 (typing) and ~1,050 (Enter) times at 200 KB and 1 MB alike.
 func TestTypingWorkStaysLocal(t *testing.T) {
 	perKey := map[int]float64{}
 	for _, c := range []struct {
 		size        int
 		enterAllocs float64
-	}{{200 << 10, 200_000}, {1 << 20, 1_000_000}} {
+	}{{200 << 10, 3_000}, {1 << 20, 3_000}} {
 		src := corpus.Generate(c.size, 1)
 		e, tt := openEditor(t, src)
 		e.Model().SetSelection(contract.Caret(len(src) / 2))
@@ -39,7 +38,11 @@ func TestTypingWorkStaysLocal(t *testing.T) {
 		}
 		perKey[c.size] = allocs
 		e.Stats.MaxFrameShapes = 0
+		walks = e.Stats.RowRebuilds
 		enter := testing.AllocsPerRun(10, func() { tt.Key(0, ui.KeyEnter); tt.Frame() })
+		if n := e.Stats.RowRebuilds - walks; n != 0 {
+			t.Errorf("%d KB: Enter walked all rows %d times", c.size>>10, n)
+		}
 		if e.Stats.MaxFrameShapes > 6 {
 			t.Errorf("%d KB: Enter laid out %d rows", c.size>>10, e.Stats.MaxFrameShapes)
 		}
