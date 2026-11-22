@@ -2,6 +2,17 @@
 
 All notable changes to Aurink are documented in this file.
 
+## 1.0.1 - 2026-11-22
+
+Engine performance, table layout, slash menu, and UI refinement update.
+
+### Highlights
+- **Zero-Concatenation Chunked Incremental Parser**: `core/markdown` now validates changes and performs typing & local structural reparses directly over 16 KB `core/text` chunks without materializing full-document contiguous strings or running full-document byte scans on each keystroke.
+- **Targeted Async Render & Image Cache Invalidation**: Completing an asynchronous MathJax formula, Mermaid diagram, or local image decode now invalidates only the affected document rows rather than dropping all cached row layouts.
+- **Auto-Fit & Interactive Resizable Tables**: Live tables automatically size column widths proportionally to cell content and support interactive mouse dragging (and double-click reset) on internal column dividers.
+- **Container Slash Menu & Atomic Command Replace**: `/` Slash Menu can now be triggered inside empty list items (`- /`), empty blockquotes (`> /`), and indented lines, features a visual block structure preview card, and executes via single-step `EditCommand.Replace` without transient model undo rollbacks.
+- **Typography, Settings & Palette Refinements**: Refined heading typographic scale and CJK serif fallbacks, resolved bottom clipping of `Reduce Transparency` in Settings on initial open, and added semantic command icons, file tree icons, and inactive tab pills.
+
 ## 1.0.0 - 2026-11-18
 
 First official Windows release of Aurink — a fast, lossless WYSIWYG Live Markdown desktop editor built in pure Go (`CGO_ENABLED=0`) on MyGo Native UI.

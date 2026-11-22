@@ -1,7 +1,7 @@
 {
   "name": "Aurink",
   "identifier": "app.aurink.editor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "copyright": "Copyright © 2026 Aurink",
   "out": "build",
   "i18n": { "dir": "locales", "source": "en" },

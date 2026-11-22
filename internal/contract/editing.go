@@ -66,14 +66,15 @@ type EditContext struct {
 
 // EditCommand 是一条格式/结构命令及其参数。
 type EditCommand struct {
-	ID    CommandID
-	Level int    // 标题级别、缩进层数
-	Text  string // 代码语言、链接文字
-	URL   string
-	Rows  int
-	Cols  int
-	Align Align
-	Paths []string // 已导入资源的相对路径
+	ID      CommandID
+	Level   int    // 标题级别、缩进层数
+	Text    string // 代码语言、链接文字
+	URL     string
+	Rows    int
+	Cols    int
+	Align   Align
+	Paths   []string // 已导入资源的相对路径
+	Replace Range    // 执行命令前在同一事务中先消去的源区间（如 /slash 查询）
 }
 
 // TriState 是选区内某格式的状态。

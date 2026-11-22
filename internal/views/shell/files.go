@@ -206,6 +206,11 @@ func (s *Shell) fileRow(c *ui.Context, t *theme.Tokens, path string) {
 			s.renameField(c, t, path)
 			return
 		}
+		icon := kit.IconFile
+		if dir {
+			icon = kit.IconFolder
+		}
+		ui.Icon(c, icon).Size(14, 14).TextColor(t.Muted)
 		ui.Text(c, name).FontSize(theme.UIText).SingleLine().Grow(1)
 		if d != nil && d.s.State().Edited {
 			ui.Box(c).Size(6, 6).Radius(3).Background(t.Accent)

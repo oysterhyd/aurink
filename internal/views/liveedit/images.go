@@ -71,8 +71,8 @@ func (e *Editor) image(source string) *imageState {
 		}
 		d.Post(func() {
 			st.src, st.failed = src, err != nil || src == nil
-			// The row's size changes with the image.
-			e.dropAllForms()
+			// Only rows displaying or previewing this image change size.
+			e.dropImageForms(source)
 			e.invalidate()
 		})
 	}()

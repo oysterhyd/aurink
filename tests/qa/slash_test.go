@@ -48,9 +48,9 @@ func TestSlashOpensOnAnEmptyParagraph(t *testing.T) {
 func TestSlashStaysShutElsewhere(t *testing.T) {
 	for _, c := range []struct{ name, doc string }{
 		{"after text", "# Notes\n\ntext"},
-		{"in a list item", "- one\n- "},
 		{"in a heading", "# "},
-		{"in a quote", "> "},
+		{"in a code block", "```\n"},
+		{"in a table cell", "| a |\n|---|\n| "},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			a := newApp(t)
@@ -63,6 +63,49 @@ func TestSlashStaysShutElsewhere(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSlashOpensInContainersAndIndentedParagraphs(t *testing.T) {
+	t.Run("in a list item", func(t *testing.T) {
+		a := newApp(t)
+		a.open("s.md", "- one\n- ")
+		a.caret(len(a.text()))
+		a.animate()
+		a.typed("/")
+		if !a.slashOpen() {
+			t.Fatal("the menu did not open in an empty list item")
+		}
+		a.typed("todo")
+		a.key(0, ui.KeyEnter)
+		a.want(a.text(), "- one\n- [ ] ")
+		a.key(ui.Cmd, ui.KeyZ)
+		a.want(a.text(), "- one\n- /todo")
+	})
+	t.Run("in a quote", func(t *testing.T) {
+		a := newApp(t)
+		a.open("s.md", "> ")
+		a.caret(len(a.text()))
+		a.animate()
+		a.typed("/")
+		if !a.slashOpen() {
+			t.Fatal("the menu did not open in an empty quote")
+		}
+		a.typed("h2")
+		a.key(0, ui.KeyEnter)
+		a.want(a.text(), "> ## ")
+		a.key(ui.Cmd, ui.KeyZ)
+		a.want(a.text(), "> /h2")
+	})
+	t.Run("after leading spaces", func(t *testing.T) {
+		a := newApp(t)
+		a.open("s.md", "  ")
+		a.caret(len(a.text()))
+		a.animate()
+		a.typed("/")
+		if !a.slashOpen() {
+			t.Fatal("the menu did not open after leading spaces")
+		}
+	})
 }
 
 func TestSlashFiltersAndInserts(t *testing.T) {

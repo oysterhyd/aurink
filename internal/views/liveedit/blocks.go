@@ -252,9 +252,9 @@ type cellWidget struct{ plainWidget }
 
 func (cellWidget) metrics(e *Editor, r int, _ *contract.Block, m *rowMetrics) {
 	v := &e.rows[r]
-	col := e.width / float32(max(v.cols, 1))
-	m.x = float32(v.col)*col + cellPad
-	m.width = float32(v.col+1)*col - cellPad
+	left, colW := e.tableColBox(r)
+	m.x = left + cellPad
+	m.width = left + colW - cellPad
 	m.above, m.below = 7, 7
 	top, bottom := e.tableGaps(r)
 	m.above += top
@@ -309,7 +309,13 @@ func (cellWidget) front(rc *rowContext) {
 	v := &e.rows[rc.row]
 	cell := rc.cell()
 	if v.col > 0 {
-		p.Fill(ui.Rect{X: cell.X, Y: cell.Y, W: 1, H: cell.H}, t.Border, 0)
+		lineColor, lineW := t.Border, float32(1)
+		if tbl, _, _, _, ok := e.tableInfo(rc.row); ok {
+			if (e.dragTableID == tbl.ID && e.dragTableCol == v.col-1) || (e.hoverTableID == tbl.ID && e.hoverTableCol == v.col-1) {
+				lineColor, lineW = t.Accent, 2
+			}
+		}
+		p.Fill(ui.Rect{X: cell.X - (lineW-1)/2, Y: cell.Y, W: lineW, H: cell.H}, lineColor, 0)
 	} else if first, last, ok := e.tableRows(rc.row); ok {
 		if rc.row != last {
 			p.Fill(ui.Rect{X: rc.ox, Y: cell.Y + cell.H - 1, W: e.width, H: 1}, t.Border, 0)
@@ -345,9 +351,9 @@ func (e *Editor) tableRows(r int) (first, last int, ok bool) {
 
 func (rc *rowContext) cell() ui.Rect {
 	e, v := rc.e, &rc.e.rows[rc.row]
-	col := e.width / float32(max(v.cols, 1))
+	left, col := e.tableColBox(rc.row)
 	top, bottom := e.tableGaps(rc.row)
-	return ui.Rect{X: rc.ox + float32(v.col)*col, Y: rc.top + top, W: col, H: e.rows[rc.row-v.col].h - top - bottom}
+	return ui.Rect{X: rc.ox + left, Y: rc.top + top, W: col, H: e.rows[rc.row-v.col].h - top - bottom}
 }
 
 // paintContainers draws what a row's containers show: list markers, checkboxes,

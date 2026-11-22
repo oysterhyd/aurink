@@ -187,7 +187,15 @@ type Editor struct {
 	gridRows, gridCols int
 	// tableMenuOpen is set while the toolbar's More menu shows: it takes the
 	// focus from the document, and the toolbar holding it stays.
-	tableMenuOpen bool
+	tableMenuOpen  bool
+	tableRatios    map[contract.BlockID][]float32
+	tableAuto      map[contract.BlockID]tableColCache
+	hoverTableID   contract.BlockID
+	hoverTableCol  int
+	dragTableID    contract.BlockID
+	dragTableCol   int
+	dragTableFirst int
+	dragTableLast  int
 	// lineHeights caches lineHeight by font.
 	lineHeights map[ui.Font]float32
 	// draftAt is the start of the block shown as a draft (draft.go), -1 for
@@ -1352,6 +1360,87 @@ func (e *Editor) dropAllForms() {
 		e.dropForms(i)
 	}
 	e.preLaid = nil
+}
+
+// dropRenderForms invalidates only the cached row forms that depend on a math
+// or diagram rendering of source, keeping all unrelated text row layouts intact.
+func (e *Editor) dropRenderForms(source string) {
+	for r := range e.rows {
+		v := &e.rows[r]
+		if len(v.forms) == 0 && v.cur == nil {
+			continue
+		}
+		match := v.kind == contract.BlockMath || v.kind == contract.BlockCode
+		if !match {
+			for _, f := range v.forms {
+				for i := range f.proj.Segments {
+					s := &f.proj.Segments[i]
+					if s.Kind == contract.SegObject && s.Object != nil && s.Object.Source == source {
+						match = true
+						break
+					}
+				}
+				if match {
+					break
+				}
+			}
+		}
+		if match {
+			e.dropForms(r)
+			if v.h > 0 {
+				e.touched = append(e.touched, v.id)
+			}
+			if r == e.caretRow {
+				e.preLaid = nil
+			}
+		}
+	}
+}
+
+// dropImageForms invalidates only the cached row forms that display or preview
+// the image at source, keeping all unrelated text row layouts intact.
+func (e *Editor) dropImageForms(source string) {
+	for r := range e.rows {
+		v := &e.rows[r]
+		if len(v.forms) == 0 && v.cur == nil {
+			continue
+		}
+		match := false
+		for _, f := range v.forms {
+			for i := range f.proj.Segments {
+				s := &f.proj.Segments[i]
+				if s.Kind == contract.SegObject && s.Object != nil && s.Object.Kind == contract.ObjImage && s.Object.Source == source {
+					match = true
+					break
+				}
+			}
+			if !match && f.html != nil {
+				for i := range f.html.images {
+					if f.html.images[i].src == source {
+						match = true
+						break
+					}
+				}
+			}
+			if !match && v.kind == contract.BlockParagraph && (!f.key.hidden() || f.m.preview > 0) {
+				if o := e.standaloneImagePreview(r); o != nil && o.Source == source {
+					match = true
+				}
+			}
+			if match {
+				break
+			}
+		}
+		if match {
+			e.dropForms(r)
+			if v.h > 0 {
+				e.touched = append(e.touched, v.id)
+			}
+			if r == e.caretRow {
+				e.preLaid = nil
+			}
+		}
+	}
 }
 
 // caretRect returns the caret in element coordinates: x, y and height.

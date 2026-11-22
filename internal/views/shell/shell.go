@@ -730,6 +730,10 @@ func (s *Shell) tab(c *ui.Context, t *theme.Tokens, d *doc) ui.Rect {
 		if active {
 			ui.Box(c.Key("pill")).Absolute().Fill().Radius(theme.RadiusButton).Background(t.Sheet).
 				Shadow(0, 1, 3, 0, t.ShadowColor).PassThrough().Transition(s.matched(&motion.Smooth, pillMatch{}))
+		} else if hover {
+			ui.Box(c.Key("hover")).Absolute().Fill().Radius(theme.RadiusButton).Background(t.Hover).PassThrough()
+		} else {
+			ui.Box(c.Key("idle")).Absolute().Fill().Radius(theme.RadiusButton).Background(t.Surface).PassThrough()
 		}
 		// Absolute children draw above those in flow, and the pill is absolute, so an
 		// unseen copy of the name sizes the tab and the label lies over the pill.

@@ -6,6 +6,7 @@ import (
 
 	"aurink/internal/contract"
 	"aurink/internal/views/editorapi"
+	"aurink/internal/views/kit"
 	"aurink/internal/views/palette"
 	"aurink/internal/views/theme"
 	"aurink/locales"
@@ -61,9 +62,58 @@ func (p paletteSource) Commands() []palette.Item {
 			continue
 		}
 		id := c.ID
-		out = append(out, palette.Item{Title: Title(c.Title), Keys: s.keyLabel(id), Run: func() { s.run(id) }})
+		out = append(out, palette.Item{Title: Title(c.Title), Icon: commandIcon(id), Keys: s.keyLabel(id), Run: func() { s.run(id) }})
 	}
 	return out
+}
+
+func commandIcon(id contract.CommandID) *ui.SVG {
+	s := string(id)
+	switch id {
+	case contract.CmdFileNew:
+		return kit.IconPlus
+	case contract.CmdFileOpenFolder, contract.CmdViewFiles:
+		return kit.IconFolder
+	case contract.CmdFileClose:
+		return kit.IconClose
+	case contract.CmdFileExportHTML, contract.CmdFileExportPDF, contract.CmdFilePrint:
+		return kit.IconExport
+	case contract.CmdViewToggleSidebar:
+		return kit.IconSidebar
+	case contract.CmdViewSource, contract.CmdFormatCode, contract.CmdBlockCode:
+		return kit.IconCode
+	case contract.CmdViewLive, contract.CmdViewRead, contract.CmdViewFocus, contract.CmdViewTypewriter:
+		return kit.IconEye
+	case contract.CmdViewThemeLight, contract.CmdViewThemeDark:
+		return kit.IconContrast
+	case contract.CmdAppSettings:
+		return kit.IconSliders
+	case contract.CmdAppAbout, contract.CmdAppCheckUpdates:
+		return kit.IconInfo
+	case contract.CmdViewOutline:
+		return kit.IconHeading
+	case contract.CmdFormatLink:
+		return kit.IconLink
+	case contract.CmdBlockTaskList, contract.CmdBlockToggleTask:
+		return kit.IconCheck
+	case contract.CmdBlockMoveUp, contract.CmdEditFindPrev:
+		return kit.IconArrowUp
+	case contract.CmdBlockMoveDown, contract.CmdEditFindNext:
+		return kit.IconArrowDown
+	}
+	switch {
+	case strings.HasPrefix(s, "file."):
+		return kit.IconFile
+	case strings.HasPrefix(s, "table."):
+		return kit.IconGrid
+	case strings.Contains(s, "search") || strings.Contains(s, "Search") || strings.HasPrefix(s, "edit.find") || id == contract.CmdEditReplace:
+		return kit.IconSearch
+	case strings.HasPrefix(s, "block.heading"):
+		return kit.IconHeading
+	case strings.HasPrefix(s, "format.") || strings.HasPrefix(s, "block.") || strings.HasPrefix(s, "edit."):
+		return kit.IconEdit
+	}
+	return kit.IconCommand
 }
 
 // Headings are the active document's headings, in order.

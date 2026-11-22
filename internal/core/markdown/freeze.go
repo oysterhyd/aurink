@@ -263,9 +263,25 @@ func (p *Parser) freeze(a *adapted, v contract.Version, exts contract.Extensions
 	return p.freezeBlocks(a.source, a.bodyAt, blocks, v, exts, cs)
 }
 
+func (p *Parser) freezeWithText(srcText *text.Text, a *adapted, exts contract.Extensions, cs []contract.Change) (*Snapshot, []contract.BlockID) {
+	blocks := a.coveredBlocks()
+	s, dirty := p.freezeBlocksWithText(srcText, a.source, a.bodyAt, blocks, srcText.Version(), exts, cs)
+	return s, dirty
+}
+
 func (p *Parser) freezeBlocks(source string, bodyAt int, blocks []contract.Block, v contract.Version, exts contract.Extensions, cs []contract.Change) (*Snapshot, []contract.BlockID) {
-	s := &Snapshot{text: text.New(source, v), exts: exts, bodyAt: bodyAt, entries: make([]placement, len(blocks))}
+	return p.freezeBlocksWithText(text.New(source, v), source, bodyAt, blocks, v, exts, cs)
+}
+
+func (p *Parser) freezeBlocksWithText(srcText *text.Text, source string, bodyAt int, blocks []contract.Block, v contract.Version, exts contract.Extensions, cs []contract.Change) (*Snapshot, []contract.BlockID) {
+	if srcText == nil {
+		srcText = text.New(source, v)
+	}
+	s := &Snapshot{text: srcText, exts: exts, bodyAt: bodyAt, entries: make([]placement, len(blocks))}
 	s.hasDefinitions = definitionBlocks(source, blocks) != ""
+	if !p.skipReferences {
+		s.hasAmbiguousCaret = ambiguousCaretLabel(source)
+	}
 	old := p.current
 	var oldFor []int
 	if old != nil {

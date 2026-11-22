@@ -10,11 +10,13 @@ import (
 
 // localUpdate reparses complete top-level subtrees, including their source
 // prefixes. Two unchanged subtrees certify the suffix before it is shared.
-func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Change) (Update, bool) {
+func (p *Parser) localUpdate(next *text.Text, cs []contract.Change) (Update, bool) {
 	old := p.current
 	if len(cs) == 0 {
 		return Update{}, false
 	}
+	v := next.Version()
+	nextLen := next.Len()
 	tops := make([]int, 0, old.LeafCount())
 	for i := 1; i < old.Len(); i = old.entries[i].next {
 		tops = append(tops, i)
@@ -30,7 +32,7 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		}
 		lo = j
 	}
-	if lo > 0 && old.entries[tops[lo]].start == first && strings.ContainsAny(source[cs[0].NewStart:cs[0].NewEnd], "\r\n") {
+	if lo > 0 && old.entries[tops[lo]].start == first && strings.ContainsAny(next.Slice(contract.Range{Start: cs[0].NewStart, End: cs[0].NewEnd}), "\r\n") {
 		// An inserted separator changes the preceding leaf's trailer too.
 		lo--
 	}
@@ -43,7 +45,7 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		hi++
 	}
 	start := windowStart(old, tops[lo])
-	delta := len(source) - old.text.Len()
+	delta := nextLen - old.text.Len()
 	var a *adapted
 	var blocks []contract.Block
 	var anchorOld, anchorNew, cutOld, cutNew int
@@ -74,13 +76,13 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 			stats.WindowLimitFallbacks++
 			return Update{Stats: stats}, false
 		}
-		if first < start || last > end || newEnd < start || newEnd > len(source) {
+		if first < start || last > end || newEnd < start || newEnd > nextLen {
 			stats.BoundaryFallbacks++
 			return Update{Stats: stats}, false
 		}
 		ext := old.exts&contract.ExtFrontMatter != 0 && start == 0
 		var err error
-		a, err = parseWithExtensions(source[start:newEnd], old.exts, ext)
+		a, err = parseWithExtensions(next.Slice(contract.Range{Start: start, End: newEnd}), old.exts, ext)
 		if err != nil {
 			stats.BoundaryFallbacks++
 			return Update{Stats: stats}, false
@@ -105,7 +107,7 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		}
 		anchorOld, anchorNew, cutOld, cutNew = -1, -1, 0, 0
 		if end == old.text.Len() {
-			anchorOld, anchorNew, cutOld, cutNew = old.Len(), len(blocks), end, len(source)
+			anchorOld, anchorNew, cutOld, cutNew = old.Len(), len(blocks), end, nextLen
 		}
 		for j := max(hi, lo+1); anchorOld < 0 && j+1 < stop; j++ {
 			oi := tops[j]
@@ -146,7 +148,7 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		}
 	}
 	begin := tops[lo]
-	region := &Snapshot{text: text.New(old.text.String()[start:cutOld], old.Version()), exts: old.exts, entries: make([]placement, anchorOld-begin+1)}
+	region := &Snapshot{text: text.New(old.text.Slice(contract.Range{Start: start, End: cutOld}), old.Version()), exts: old.exts, entries: make([]placement, anchorOld-begin+1)}
 	root := contract.Block{Kind: contract.BlockRoot, Range: contract.Range{End: cutOld - start}, Content: contract.Range{End: cutOld - start}}
 	region.entries[0] = placement{data: &blockData{block: root}, parent: -1, next: len(region.entries), id: old.entries[0].id}
 	for i := begin; i < anchorOld; i++ {
@@ -172,15 +174,15 @@ func (p *Parser) localUpdate(source string, v contract.Version, cs []contract.Ch
 		changes[i] = contract.Change{OldStart: c.OldStart - start, OldEnd: c.OldEnd - start, NewStart: c.NewStart - start, NewEnd: c.NewEnd - start}
 	}
 	writer := &Parser{current: region, next: p.next, skipReferences: true}
-	middle, dirty := writer.freezeBlocks(source[start:cutNew], a.bodyAt, blocks, v, old.exts, changes)
+	middle, dirty := writer.freezeBlocks(next.Slice(contract.Range{Start: start, End: cutNew}), a.bodyAt, blocks, v, old.exts, changes)
 	p.next = writer.next
 	count := begin + middle.Len() - 1 + old.Len() - anchorOld
-	s := &Snapshot{text: text.New(source, v), exts: old.exts, bodyAt: old.bodyAt, highest: p.next, entries: make([]placement, count)}
+	s := &Snapshot{text: next, exts: old.exts, bodyAt: old.bodyAt, highest: p.next, hasAmbiguousCaret: old.hasAmbiguousCaret, entries: make([]placement, count)}
 	s.leaves = make([]int, 0, old.LeafCount()+middle.LeafCount()-region.LeafCount())
 	if start == 0 {
 		s.bodyAt = a.bodyAt
 	}
-	root.Range.End, root.Content.End = len(source), len(source)
+	root.Range.End, root.Content.End = nextLen, nextLen
 	s.entries[0] = placement{data: &blockData{block: root}, parent: -1, next: count, id: old.entries[0].id}
 	for i := 1; i < begin; i++ {
 		copyPlacement(&s.entries[i], &old.entries[i])

@@ -46,6 +46,10 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 		e.pointerDown(ev)
 		return true
 	case ui.InputPointerMove:
+		if e.dragTableID != 0 {
+			e.dragTableDividerTo(ev.X)
+			return true
+		}
 		if e.dragging {
 			e.dragX, e.dragY = ev.X, ev.Y
 			e.dragSpeed = 0
@@ -58,12 +62,25 @@ func (e *Editor) input(ev ui.InputEvent) bool {
 			e.dragTowards(ev.X, ev.Y)
 			return true
 		}
+		var hoverTbl contract.BlockID
+		hoverCol := -1
+		if !e.readOnly() {
+			if id, _, _, col, ok := e.tableDividerAt(ev.X, ev.Y); ok {
+				hoverTbl, hoverCol = id, col
+			}
+		}
+		divChanged := hoverTbl != e.hoverTableID || hoverCol != e.hoverTableCol
+		e.hoverTableID, e.hoverTableCol = hoverTbl, hoverCol
 		link, note := e.linkAt(ev.X, ev.Y), e.noteAt(ev.X, ev.Y)
-		if link != e.hoverLink || note != e.hoverNote || ((link != "" || note != "") && (ev.X != e.hoverX || ev.Y != e.hoverY)) {
+		if divChanged || link != e.hoverLink || note != e.hoverNote || ((link != "" || note != "") && (ev.X != e.hoverX || ev.Y != e.hoverY)) {
 			e.hoverLink, e.hoverNote, e.hoverX, e.hoverY = link, note, ev.X, ev.Y
 			return true
 		}
 	case ui.InputPointerUp:
+		if e.dragTableID != 0 {
+			e.dragTableID = 0
+			return true
+		}
 		was := e.dragging
 		e.dragging = false
 		e.dragSpeed = 0
@@ -195,9 +212,20 @@ func (e *Editor) cellByX(p int, x float32) int {
 	if v.cols == 0 {
 		return p
 	}
-	col := int((x - e.contentX()) / (e.width / float32(v.cols)))
+	first := p - v.col
+	ws := e.tableColWidths(first)
+	relX := x - e.contentX()
+	col := v.cols - 1
+	var acc float32
+	for k, w := range ws {
+		acc += w
+		if relX < acc {
+			col = k
+			break
+		}
+	}
 	col = max(0, min(col, v.cols-1))
-	return min(p-v.col+col, len(e.rows)-1)
+	return min(first+col, len(e.rows)-1)
 }
 
 // secondaryDown moves the caret to a press with the secondary button outside the
@@ -212,6 +240,20 @@ func (e *Editor) secondaryDown(ev ui.InputEvent) {
 
 func (e *Editor) pointerDown(ev ui.InputEvent) {
 	e.UnmarkText()
+	if !e.readOnly() {
+		if tblID, first, last, col, ok := e.tableDividerAt(ev.X, ev.Y); ok {
+			if ev.Clicks >= 2 {
+				delete(e.tableRatios, tblID)
+				e.dropTableForms(first, last)
+				e.invalidate()
+				return
+			}
+			e.dragTableID, e.dragTableCol = tblID, col
+			e.dragTableFirst, e.dragTableLast = first, last
+			e.dragging = false
+			return
+		}
+	}
 	if e.imageClick(ev) {
 		return
 	}

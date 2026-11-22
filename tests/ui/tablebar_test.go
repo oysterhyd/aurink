@@ -207,3 +207,24 @@ func TestTableSizeGridResizesAndTrashDeletes(t *testing.T) {
 		t.Fatal("the toolbar stayed with no table")
 	}
 }
+
+func TestTableAutoFitsAndDragsColumns(t *testing.T) {
+	src := "| ID | Detailed parameter description and usage notes |\n|---|---|\n| 1 | This column holds a much longer sentence than the ID column |\n"
+	h := openRail(t, src)
+	ws := h.e.TableColumnWidths(0)
+	if len(ws) != 2 || ws[1] <= ws[0]*1.5 {
+		t.Fatalf("auto-fit did not give wider column to long content: %v", ws)
+	}
+	// Drag the divider between column 0 and column 1 to the right by 120 DIP.
+	at := h.e.RowText(0)
+	divX := (at.X - 10) + ws[0] // cell left is RowText.X - cellPad (10)
+	divY := at.Y + 4
+	h.tt.Press(divX, divY)
+	h.tt.Move(divX+120, divY)
+	h.tt.Release(divX+120, divY)
+	h.tt.Frame()
+	dragged := h.e.TableColumnWidths(0)
+	if dragged[0] < ws[0]+100 {
+		t.Fatalf("column drag did not widen column 0: before=%v after=%v", ws, dragged)
+	}
+}

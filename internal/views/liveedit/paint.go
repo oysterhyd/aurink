@@ -121,12 +121,12 @@ func (e *Editor) veil(p *ui.Painter, r ui.Rect, ox, top float32, i int) {
 	v := &e.rows[i]
 	x0, x1 := r.X, r.X+r.W
 	if v.cols > 1 {
-		cw := e.width / float32(v.cols)
+		left, cw := e.tableColBox(i)
 		if v.col > 0 {
-			x0 = ox + float32(v.col)*cw
+			x0 = ox + left
 		}
 		if v.col < v.cols-1 {
-			x1 = ox + float32(v.col+1)*cw
+			x1 = ox + left + cw
 		}
 	}
 	p.Fill(ui.Rect{X: x0, Y: top, W: x1 - x0, H: e.rows[i-v.col].h}, e.t.Sheet.Alpha(1-focusAlpha), 0)

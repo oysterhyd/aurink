@@ -205,6 +205,9 @@ func TestUpdateWorkDoesNotScaleWithUntouchedBlocks(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		if n == 10000 && u.Snapshot.text.HasContiguousString() {
+			t.Fatal("typing materialized a contiguous full-document string")
+		}
 		if n == 10 {
 			small = u.Stats.AdaptedBlocks
 		} else if u.Stats.AdaptedBlocks != small {

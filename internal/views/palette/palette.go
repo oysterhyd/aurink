@@ -29,6 +29,7 @@ type Item struct {
 	Detail string // a file's folder, a heading's level
 	Keys   string // a command's shortcut
 	Indent int    // a heading's level minus one
+	Icon   *ui.SVG
 	Run    func()
 }
 
@@ -204,12 +205,22 @@ func (p *Palette) match(q string) []contract.FuzzyHit {
 	}
 	var out []contract.FuzzyHit
 	lq := strings.ToLower(q)
+	qRunes := len([]rune(lq))
 	for i, it := range p.items {
 		if len(out) == MaxRows {
 			break
 		}
-		if strings.Contains(strings.ToLower(it.Title), lq) {
-			out = append(out, contract.FuzzyHit{Index: i})
+		lt := strings.ToLower(it.Title)
+		if idx := strings.Index(lt, lq); idx >= 0 {
+			var pos []int
+			if qRunes > 0 {
+				startRune := len([]rune(lt[:idx]))
+				pos = make([]int, qRunes)
+				for k := range qRunes {
+					pos[k] = startRune + k
+				}
+			}
+			out = append(out, contract.FuzzyHit{Index: i, Positions: pos})
 		}
 	}
 	return out
@@ -344,6 +355,9 @@ func (p *Palette) row(c *ui.Context, t *theme.Tokens, i int, it Item, pos []int)
 			icon = kit.IconCommand
 		case ModeHeadings:
 			icon = kit.IconHeading
+		}
+		if it.Icon != nil {
+			icon = it.Icon
 		}
 		ui.Row(c).Size(24, 24).Justify(ui.Center).AlignItems(ui.Center).Radius(6).Background(t.Surface).
 			MarginStart(float32(it.Indent) * 14).Children(func() {

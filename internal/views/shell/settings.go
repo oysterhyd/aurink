@@ -134,13 +134,13 @@ func (s *Shell) settingsView(c *ui.Context, t *theme.Tokens) {
 		ui.Row(c).Fill().AlignItems(ui.Stretch).Children(func() {
 			s.settingsNav(c, t)
 			ui.Column(c).Grow(1).MinWidth(0).Children(func() {
-				ui.Row(c).Padding(22, 18, 8, 26).AlignItems(ui.Center).Children(func() {
+				ui.Row(c).Padding(16, 18, 4, 26).AlignItems(ui.Center).Children(func() {
 					ui.Text(c, s.catTitle(s.set.cat)).Font(theme.Serif).FontSize(24).FontWeight(500).Grow(1)
 					if kit.IconButton(c.Key("close"), t, kit.IconClose, locales.SettingsClose(), 32, 14).Clicked() {
 						s.set.open = false
 					}
 				})
-				ui.Scroll(c.Key(s.set.cat)).Grow(1).MinHeight(0).Padding(0, 26, 22, 26).Children(func() {
+				ui.Scroll(c.Key(s.set.cat)).Grow(1).MinHeight(0).Padding(0, 26, 20, 26).Children(func() {
 					switch s.set.cat {
 					case catEditor:
 						s.editorPage(c, t)
@@ -199,7 +199,7 @@ type segmentPillOf string
 
 // row is one setting: its label and description on the left, its control on the right.
 func (s *Shell) row(c *ui.Context, t *theme.Tokens, key, label, hint string, control func()) {
-	ui.Row(c.Key(key)).Padding(11, 0).Gap(24).AlignItems(ui.Center).BorderWidth(1, 0, 0, 0).BorderColor(t.Border).Children(func() {
+	ui.Row(c.Key(key)).Padding(7, 0).Gap(24).AlignItems(ui.Center).BorderWidth(1, 0, 0, 0).BorderColor(t.Border).Children(func() {
 		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
 			ui.Text(c, label).FontSize(theme.UIText + 1)
 			if hint != "" {
@@ -298,7 +298,7 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 	v := s.o.Settings.Get()
 	a := v.Appearance
 	// The theme cards: a window with a sheet and two lines of text.
-	ui.Row(c.Key("themes")).Gap(12).Padding(10, 0, 14, 0).Role(ui.RoleRadioGroup).Label(locales.SettingsAppearance()).Children(func() {
+	ui.Row(c.Key("themes")).Gap(12).Padding(4, 0, 6, 0).Role(ui.RoleRadioGroup).Label(locales.SettingsAppearance()).Children(func() {
 		cards := []struct {
 			mode, label string
 			dark        int // 0 light, 1 dark, 2 both
@@ -307,7 +307,7 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 		}
 		for _, card := range cards {
 			on := a.Theme == card.mode || (card.mode == "system" && a.Theme == "")
-			b := ui.Column(c.Key(card.mode)).Grow(1).Basis(0).Gap(6).Role(ui.RoleRadio).Label(card.label).Checked(on).Focusable()
+			b := ui.Column(c.Key(card.mode)).Grow(1).Basis(0).Gap(4).Role(ui.RoleRadio).Label(card.label).Checked(on).Focusable()
 			b.Children(func() {
 				light, dark := theme.For(theme.Options{Hue: float32(a.AccentHue)}), theme.For(theme.Options{Dark: true, Hue: float32(a.AccentHue)})
 				ring := t.Border
@@ -322,7 +322,7 @@ func (s *Shell) appearancePage(c *ui.Context, t *theme.Tokens) {
 					}
 					return e.Background(pick([]*theme.Tokens{light, dark}[card.dark]))
 				}
-				paint(ui.Box(c).Height(82).Radius(12).Clip().Border(width, ring).Padding(8, 8, 0, 28), func(k *theme.Tokens) ui.Color { return k.Window }).Children(func() {
+				paint(ui.Box(c).Height(62).Radius(12).Clip().Border(width, ring).Padding(8, 8, 0, 28), func(k *theme.Tokens) ui.Color { return k.Window }).Children(func() {
 					paint(ui.Column(c).Fill().Padding(10).Gap(8).Radius(7), func(k *theme.Tokens) ui.Color { return k.Sheet }).Children(func() {
 						paint(ui.Box(c).Height(5).WidthPercent(54).Radius(3), func(k *theme.Tokens) ui.Color { return k.Text })
 						paint(ui.Box(c).Height(3).WidthPercent(86).Radius(3), func(k *theme.Tokens) ui.Color { return k.Text.Alpha(.18) })

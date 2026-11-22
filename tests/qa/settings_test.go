@@ -74,6 +74,13 @@ func TestSettingsOpensAndCloses(t *testing.T) {
 			t.Fatalf("the appearance page lacks %q", s)
 		}
 	}
+	// Reduce Transparency and its hint must be unclipped inside the 580px dialog (Y: 110..690) on initial open.
+	for _, s := range []string{locales.SettingsReduceTransparency(), locales.SettingsReduceTransparencyHint()} {
+		r, ok := a.tt.Find(s)
+		if !ok || r.Y+r.H > 682 {
+			t.Fatalf("Reduce Transparency text %q is clipped at the bottom of the dialog: rect=%+v", s, r)
+		}
+	}
 	a.key(0, ui.KeyEscape)
 	if a.s.SettingsOpen() {
 		t.Fatal("Escape did not close settings")

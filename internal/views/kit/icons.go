@@ -40,6 +40,10 @@ var (
 	IconAlignCenter = icon(`<path d="M2.5 4h11M4.5 8h7M2.5 12h11"/>`)
 	IconAlignRight  = icon(`<path d="M2.5 4h11M6.5 8h7M2.5 12h11"/>`)
 	IconMore        = icon(`<circle cx="8" cy="3.5" r=".6" fill="currentColor"/><circle cx="8" cy="8" r=".6" fill="currentColor"/><circle cx="8" cy="12.5" r=".6" fill="currentColor"/>`)
+	IconCode        = icon(`<path d="M5.5 5L2.5 8l3 3M10.5 5l3 3-3 3"/>`)
+	IconEye         = icon(`<path d="M1.8 8s2.3-4.2 6.2-4.2S14.2 8 14.2 8s-2.3 4.2-6.2 4.2S1.8 8 1.8 8z"/><circle cx="8" cy="8" r="1.8"/>`)
+	IconEdit        = icon(`<path d="M11.2 2.8l2 2L5.5 12.5 3 13l.5-2.5z"/>`)
+	IconExport      = icon(`<path d="M8 10.5V2.5M5 5.5l3-3 3 3M3 11v2a1 1 0 001 1h8a1 1 0 001-1v-2"/>`)
 )
 
 // Brand is the Aurink mark of the design (Main, the title bar): an arch in

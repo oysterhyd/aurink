@@ -137,8 +137,8 @@ func (e *Editor) renderedIn(o *contract.ObjectRef, size float32, color ui.Color,
 					st.arrived = now
 				}
 			}
-			// The row's size changes with the answer.
-			e.dropAllForms()
+			// Only rows displaying or previewing this rendering change size.
+			e.dropRenderForms(o.Source)
 			e.invalidate()
 		})
 	}()

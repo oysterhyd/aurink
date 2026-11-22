@@ -287,6 +287,35 @@ func TestImageLoadsAndGrowsItsRow(t *testing.T) {
 	}
 }
 
+func TestImageLoadReshapesOnlyAffectedRow(t *testing.T) {
+	dir := t.TempDir()
+	var png64 bytes.Buffer
+	if err := png.Encode(&png64, image.NewRGBA(image.Rect(0, 0, 64, 180))); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "pic.png"), png64.Bytes(), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	src := "first paragraph\n\nsecond paragraph\n\nthird paragraph\n\n![alt](pic.png)\n\nfourth paragraph\n\nfifth paragraph\n"
+	m := document.Factory{}.New("doc", src, contract.DocMeta{Dominant: "\n", Encoding: "utf-8"}, 0)
+	d := make(waitDispatcher, 2)
+	e := liveedit.New(liveedit.Options{Model: m, Projector: projection.New(), Editing: editing.New(), Dispatcher: d, DocDir: func() string { return dir }})
+	t.Cleanup(e.Close)
+	tt := ui.NewTester(func(c *ui.Context) { e.View(c) }, 1000, 900)
+	tt.Frame()
+	e.ResetStats()
+	select {
+	case f := <-d:
+		f()
+	case <-time.After(10 * time.Second):
+		t.Fatal("image never loaded")
+	}
+	tt.Frame()
+	if e.Stats.Shapes != 1 {
+		t.Fatalf("async image completion reshaped %d rows, want 1 (only the image row)", e.Stats.Shapes)
+	}
+}
+
 func TestRemoteImageNeverLoads(t *testing.T) {
 	h := open(t, "text\n\n![alt](https://example.com/p.png)\n")
 	if !h.e.ImageFailed("https://example.com/p.png") {

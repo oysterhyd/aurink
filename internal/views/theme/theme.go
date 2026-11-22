@@ -9,7 +9,7 @@ const DefaultHue = 182
 
 // Font stacks of §4.2. The first three families ship with the app.
 const (
-	Serif = "Newsreader, Noto Serif SC, Georgia, SimSun"
+	Serif = "Newsreader, Noto Serif SC, PingFang SC, Microsoft YaHei UI, Noto Sans CJK SC, Georgia, SimSun"
 	Sans  = "Segoe UI Variable, Microsoft YaHei UI, SF Pro Text, PingFang SC, Cantarell, Noto Sans CJK SC"
 	// FontSerif is Appearance.ContentFont's value for the serif body.
 	FontSerif = "serif"
@@ -163,7 +163,9 @@ func (ty Typography) HeadingFont(level int) ui.Font {
 	case 2:
 		return ui.Font{Family: Serif, Size: b * 1.62, Weight: 500, LineHeight: 1.3}
 	case 3:
-		return ui.Font{Family: ty.body(), Size: b * 1.12, Weight: 650, LineHeight: 1.5}
+		return ui.Font{Family: ty.body(), Size: b * 1.25, Weight: 650, LineHeight: 1.45}
+	case 4:
+		return ui.Font{Family: ty.body(), Size: b * 1.08, Weight: 600, LineHeight: 1.5}
 	case 6:
 		return ui.Font{Family: ty.body(), Size: b * .95, Weight: 600, LineHeight: 1.5}
 	}

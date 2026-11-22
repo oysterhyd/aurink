@@ -5,16 +5,36 @@ import (
 	"strings"
 
 	"aurink/internal/contract"
+	"aurink/internal/core/text"
 	"github.com/egoist/mygo/ui/markdown/parser"
 )
 
 // Dollar delimiters can change the interpretation of blocks far before the
 // edited line, so a local suffix anchor alone cannot certify such an edit.
-func touchesDollarLine(old, next string, changes []contract.Change) bool {
-	contains := func(src string, start, end int) bool {
-		first := strings.LastIndexAny(src[:start], "\r\n") + 1
-		last, _ := lineEnd(src, end)
-		return strings.Contains(src[first:last], "$$")
+func touchesDollarLine(old, next *text.Text, changes []contract.Change) bool {
+	contains := func(src *text.Text, start, end int) bool {
+		n := src.Len()
+		first := start
+		for first > 0 {
+			lo := max(0, first-256)
+			chunk := src.Slice(contract.Range{Start: lo, End: first})
+			if k := strings.LastIndexAny(chunk, "\r\n"); k >= 0 {
+				first = lo + k + 1
+				break
+			}
+			first = lo
+		}
+		last := end
+		for last < n {
+			hi := min(n, last+256)
+			chunk := src.Slice(contract.Range{Start: last, End: hi})
+			if k := strings.IndexAny(chunk, "\r\n"); k >= 0 {
+				last += k
+				break
+			}
+			last = hi
+		}
+		return strings.Contains(src.Slice(contract.Range{Start: first, End: last}), "$$")
 	}
 	for _, c := range changes {
 		if contains(old, c.OldStart, c.OldEnd) || contains(next, c.NewStart, c.NewEnd) {

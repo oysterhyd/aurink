@@ -5,12 +5,16 @@ import (
 	"strings"
 
 	"aurink/internal/contract"
+	"aurink/internal/core/markdown"
 )
 
 // Run executes a formatting or block command in the supplied snapshot.
 func (Editor) Run(ctx contract.EditContext, cmd contract.EditCommand) (contract.Transaction, bool, error) {
 	if !valid(ctx) {
 		return contract.Transaction{}, false, &contract.Error{Code: contract.CodeInvalid, Op: "editing.Run", Detail: "invalid context or selection"}
+	}
+	if !cmd.Replace.Empty() {
+		return runWithReplace(ctx, cmd)
 	}
 	if strings.HasPrefix(string(cmd.ID), "table.") {
 		return tableCommand(ctx, cmd)
@@ -518,4 +522,62 @@ func moveRange(ctx contract.EditContext, b *contract.Block) contract.Range {
 		}
 	}
 	return r
+}
+
+func runWithReplace(ctx contract.EditContext, cmd contract.EditCommand) (contract.Transaction, bool, error) {
+	rep := cmd.Replace
+	if rep.Start < 0 || rep.End < rep.Start || rep.End > ctx.Text.Len() {
+		return contract.Transaction{}, false, &contract.Error{Code: contract.CodeInvalid, Op: "editing.Run", Detail: "invalid replace range"}
+	}
+	nextText, nextAST, err := markdown.Rebase(ctx.AST, ctx.Text, ctx.Prefs.Exts, []contract.TextEdit{{Range: rep}})
+	if err != nil {
+		return contract.Transaction{}, false, err
+	}
+	next := ctx
+	next.Text = nextText
+	next.AST = nextAST
+	next.Selection = contract.Caret(rep.Start)
+	cmd.Replace = contract.Range{}
+	l := lineAt(next, rep.Start)
+	if strings.TrimSpace(l.s[l.content:]) == "" && blockMatches(l, cmd.ID) {
+		mark := ""
+		if cmd.ID == contract.CmdBlockQuote {
+			mark = "> "
+		}
+		edits := []contract.TextEdit{{Range: rep, Text: mark}}
+		return transaction(edits, contract.Caret(rep.Start+len(mark)), contract.OriginCommand, "block"), true, nil
+	}
+	tx, ok, err := Editor{}.Run(next, cmd)
+	if err != nil || !ok {
+		return tx, ok, err
+	}
+	tx.Edits = unshiftEdits(tx.Edits, rep.Start, rep.Len())
+	return tx, true, nil
+}
+
+// unshiftEdits maps edits computed on text without [from, from+d) back onto
+// the original text containing [from, from+d).
+func unshiftEdits(edits []contract.TextEdit, from, d int) []contract.TextEdit {
+	out := make([]contract.TextEdit, 0, len(edits)+1)
+	taken := false
+	for _, ed := range edits {
+		r := ed.Range
+		switch {
+		case r.End < from:
+		case r.Start <= from && !taken:
+			r.End += d
+			taken = true
+		default:
+			r.Start, r.End = r.Start+d, r.End+d
+		}
+		if !taken && r.Start > from {
+			out = append(out, contract.TextEdit{Range: contract.Range{Start: from, End: from + d}})
+			taken = true
+		}
+		out = append(out, contract.TextEdit{Range: r, Text: ed.Text})
+	}
+	if !taken {
+		out = append(out, contract.TextEdit{Range: contract.Range{Start: from, End: from + d}})
+	}
+	return out
 }

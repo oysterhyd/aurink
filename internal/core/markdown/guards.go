@@ -1,6 +1,22 @@
 package markdown
 
-import "github.com/egoist/mygo/ui/markdown/parser"
+import (
+	"aurink/internal/contract"
+	"aurink/internal/core/text"
+	"github.com/egoist/mygo/ui/markdown/parser"
+)
+
+func touchesAmbiguousCaret(t *text.Text, cs []contract.Change) bool {
+	n := t.Len()
+	for _, c := range cs {
+		lo := max(0, c.NewStart-1005)
+		hi := min(n, c.NewEnd+1005)
+		if ambiguousCaretLabel(t.Slice(contract.Range{Start: lo, End: hi})) {
+			return true
+		}
+	}
+	return false
+}
 
 func ambiguousCaretLabel(src string) bool {
 	for i := 0; i < len(src); i++ {

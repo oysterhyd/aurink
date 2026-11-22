@@ -55,6 +55,8 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		defer s.lazyMu.Unlock()
 		var d *parser.Document
 		var input parserInput
+		var localSrc string
+		useLocal := false
 		shift := s.bodyAt
 		if !s.hasDefinitions {
 			top := i
@@ -66,8 +68,10 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				last--
 			}
 			start, end := s.Block(first).Lead.Start, s.Block(last).Trailer.End
-			d, input = parserDocument(s.text.String()[start:end], parserExtensions(s.exts))
+			localSrc = s.text.Slice(contract.Range{Start: start, End: end})
+			d, input = parserDocument(localSrc, parserExtensions(s.exts))
 			shift = start
+			useLocal = true
 		} else {
 			d = s.inlineDoc()
 			input = s.lazyInput
@@ -78,7 +82,11 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		if b.Parent > 0 && i == b.Parent+1 && len(b.Lines) > 0 && b.Lines[0].Source.Empty() {
 			item := s.Block(b.Parent)
 			if item.Kind == contract.BlockItem && item.Task != contract.TaskNone {
-				if end, ok := emptyTaskLine(s.text.String(), item.TaskMarker.Start); ok && b.Range.Start == end {
+				if useLocal && item.TaskMarker.Start >= shift && b.Range.Start <= shift+len(localSrc) {
+					if end, ok := emptyTaskLine(localSrc, item.TaskMarker.Start-shift); ok && b.Range.Start == shift+end {
+						taskStart = item.TaskMarker.End + 1
+					}
+				} else if end, ok := emptyTaskLine(s.text.String(), item.TaskMarker.Start); ok && b.Range.Start == end {
 					taskStart = item.TaskMarker.End + 1
 				}
 			}
@@ -119,6 +127,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 		if !found && !s.hasDefinitions {
 			// A top-level leaf can begin in another block's table delimiter or
 			// depend on a lazy continuation before it. Recover its full context.
+			useLocal = false
 			d, shift = s.inlineDoc(), s.bodyAt
 			input = s.lazyInput
 			for j := 1; j < d.Len(); j++ {
@@ -135,6 +144,7 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 			if s.hasDefinitions {
 				context = s.text.String()[s.bodyAt:]
 			}
+			useLocal = false
 			d, input = parserDocument("| "+s.text.Slice(b.Range)+" |\n|---|\n\n"+context, parserExtensions(s.exts))
 			in = d.Inlines(3)
 			shift = b.Range.Start - 2
@@ -161,6 +171,15 @@ func (s *Snapshot) Inlines(i int) []contract.Inline {
 				d, input = next, nextInput
 				in = d.Inlines(match)
 			}
+		}
+		if useLocal {
+			adapted := adaptInlines(localSrc, in, 0, input, s.exts)
+			if taskStart >= 0 {
+				adapted = trimEmptyTaskInlines(adapted, b.Range.Start-shift)
+			}
+			e.in = extendInlines(localSrc, adapted, s.exts)
+			shiftInlines(e.in, shift)
+			return
 		}
 		adapted := adaptInlines(s.text.String(), in, shift, input, s.exts)
 		if taskStart >= 0 {

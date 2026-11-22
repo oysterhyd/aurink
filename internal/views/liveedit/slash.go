@@ -97,10 +97,10 @@ func (e *Editor) slashItems() []slashItem {
 var slashLanguages = []string{"", "go", "python", "javascript", "typescript", "rust", "c", "cpp", "java", "csharp",
 	"json", "yaml", "toml", "bash", "powershell", "sql", "html", "css", "markdown", "diff"}
 
-// slashTyped opens the menu when s, just typed, is a "/" that makes an empty
-// top-level paragraph.
+// slashTyped opens the menu when s, just typed, is a "/" at the start of an
+// empty paragraph (at top level, after leading whitespace, or inside an empty
+// list item or blockquote).
 func (e *Editor) slashTyped(s string) {
-
 	if s != "/" || e.readOnly() {
 		return
 	}
@@ -114,9 +114,15 @@ func (e *Editor) slashTyped(s string) {
 		return
 	}
 	b := ast.Block(ast.LeafAt(at))
-	top := b.Parent < 0 || ast.Block(b.Parent).Kind == contract.BlockRoot
-	if b.Kind != contract.BlockParagraph || !top || text.Slice(b.Content) != "/" {
+	if b.Kind != contract.BlockParagraph || strings.TrimLeft(text.Slice(b.Content), " \t") != "/" {
 		return
+	}
+	for p := b.Parent; p > 0; p = ast.Block(p).Parent {
+		switch ast.Block(p).Kind {
+		case contract.BlockList, contract.BlockItem, contract.BlockQuote:
+		default:
+			return
+		}
 	}
 	e.slash = slashMenu{open: true, at: at}
 	e.invalidate()
@@ -279,54 +285,20 @@ func (e *Editor) slashClear(from int) {
 }
 
 // slashCommand replaces the "/" and its query with the block cmd makes, as
-// one undo step: the command is worked out on the text without them, then
-// applied with their deletion in one transaction.
+// one atomic undo step computed directly by Editing.Run without mutating or
+// rolling back the live document model.
 func (e *Editor) slashCommand(cmd contract.EditCommand) {
 	from := e.slash.at
 	e.closeSlash()
 	head := e.model.Selection().Primary().Head
-	c := contract.Caret(from)
-	if !e.apply(contract.Transaction{Edits: []contract.TextEdit{{Range: contract.Range{Start: from, End: head}}},
-		Selection: &c, Origin: contract.OriginUser}) {
-		return
-	}
+	cmd.Replace = contract.Range{Start: from, End: head}
 	tx, ok, err := e.opts.Editing.Run(e.editContext(), cmd)
-	e.model.Undo()
-	e.model.BreakCoalescing()
 	if err != nil || !ok {
 		return
 	}
-	tx.Edits = unshift(tx.Edits, from, head-from)
+	e.model.BreakCoalescing()
 	e.apply(tx)
 	e.model.BreakCoalescing()
-}
-
-// unshift maps edits made on a text without [from, from+d) onto the text
-// with it: the edit that reaches from takes the bytes in, or a deletion of
-// them joins the edits.
-func unshift(edits []contract.TextEdit, from, d int) []contract.TextEdit {
-	out := make([]contract.TextEdit, 0, len(edits)+1)
-	taken := false
-	for _, ed := range edits {
-		r := ed.Range
-		switch {
-		case r.End < from:
-		case r.Start <= from && !taken:
-			r.End += d
-			taken = true
-		default:
-			r.Start, r.End = r.Start+d, r.End+d
-		}
-		if !taken && r.Start > from {
-			out = append(out, contract.TextEdit{Range: contract.Range{Start: from, End: from + d}})
-			taken = true
-		}
-		out = append(out, contract.TextEdit{Range: r, Text: ed.Text})
-	}
-	if !taken {
-		out = append(out, contract.TextEdit{Range: contract.Range{Start: from, End: from + d}})
-	}
-	return out
 }
 
 func (e *Editor) slashTable(rows, cols int) {
@@ -379,10 +351,11 @@ func (e *Editor) SlashMenu(c *ui.Context) ui.Element {
 	sm.moved = in && (px != sm.px || py != sm.py)
 	sm.px, sm.py = px, py
 	panel.Children(func() {
-		var label, desc, syntax string
+		var glyph, label, desc, syntax string
 		switch sm.step {
 		case slashSize:
 			active = e.slashGrid(c)
+			glyph = "▦"
 			label = locales.LiveeditSlashSizeN(strconv.Itoa(sm.rows), strconv.Itoa(sm.cols))
 			desc = locales.LiveeditSlashSizeDesc()
 			syntax = tableSyntax(min(sm.rows, 3), min(sm.cols, 4))
@@ -391,6 +364,7 @@ func (e *Editor) SlashMenu(c *ui.Context) ui.Element {
 			active = e.slashList(c, q, len(langs))
 			if len(langs) > 0 {
 				l := langs[min(sm.sel, len(langs)-1)]
+				glyph = "{}"
 				label, desc, syntax = locales.LiveeditSlashLanguage(), locales.LiveeditSlashLanguageDesc(), "```"+l+"\n\n```"
 			}
 		default:
@@ -398,7 +372,7 @@ func (e *Editor) SlashMenu(c *ui.Context) ui.Element {
 			active = e.slashList(c, q, len(items))
 			if len(items) > 0 {
 				it := items[min(sm.sel, len(items)-1)]
-				label, desc, syntax = it.label, it.desc, it.syntax
+				glyph, label, desc, syntax = it.glyph, it.label, it.desc, it.syntax
 			}
 		}
 		ui.Column(c).Grow(1).FillHeight().MinWidth(0).Padding(14).Gap(10).Background(t.Surface).Children(func() {
@@ -407,12 +381,83 @@ func (e *Editor) SlashMenu(c *ui.Context) ui.Element {
 			}
 			ui.Text(c, label).FontSize(theme.UIText).FontWeight(600).TextColor(t.Text)
 			ui.Text(c, desc).FontSize(theme.UIStatus).TextColor(t.Muted)
+			e.slashSpecimen(c, glyph)
 			ui.Spacer(c)
 			ui.Text(c, syntax).Font(theme.Mono).FontSize(theme.UIStatus).TextColor(t.Muted).
 				Padding(10).Radius(8).Background(t.CodeBg).Border(1, t.Border).FillWidth()
 		})
 	})
 	return active
+}
+
+// slashSpecimen renders a miniature visual preview card of the selected block
+// structure in the middle of the slash menu's right pane.
+func (e *Editor) slashSpecimen(c *ui.Context, glyph string) {
+	t := e.t
+	card := ui.Column(c.Key("specimen")).FillWidth().Padding(12).Gap(8).Radius(8).
+		Background(t.Sheet).Border(1, t.Border).PassThrough()
+	card.Children(func() {
+		bar := func(wPct float32, h float32, col ui.Color) {
+			ui.Box(c).WidthPercent(wPct).Height(h).Radius(h / 2).Background(col)
+		}
+		switch glyph {
+		case "H1", "H2", "H3":
+			h := float32(10)
+			if glyph == "H2" {
+				h = 8
+			} else if glyph == "H3" {
+				h = 6
+			}
+			bar(62, h, t.Text.Alpha(.78))
+			bar(90, 4, t.Muted.Alpha(.3))
+			bar(74, 4, t.Muted.Alpha(.22))
+		case "•", "1.", "[ ]":
+			for i := range 2 {
+				ui.Row(c.Key(i)).Gap(8).AlignItems(ui.Center).Children(func() {
+					if glyph == "[ ]" {
+						box := ui.Box(c).Size(10, 10).Radius(3)
+						if i == 0 {
+							box.Background(t.Accent)
+						} else {
+							box.Border(1, t.Muted)
+						}
+					} else {
+						ui.Box(c).Size(5, 5).Radius(2.5).Background(t.Accent)
+					}
+					bar(float32(72-i*14), 4, t.Text.Alpha(.55))
+				})
+			}
+		case ">":
+			ui.Row(c).Gap(10).AlignItems(ui.Stretch).Children(func() {
+				ui.Box(c).Width(3).Height(26).Radius(1.5).Background(t.Accent)
+				ui.Column(c).Grow(1).Gap(6).Justify(ui.Center).Children(func() {
+					bar(84, 4, t.Muted.Alpha(.55))
+					bar(64, 4, t.Muted.Alpha(.4))
+				})
+			})
+		case "▦":
+			ui.Column(c).Gap(3).FillWidth().Children(func() {
+				for r := range 2 {
+					ui.Row(c.Key(r)).Gap(3).FillWidth().Children(func() {
+						for col := range 3 {
+							bg := t.Surface
+							if r == 0 {
+								bg = t.AccentSoft
+							}
+							ui.Box(c.Key(col)).Grow(1).Height(14).Radius(3).Background(bg).Border(1, t.Border)
+						}
+					})
+				}
+			})
+		case "{}":
+			bar(36, 4, t.SynKeyword)
+			bar(76, 4, t.Accent.Alpha(.65))
+			bar(54, 4, t.Muted.Alpha(.45))
+		default:
+			bar(50, 5, t.Accent.Alpha(.65))
+			bar(82, 4, t.Muted.Alpha(.35))
+		}
+	})
 }
 
 // slashList is the left column: the items under their groups, or the

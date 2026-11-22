@@ -112,18 +112,69 @@ func (t *Text) Slice(r contract.Range) string {
 	return b.String()
 }
 
+// HasContiguousString reports whether the full contiguous string view has been
+// materialized in memory. Multi-chunk snapshots created by Apply leave this
+// false until String() is explicitly called.
+func (t *Text) HasContiguousString() bool {
+	return len(t.chunks) <= 1 || t.s != ""
+}
+
+// SameSpan reports whether t[from:to] and other[otherFrom:otherTo] contain
+// identical bytes, comparing shared 16 KB chunks directly without materializing
+// a contiguous full-document string.
+func (t *Text) SameSpan(from, to int, other *Text, otherFrom, otherTo int) bool {
+	if other == nil || from < 0 || to < from || to > t.Len() || otherFrom < 0 || otherTo < otherFrom || otherTo > other.Len() {
+		return false
+	}
+	rem := to - from
+	if otherTo-otherFrom != rem {
+		return false
+	}
+	if rem == 0 {
+		return true
+	}
+	if len(t.chunks) == 1 && len(other.chunks) == 1 {
+		return t.chunks[0][from:to] == other.chunks[0][otherFrom:otherTo]
+	}
+	i := sort.Search(len(t.chunks), func(i int) bool { return t.offs[i+1] > from })
+	j := sort.Search(len(other.chunks), func(j int) bool { return other.offs[j+1] > otherFrom })
+	posA, posB := from, otherFrom
+	for rem > 0 {
+		availA := t.offs[i+1] - posA
+		availB := other.offs[j+1] - posB
+		step := min(rem, min(availA, availB))
+		baseA := t.offs[i]
+		baseB := other.offs[j]
+		if t.chunks[i][posA-baseA:posA-baseA+step] != other.chunks[j][posB-baseB:posB-baseB+step] {
+			return false
+		}
+		posA += step
+		posB += step
+		rem -= step
+		if posA == t.offs[i+1] {
+			i++
+		}
+		if posB == other.offs[j+1] {
+			j++
+		}
+	}
+	return true
+}
+
 func (t *Text) lineStarts() []int {
 	t.lineOnce.Do(func() {
 		t.lineBuilds++
-		s := t.String()
 		starts := []int{0}
-		for i := 0; i < len(s); {
-			j := strings.IndexByte(s[i:], '\n')
-			if j < 0 {
-				break
+		for ci, c := range t.chunks {
+			base := t.offs[ci]
+			for i := 0; i < len(c); {
+				j := strings.IndexByte(c[i:], '\n')
+				if j < 0 {
+					break
+				}
+				i += j + 1
+				starts = append(starts, base+i)
 			}
-			i += j + 1
-			starts = append(starts, i)
 		}
 		t.lines = starts
 	})

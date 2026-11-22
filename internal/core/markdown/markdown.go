@@ -66,6 +66,33 @@ func New(source string, version contract.Version, exts contract.Extensions) (*Pa
 // Snapshot returns the current AST. Later updates never modify this value.
 func (p *Parser) Snapshot() *Snapshot { return p.current }
 
+// Rebase applies ordered edits to prev's snapshot without mutating prev,
+// returning the resulting immutable text and AST snapshots.
+func Rebase(prev contract.AST, src contract.Text, exts contract.Extensions, edits []contract.TextEdit) (contract.Text, contract.AST, error) {
+	if s, ok := prev.(*Snapshot); ok && s != nil {
+		nextID := s.highest
+		for i := range s.entries {
+			nextID = max(nextID, s.entries[i].id)
+		}
+		p := &Parser{current: s, next: nextID}
+		u, err := p.Apply(edits)
+		if err != nil {
+			return nil, nil, err
+		}
+		return u.Snapshot.text, u.Snapshot, nil
+	}
+	base := text.New(src.String(), max(src.Version(), 1))
+	next, _, err := base.Apply(edits)
+	if err != nil {
+		return nil, nil, err
+	}
+	p, err := New(next.String(), next.Version(), exts)
+	if err != nil {
+		return nil, nil, err
+	}
+	return next, p.Snapshot(), nil
+}
+
 // Apply applies ordered edits using core/text's validation and byte-preserving
 // change mapping. It is a convenience for callers that do not own a Text yet.
 func (p *Parser) Apply(edits []contract.TextEdit) (Update, error) {
@@ -85,35 +112,40 @@ func (p *Parser) Apply(edits []contract.TextEdit) (Update, error) {
 // the writer and all snapshots unchanged. Versions must increase.
 func (p *Parser) Update(next contract.Text, changes []contract.Change) (Update, error) {
 	old := p.current
-	if next == nil || next.Version() <= old.Version() || !validChanges(old.text.String(), next.String(), changes) {
+	if next == nil || next.Version() <= old.Version() {
 		return Update{}, &contract.Error{Code: contract.CodeInvalid, Op: "markdown.Update", Detail: "invalid version or change mapping"}
 	}
-	source := next.String()
-	if source == old.text.String() {
-		s := &Snapshot{text: text.New(source, next.Version()), exts: old.exts, bodyAt: old.bodyAt, highest: old.highest, hasDefinitions: old.hasDefinitions, entries: make([]placement, old.Len()), leaves: old.leaves}
+	nextT, ok := next.(*text.Text)
+	if !ok {
+		nextT = text.New(next.String(), next.Version())
+	}
+	if !validChanges(old.text, nextT, changes) {
+		return Update{}, &contract.Error{Code: contract.CodeInvalid, Op: "markdown.Update", Detail: "invalid version or change mapping"}
+	}
+	if sameChangedBytes(old.text, nextT, changes) {
+		s := &Snapshot{text: nextT, exts: old.exts, bodyAt: old.bodyAt, highest: old.highest, hasDefinitions: old.hasDefinitions, hasAmbiguousCaret: old.hasAmbiguousCaret, entries: make([]placement, old.Len()), leaves: old.leaves}
 		for i := range old.entries {
 			copyPlacement(&s.entries[i], &old.entries[i])
 		}
 		p.current = s
 		return Update{Snapshot: s}, nil
 	}
-	dollarEdit := touchesDollarLine(old.text.String(), source, changes)
-	if s, dirty, ok := old.typing(source, next.Version(), changes); ok && !dollarEdit {
+	dollarEdit := touchesDollarLine(old.text, nextT, changes)
+	if s, dirty, ok := old.typing(nextT, changes); ok && !dollarEdit {
 		p.current = s
 		return Update{Snapshot: s, Dirty: dirty, Stats: Stats{AdaptedBlocks: len(dirty)}}, nil
 	}
 	var stats Stats
-	at, _ := front(source, old.exts&contract.ExtFrontMatter != 0)
 	switch {
-	case at != old.bodyAt || touchesFront(changes, old.bodyAt):
+	case frontChanged(old, nextT, changes):
 		stats.FrontMatterFallbacks++
 	case dollarEdit:
 		// A closer can make a distant, formerly literal opener into a block.
 		stats.BoundaryFallbacks++
-	case ambiguousCaretLabel(old.text.String()) || ambiguousCaretLabel(source):
+	case old.hasAmbiguousCaret || touchesAmbiguousCaret(nextT, changes):
 		stats.ReferenceFallbacks++
 	default:
-		u, ok := p.localUpdate(source, next.Version(), changes)
+		u, ok := p.localUpdate(nextT, changes)
 		if ok {
 			p.current = u.Snapshot
 			return u, nil
@@ -121,11 +153,12 @@ func (p *Parser) Update(next contract.Text, changes []contract.Change) (Update, 
 		stats = u.Stats
 	}
 	stats.FullRebuilds++
+	source := nextT.String()
 	a, err := parseWithExtensions(source, old.exts, old.exts&contract.ExtFrontMatter != 0)
 	if err != nil {
 		return Update{}, &contract.Error{Code: contract.CodeInternal, Op: "markdown.Update", Err: err}
 	}
-	s, dirty := p.freeze(a, next.Version(), old.exts, changes)
+	s, dirty := p.freezeWithText(nextT, a, old.exts, changes)
 	stats.AdaptedBlocks += s.Len()
 	p.current = s
 	return Update{Snapshot: s, Dirty: dirty, Stats: stats}, nil
@@ -135,15 +168,48 @@ func touchesFront(cs []contract.Change, at int) bool {
 	return at > 0 && len(cs) > 0 && cs[0].OldStart < at
 }
 
-func validChanges(old, next string, cs []contract.Change) bool {
+func frontChanged(old *Snapshot, next *text.Text, cs []contract.Change) bool {
+	if old.exts&contract.ExtFrontMatter == 0 {
+		return false
+	}
+	if touchesFront(cs, old.bodyAt) {
+		return true
+	}
+	if old.bodyAt > 0 {
+		return false
+	}
+	head := next.Slice(contract.Range{Start: 0, End: min(5, next.Len())})
+	if !strings.HasPrefix(head, "---") {
+		return false
+	}
+	at, _ := front(next.String(), true)
+	return at != old.bodyAt
+}
+
+func validChanges(old, next *text.Text, cs []contract.Change) bool {
 	a, b := 0, 0
+	oldLen, nextLen := old.Len(), next.Len()
 	for _, c := range cs {
-		if c.OldStart < a || c.OldEnd < c.OldStart || c.OldEnd > len(old) || c.NewStart < b || c.NewEnd < c.NewStart || c.NewEnd > len(next) || old[a:c.OldStart] != next[b:c.NewStart] {
+		if c.OldStart < a || c.OldEnd < c.OldStart || c.OldEnd > oldLen ||
+			c.NewStart < b || c.NewEnd < c.NewStart || c.NewEnd > nextLen ||
+			!old.SameSpan(a, c.OldStart, next, b, c.NewStart) {
 			return false
 		}
 		a, b = c.OldEnd, c.NewEnd
 	}
-	return old[a:] == next[b:]
+	return old.SameSpan(a, oldLen, next, b, nextLen)
+}
+
+func sameChangedBytes(old, next *text.Text, cs []contract.Change) bool {
+	if old.Len() != next.Len() {
+		return false
+	}
+	for _, c := range cs {
+		if !old.SameSpan(c.OldStart, c.OldEnd, next, c.NewStart, c.NewEnd) {
+			return false
+		}
+	}
+	return true
 }
 
 type blockData struct {
@@ -166,25 +232,26 @@ type placement struct {
 // Snapshot is an immutable AST with shared relative block records. Do not copy
 // it. Blocks, inline slices and outline slices returned by it are read-only.
 type Snapshot struct {
-	text           *text.Text
-	exts           contract.Extensions
-	bodyAt         int
-	entries        []placement
-	leaves         []int
-	adapted        int
-	highest        contract.BlockID
-	hasDefinitions bool
-	indexOnce      sync.Once
-	index          map[contract.BlockID]int
-	lazyOnce       sync.Once
-	lazyMu         sync.Mutex
-	lazy           *parser.Document
-	lazyInput      parserInput
-	outlineOnce    sync.Once
-	defsOnce       sync.Once
-	outline        []contract.Heading
-	notes          map[string]int
-	defs           map[string]contract.LinkDef
+	text              *text.Text
+	exts              contract.Extensions
+	bodyAt            int
+	entries           []placement
+	leaves            []int
+	adapted           int
+	highest           contract.BlockID
+	hasDefinitions    bool
+	hasAmbiguousCaret bool
+	indexOnce         sync.Once
+	index             map[contract.BlockID]int
+	lazyOnce          sync.Once
+	lazyMu            sync.Mutex
+	lazy              *parser.Document
+	lazyInput         parserInput
+	outlineOnce       sync.Once
+	defsOnce          sync.Once
+	outline           []contract.Heading
+	notes             map[string]int
+	defs              map[string]contract.LinkDef
 }
 
 var _ contract.AST = (*Snapshot)(nil)
@@ -312,12 +379,13 @@ func moveBlock(b contract.Block, delta int) contract.Block {
 
 // typing proves a replacement cannot change block grammar: the block and the
 // affected line retain a leading letter; line endings and pipes cannot change.
-func (s *Snapshot) typing(source string, v contract.Version, cs []contract.Change) (*Snapshot, []contract.BlockID, bool) {
+func (s *Snapshot) typing(next *text.Text, cs []contract.Change) (*Snapshot, []contract.BlockID, bool) {
 	if len(cs) != 1 {
 		return nil, nil, false
 	}
 	c := cs[0]
-	if strings.ContainsAny(source[c.NewStart:c.NewEnd], "\r\n|") || strings.ContainsAny(s.text.String()[c.OldStart:c.OldEnd], "\r\n|") {
+	if strings.ContainsAny(next.Slice(contract.Range{Start: c.NewStart, End: c.NewEnd}), "\r\n|") ||
+		strings.ContainsAny(s.text.Slice(contract.Range{Start: c.OldStart, End: c.OldEnd}), "\r\n|") {
 		return nil, nil, false
 	}
 	i := s.LeafAt(c.OldStart)
@@ -349,9 +417,10 @@ func (s *Snapshot) typing(source string, v contract.Version, cs []contract.Chang
 	if !safe {
 		return nil, nil, false
 	}
-	n := &Snapshot{text: text.New(source, v), exts: s.exts, bodyAt: s.bodyAt, entries: make([]placement, s.Len()), leaves: s.leaves}
+	n := &Snapshot{text: next, exts: s.exts, bodyAt: s.bodyAt, entries: make([]placement, s.Len()), leaves: s.leaves}
 	n.highest = s.highest
 	n.hasDefinitions = s.hasDefinitions
+	n.hasAmbiguousCaret = s.hasAmbiguousCaret || touchesAmbiguousCaret(next, cs)
 	delta := (c.NewEnd - c.NewStart) - (c.OldEnd - c.OldStart)
 	var dirty []contract.BlockID
 	for j := range s.entries {
